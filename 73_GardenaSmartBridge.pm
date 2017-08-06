@@ -64,7 +64,7 @@ eval "use JSON;1" or $missingModul .= "JSON ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.10";
+my $version = "0.0.22";
 
 
 
@@ -108,6 +108,7 @@ sub GardenaSmartBridge_Initialize($) {
     $hash->{AttrFn}     = "GardenaSmartBridge_Attr";
     $hash->{AttrList}   = "debugJSON:0,1 ".
                           "disable:1 ".
+                          "interval ".
                           $readingFnAttributes;
     
     foreach my $d(sort keys %{$modules{GardenaSmartBridge}{defptr}}) {
@@ -240,12 +241,14 @@ sub GardenaSmartBridge_Set($@) {
     
         GardenaSmartBridge_getDevices($hash);
         
-    } elsif( lc $cmd eq 'dummy2' ) {
+    } elsif( lc $cmd eq 'gettoken' ) {
     
-
+        return "token is up to date" if( defined($hash->{helper}{session_id}) );
+        GardenaSmartBridge_getToken($hash);
     
     } else {
-        my $list = "getDevicesState:noArg";
+    
+        my $list = "getDevicesState:noArg getToken:noArg";
         return "Unknown argument $cmd, choose one of $list";
     }
     
@@ -281,22 +284,25 @@ sub GardenaSmartBridge_Write($@) {
     my $header                      = "Content-Type: application/json";
     my $uri                         = '';
     my $method                      = 'POST';
-    $header                         .= "\r\nX-Session: $session_id"                                     if( defined($hash->{helper}{session_id}) );
-    $payload                        = '{' . $payload . '}'                                              if( defined($payload) );
-    $payload                        = '{}'                                                              if( not defined($payload) );
+    $header                         .= "\r\nX-Session: $session_id"                                         if( defined($hash->{helper}{session_id}) );
+    $payload                        = '{' . $payload . '}'                                                  if( defined($payload) );
+    $payload                        = '{}'                                                                  if( not defined($payload) );
 
 
     if( $payload eq '{}' ) {
         $method                         = 'GET';
-        $uri                            .= '/locations/?user_id=' . $hash->{helper}{user_id}            if( not defined($hash->{helper}{locations_id}) );
-            readingsSingleUpdate($hash,'state','fetch locationId',1)                                      if( not defined($hash->{helper}{locations_id}) );
-        $uri                            .= '/sessions'                                                  if( not defined($hash->{helper}{session_id}));
-        $uri                            .= '/devices'                                                   if( not defined($model) and defined($hash->{helper}{locations_id}) );
+        $uri                            .= '/locations/?user_id=' . $hash->{helper}{user_id}                if( not defined($hash->{helper}{locations_id}) );
+            readingsSingleUpdate($hash,'state','fetch locationId',1)                                        if( not defined($hash->{helper}{locations_id}) );
+        $uri                            .= '/sessions'                                                      if( not defined($hash->{helper}{session_id}));
+        $uri                            .= '/devices'                                                       if( not defined($model) and defined($hash->{helper}{locations_id}) );
     }
     
-    $uri                            .= '/sessions'                                                      if( not defined($hash->{helper}{session_id}));
-    $uri                            .= '/devices/' . $deviceId . '/abilities/' . $model . '/command'    if( defined($model) and defined($payload) );
-    $uri                            .= '?locationId=' . $hash->{helper}{locations_id}                   if( defined($hash->{helper}{locations_id}) );
+    $uri                            .= '/sessions'                                                          if( not defined($hash->{helper}{session_id}));
+    
+    if( defined($hash->{helper}{locations_id}) ) {
+        $uri                            .= '/devices/' . $deviceId . '/abilities/' . $model . '/command'    if( defined($model) and defined($payload) );
+        $uri                            .= '?locationId=' . $hash->{helper}{locations_id};
+    }
 
     
     HttpUtils_NonblockingGet(
@@ -472,6 +478,9 @@ sub GardenaSmartBridge_getToken($) {
     GardenaSmartBridge_Write($hash,'"sessions": {"email": "'.GardenaSmartBridge_decrypt($hash->{helper}{username}).'","password": "'.GardenaSmartBridge_decrypt($hash->{helper}{password}).'"}',undef,undef);
     
     Log3 $name, 3, "GardenaSmartBridge ($name) - send credentials to fetch Token and locationId";
+    
+    RemoveInternalTimer($hash);
+    InternalTimer( gettimeofday()+$hash->{INTERVAL},"GardenaSmartBridge_InternalTimerGetDeviceData", $hash, 1 );
 }
 
 sub GardenaSmartBridge_encrypt($) {

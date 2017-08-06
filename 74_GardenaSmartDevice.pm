@@ -62,7 +62,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.10";
+my $version = "0.0.22";
 
 
 
@@ -148,18 +148,11 @@ sub GardenaSmartDevice_Define($$) {
     
     return "GardenaSmartDevice device $name on GardenaSmartBridge $iodev already defined."
     if( defined($d) && $d->{IODev} == $hash->{IODev} && $d->{NAME} ne $name );
-
-    Log3 $name, 3, "GardenaSmartDevice ($name) - defined with DEVICEID: $deviceId";
-    
-
-    
     
     $attr{$name}{room}          = "GardenaSmart"    if( not defined( $attr{$name}{room} ) );
     $attr{$name}{model}         = $category         if( not defined( $attr{$name}{model} ) );
     
-    Log3 $name, 3, "GardenaSmartDevice ($name) - defined GardenaSmartDevice";
-
-    #GardenaSmartDevice_Open( $hash );
+    Log3 $name, 3, "GardenaSmartDevice ($name) - defined GardenaSmartDevice with DEVICEID: $deviceId";
     
     $modules{GardenaSmartDevice}{defptr}{$deviceId} = $hash;
 
@@ -182,10 +175,8 @@ sub GardenaSmartDevice_Attr(@) {
 
     my ( $cmd, $name, $attrName, $attrVal ) = @_;
     my $hash = $defs{$name};
-    
-    my $orig = $attrVal;
 
-    
+
     return undef;
 }
 
@@ -214,12 +205,14 @@ sub GardenaSmartDevice_Set($@) {
         my $duration     = join( " ", @args );
         $payload    = '"name":"start_override_timer","parameters":{"duration":' . $duration . '}';
     
-    } elsif( lc $cmd eq 'statusrequest' ) {
+    } elsif( lc $cmd eq 'manualoverride' ) {
     
-        #$payload    = '"name":"device_info"';
-        $payload    = '"name":"measure_ambient_temperature"';
+        my $duration     = join( " ", @args );
+        $payload    = '"name":"manual_override","parameters":{"duration":' . $duration . '}';
     
-    } elsif( lc $cmd eq '' ) {
+    } elsif( lc $cmd eq 'canceloverride' ) {
+    
+        $payload    = '"name":"cancel_override"';
     
     } elsif( lc $cmd eq '' ) {
     
@@ -240,14 +233,16 @@ sub GardenaSmartDevice_Set($@) {
     
     } else {
     
-        my $list    = 'statusRequest:noArg ';
-        $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,1,1440' if( AttrVal($name,'model','unknown') eq 'mower' );
+        my $list    = '';
+        $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440' if( AttrVal($name,'model','unknown') eq 'mower' );
+        $list       .= 'manualOverride:slider,0,10,240 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+        $list       .= 'refresh:Temperature,Light,Humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
     }
     
     IOWrite($hash,$payload,$hash->{DEVICEID},AttrVal($name,'model','unknown'));
-    Log3 $name, 3, "GardenaSmartBridge ($name) - IOWrite: $payload $hash->{DEVICEID} " . AttrVal($name,'model','unknown') . " IODevHash=$hash->{IODev}";
+    Log3 $name, 4, "GardenaSmartBridge ($name) - IOWrite: $payload $hash->{DEVICEID} " . AttrVal($name,'model','unknown') . " IODevHash=$hash->{IODev}";
     
     return undef;
 }
@@ -266,7 +261,7 @@ sub GardenaSmartDevice_Parse($$) {
     }
     
     Log3 $name, 4, "GardenaSmartDevice ($name) - ParseFn was called";
-    Log3 $name, 4, "GardenaSmartDevice ($name) - JSON: $json";
+    Log3 $name, 5, "GardenaSmartDevice ($name) - JSON: $json";
 
     
     if( defined($decode_json->{id}) ) {
@@ -277,13 +272,13 @@ sub GardenaSmartDevice_Parse($$) {
             my $name                = $hash->{NAME};
                         
             GardenaSmartDevice_WriteReadings($hash,$decode_json);
-            Log3 $name, 3, "GardenaSmartDevice ($name) - find logical device: $hash->{NAME}";
+            Log3 $name, 4, "GardenaSmartDevice ($name) - find logical device: $hash->{NAME}";
                         
             return $hash->{NAME};
             
         } else {
             
-            Log3 $name, 3, "GardenaSmartDevice ($name) - Wird angelegt NAME: $decode_json->{name} ID: $decode_json->{id} CATEGORY: $decode_json->{category} IODev=$name";
+            Log3 $name, 3, "GardenaSmartDevice ($name) - autocreate new device $decode_json->{name} with deviceId $decode_json->{id}, model $decode_json->{category} and IODev IODev=$name";
             return "UNDEFINED $decode_json->{name} GardenaSmartDevice $decode_json->{id} $decode_json->{category} IODev=$name";
         }
     }
@@ -297,19 +292,20 @@ sub GardenaSmartDevice_WriteReadings($$) {
     my $abilities               = scalar (@{$decode_json->{abilities}});
 
     
+    readingsBeginUpdate($hash);
+    
     do {
         
         if( ref($decode_json->{abilities}[$abilities]{properties}) eq "ARRAY" and scalar(@{$decode_json->{abilities}[$abilities]{properties}}) > 0 ) {;
-
             foreach my $propertie (@{$decode_json->{abilities}[$abilities]{properties}}) {
-                readingsBeginUpdate($hash);
-                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},$propertie->{value});
-                readingsEndUpdate( $hash, 1 );
+                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},$propertie->{value}) if( defined($propertie->{value}) );
             }
         }
 
         $abilities--;
     } while ($abilities >= 0);
+    
+    readingsEndUpdate( $hash, 1 );
     
     Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written}";
 }
