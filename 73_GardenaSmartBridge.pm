@@ -64,7 +64,7 @@ eval "use JSON;1" or $missingModul .= "JSON ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.22";
+my $version = "0.0.25";
 
 
 
@@ -149,6 +149,7 @@ sub GardenaSmartBridge_Define($$) {
     $attr{$name}{room} = "GardenaSmart" if( !defined( $attr{$name}{room} ) );
     
     readingsSingleUpdate($hash,'state','initialized',1);
+    readingsSingleUpdate($hash,'token','none',1);
     Log3 $name, 3, "GardenaSmartBridge ($name) - defined GardenaSmartBridge and crypt your credentials";
 
     
@@ -371,6 +372,7 @@ sub GardenaSmartBridge_ResponseProcessing($$) {
         
         GardenaSmartBridge_Write($hash,undef,undef,undef);
         Log3 $name, 3, "GardenaSmartBridge ($name) - fetch locations id";
+        readingsSingleUpdate($hash,'token',$hash->{helper}{session_id},1);
         
         return;
     

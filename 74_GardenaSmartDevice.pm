@@ -62,7 +62,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.22";
+my $version = "0.0.25";
 
 
 
@@ -153,6 +153,7 @@ sub GardenaSmartDevice_Define($$) {
     $attr{$name}{model}         = $category         if( not defined( $attr{$name}{model} ) );
     
     Log3 $name, 3, "GardenaSmartDevice ($name) - defined GardenaSmartDevice with DEVICEID: $deviceId";
+    readingsSingleUpdate($hash,'state','initialized',1);
     
     $modules{GardenaSmartDevice}{defptr}{$deviceId} = $hash;
 
@@ -305,6 +306,12 @@ sub GardenaSmartDevice_WriteReadings($$) {
         $abilities--;
     } while ($abilities >= 0);
     
+    
+    readingsBulkUpdateIfChanged($hash,'state',ReadingsVal($name,'mower-status','readingsValError')) if( AttrVal($name,'model','unknown') eq 'mower' );
+    readingsBulkUpdateIfChanged($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? "open" : "closed")) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+    
+    readingsBulkUpdateIfChanged($hash,'state','T: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . '°C, H: ' . ReadingsVal($name,'humidity-humidity','readingsValError') . '%, Light: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . 'lux') if( AttrVal($name,'model','unknown') eq 'sensor' );
+
     readingsEndUpdate( $hash, 1 );
     
     Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written}";
