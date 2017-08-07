@@ -61,10 +61,11 @@ use Data::Dumper;   #debugging
 
 eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Encode ";
 eval "use JSON;1" or $missingModul .= "JSON ";
+eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.29";
+my $version = "0.0.31";
 
 
 
@@ -126,7 +127,7 @@ sub GardenaSmartBridge_Define($$) {
 
     
     return "too few parameters: define <NAME> GardenaSmartBridge <Email> <Passwort>" if( @a != 4 ) ;
-    return "Cannot define Gardena Bridge device. Perl modul $missingModul is missing." if ( $missingModul );
+    return "Cannot define Gardena Bridge device. Perl modul ${missingModul}is missing." if ( $missingModul );
     
     my $name                = $a[0];
     my $user                = $a[2];

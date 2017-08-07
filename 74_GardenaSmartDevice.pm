@@ -62,7 +62,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.29";
+my $version = "0.0.31";
 
 
 
@@ -312,10 +312,10 @@ sub GardenaSmartDevice_WriteReadings($$) {
     } while ($abilities >= 0);
     
     
-    readingsBulkUpdateIfChanged($hash,'state',ReadingsVal($name,'mower-status','readingsValError')) if( AttrVal($name,'model','unknown') eq 'mower' );
-    readingsBulkUpdateIfChanged($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? "open" : "closed")) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+    readingsBulkUpdate($hash,'state',ReadingsVal($name,'mower-status','readingsValError')) if( AttrVal($name,'model','unknown') eq 'mower' );
+    readingsBulkUpdate($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? "open" : "closed")) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
     
-    readingsBulkUpdateIfChanged($hash,'state','T: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . '°C, H: ' . ReadingsVal($name,'humidity-humidity','readingsValError') . '%, Light: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . 'lux') if( AttrVal($name,'model','unknown') eq 'sensor' );
+    readingsBulkUpdate($hash,'state','T: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . '°C, H: ' . ReadingsVal($name,'humidity-humidity','readingsValError') . '%, Light: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . 'lux') if( AttrVal($name,'model','unknown') eq 'sensor' );
 
     readingsEndUpdate( $hash, 1 );
     
