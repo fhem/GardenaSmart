@@ -342,6 +342,7 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
     
     
     #### Ein Fehler der Behandelt werden muss
+   # Data:
    # '<html>
    #     <head>
    #         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -354,6 +355,20 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
    #     </body>
    # </html>
    # ';
+   
+   # '<html>
+   #    <head>
+   #         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+   #         <title>Error 503 Service Unavailable</title>
+   #     </head>
+   #     <body><h2>HTTP ERROR 503</h2>
+   #         <p>Problem accessing /sg-1/devices/2ad0d816-8bc3-4f0a-8c52-8b0dc8d7b2ec/abilities/outlet/command. Reason:
+   #         <pre>    Service Unavailable</pre></p><hr><i><small>Powered by Jetty://</small></i><hr/>
+   # 
+   #     </body>
+   # </html>
+   # ';
+
     
 
 

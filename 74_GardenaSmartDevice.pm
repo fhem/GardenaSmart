@@ -254,7 +254,7 @@ sub GardenaSmartDevice_Set($@) {
     
         my $list    = '';
         $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440' if( AttrVal($name,'model','unknown') eq 'mower' );
-        $list       .= 'manualOverride:slider,0,10,240 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+        $list       .= 'manualOverride:slider,0,1,59 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
         $list       .= 'refresh:temperature,light,humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
