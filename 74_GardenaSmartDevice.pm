@@ -187,8 +187,10 @@ sub GardenaSmartDevice_Set($@) {
     my ($arg, @params) = @args;
     
     my $payload;
+    my $abilities;
     
     
+    ### mower
     if( lc $cmd eq 'parkuntilfurthernotice' ) {
 
         $payload    = '"name":"park_until_further_notice"';
@@ -206,6 +208,7 @@ sub GardenaSmartDevice_Set($@) {
         my $duration     = join( " ", @args );
         $payload    = '"name":"start_override_timer","parameters":{"duration":' . $duration . '}';
     
+    ### watering_computer
     } elsif( lc $cmd eq 'manualoverride' ) {
     
         my $duration     = join( " ", @args );
@@ -215,12 +218,22 @@ sub GardenaSmartDevice_Set($@) {
     
         $payload    = '"name":"cancel_override"';
     
+    ### Sensors
     } elsif( lc $cmd eq 'refresh' ) {
     
         my $sensname     = join( " ", @args );
-        $payload    = '"name":"measure_ambient_temperature"' if( $sensname eq 'Temperature' );
-        $payload    = '"name":"measure_light"' if( $sensname eq 'Light' );
-        $payload    = '"name":"measure_humidity"' if( $sensname eq 'Humidity' );
+        if( lc $sensname eq 'temperature' ) {
+            $payload    = '"name":"measure_ambient_temperature"';
+            $abilities  = 'ambient_temperature';
+            
+        } elsif( lc $sensname eq 'light' ) {
+            $payload    = '"name":"measure_light"';
+            $abilities  = 'light';
+            
+        } elsif( lc $sensname eq 'humidity' ) {
+            $payload    = '"name":"measure_humidity"';
+            $abilities  = 'humidity';
+        }
     
     } elsif( lc $cmd eq '' ) {
     
@@ -242,13 +255,17 @@ sub GardenaSmartDevice_Set($@) {
         my $list    = '';
         $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440' if( AttrVal($name,'model','unknown') eq 'mower' );
         $list       .= 'manualOverride:slider,0,10,240 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
-        $list       .= 'refresh:Temperature,Light,Humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
+        $list       .= 'refresh:temperature,light,humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
     }
     
-    IOWrite($hash,$payload,$hash->{DEVICEID},AttrVal($name,'model','unknown'));
-    Log3 $name, 4, "GardenaSmartBridge ($name) - IOWrite: $payload $hash->{DEVICEID} " . AttrVal($name,'model','unknown') . " IODevHash=$hash->{IODev}";
+    $abilities  = 'mower' if( AttrVal($name,'model','unknown') eq 'mower' );
+    $abilities  = 'outlet' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+    
+    
+    IOWrite($hash,$payload,$hash->{DEVICEID},$abilities);
+    Log3 $name, 4, "GardenaSmartBridge ($name) - IOWrite: $payload $hash->{DEVICEID} $abilities IODevHash=$hash->{IODev}";
     
     return undef;
 }

@@ -279,7 +279,7 @@ sub GardenaSmartBridge_InternalTimerGetDeviceData($) {
 
 sub GardenaSmartBridge_Write($@) {
 
-    my ($hash,$payload,$deviceId,$model)  = @_;
+    my ($hash,$payload,$deviceId,$abilities)  = @_;
     my $name                        = $hash->{NAME};
     
     my $session_id                  = $hash->{helper}{session_id};
@@ -296,13 +296,13 @@ sub GardenaSmartBridge_Write($@) {
         $uri                            .= '/locations/?user_id=' . $hash->{helper}{user_id}                if( not defined($hash->{helper}{locations_id}) );
             readingsSingleUpdate($hash,'state','fetch locationId',1)                                        if( not defined($hash->{helper}{locations_id}) );
         $uri                            .= '/sessions'                                                      if( not defined($hash->{helper}{session_id}));
-        $uri                            .= '/devices'                                                       if( not defined($model) and defined($hash->{helper}{locations_id}) );
+        $uri                            .= '/devices'                                                       if( not defined($abilities) and defined($hash->{helper}{locations_id}) );
     }
     
     $uri                            .= '/sessions'                                                          if( not defined($hash->{helper}{session_id}));
     
     if( defined($hash->{helper}{locations_id}) ) {
-        $uri                            .= '/devices/' . $deviceId . '/abilities/' . $model . '/command'    if( defined($model) and defined($payload) );
+        $uri                            .= '/devices/' . $deviceId . '/abilities/' . $abilities . '/command'    if( defined($abilities) and defined($payload) );
         $uri                            .= '?locationId=' . $hash->{helper}{locations_id};
     }
 
