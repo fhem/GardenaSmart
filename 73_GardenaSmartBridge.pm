@@ -65,7 +65,7 @@ eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.31";
+my $version = "0.0.35";
 
 
 
