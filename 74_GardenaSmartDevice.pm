@@ -62,7 +62,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.25";
+my $version = "0.0.28";
 
 
 
@@ -215,7 +215,12 @@ sub GardenaSmartDevice_Set($@) {
     
         $payload    = '"name":"cancel_override"';
     
-    } elsif( lc $cmd eq '' ) {
+    } elsif( lc $cmd eq 'refresh' ) {
+    
+        my $sensname     = join( " ", @args );
+        $payload    = '"name":"measure_ambient_temperature"' if( $sensname eq 'Temperature' );
+        $payload    = '"name":"measure_light"' if( $sensname eq 'Light' );
+        $payload    = '"name":"measure_humidity"' if( $sensname eq 'Humidity' );
     
     } elsif( lc $cmd eq '' ) {
     
@@ -280,7 +285,7 @@ sub GardenaSmartDevice_Parse($$) {
         } else {
             
             Log3 $name, 3, "GardenaSmartDevice ($name) - autocreate new device $decode_json->{name} with deviceId $decode_json->{id}, model $decode_json->{category} and IODev IODev=$name";
-            return "UNDEFINED $decode_json->{name} GardenaSmartDevice $decode_json->{id} $decode_json->{category} IODev=$name";
+            return "UNDEFINED " . join(' ',$decode_json->{name}) . " GardenaSmartDevice $decode_json->{id} $decode_json->{category} IODev=$name";
         }
     }
 }

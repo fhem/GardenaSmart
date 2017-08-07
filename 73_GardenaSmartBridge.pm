@@ -64,7 +64,7 @@ eval "use JSON;1" or $missingModul .= "JSON ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.25";
+my $version = "0.0.28";
 
 
 
@@ -337,6 +337,23 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
     #Log3 $name, 1, "GardenaSmartBridge ($name) - Error:\n".Dumper($err);
     #Log3 $name, 1, "GardenaSmartBridge ($name) - Data:\n".Dumper($data);
     
+    
+    
+    
+    #### Ein Fehler der Behandelt werden muss
+   # '<html>
+   #     <head>
+   #         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+   #         <title>Error 400 Bad Request</title>
+   #     </head>
+   #     <body><h2>HTTP ERROR 400</h2>
+   #         <p>Problem accessing /sg-1/devices/2ad0d816-8bc3-4f0a-8c52-8b0dc8d7b2ec/abilities/watering_computer/command. Reason:
+   #         <pre>    Bad Request</pre></p><hr><i><small>Powered by Jetty://</small></i><hr/>
+   #
+   #     </body>
+   # </html>
+   # ';
+    
 
 
     readingsSingleUpdate($hash,'state','connect to cloud',1) if( defined($hash->{helper}{locations_id}) );
@@ -412,7 +429,6 @@ sub GardenaSmartBridge_ResponseProcessing($$) {
                 }
                 
                 Dispatch($hash,$json,undef)
-                #Log3 $name, 3, "GardenaSmartBridge ($name) - NAME: $decode_json->{name} und ID: $decode_json->{id} und JSON: $json"
                 unless( $decode_json->{category} eq 'gateway' );
             }
             
