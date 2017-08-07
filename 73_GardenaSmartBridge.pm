@@ -64,7 +64,7 @@ eval "use JSON;1" or $missingModul .= "JSON ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.28";
+my $version = "0.0.29";
 
 
 
