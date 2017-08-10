@@ -62,7 +62,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.42";
+my $version = "0.0.43";
 
 
 
@@ -263,7 +263,9 @@ sub GardenaSmartDevice_Set($@) {
     $abilities  = 'mower' if( AttrVal($name,'model','unknown') eq 'mower' );
     $abilities  = 'outlet' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
     
+    
     $hash->{helper}{deviceAction}  = $payload;
+    readingsSingleUpdate( $dhash, "state", "send command to gardena cloud", 1);
     
     IOWrite($hash,$payload,$hash->{DEVICEID},$abilities);
     Log3 $name, 4, "GardenaSmartBridge ($name) - IOWrite: $payload $hash->{DEVICEID} $abilities IODevHash=$hash->{IODev}";

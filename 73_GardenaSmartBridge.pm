@@ -65,7 +65,7 @@ eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.42";
+my $version = "0.0.43";
 
 
 
@@ -435,7 +435,7 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
         
         } elsif( $param->{code} == 204 and $dhash ne $hash and defined($dhash->{helper}{deviceAction}) ) {
             
-            readingsBulkUpdate( $dhash, "state", "the set command is processed", 1);
+            readingsBulkUpdate( $dhash, "state", "the command is processed", 1);
             GardenaSmartBridge_getDevices($hash);
         
         } elsif( $param->{code} != 200 ) {
