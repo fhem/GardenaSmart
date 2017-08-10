@@ -263,6 +263,7 @@ sub GardenaSmartDevice_Set($@) {
     $abilities  = 'mower' if( AttrVal($name,'model','unknown') eq 'mower' );
     $abilities  = 'outlet' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
     
+    $hash->{helper}{deviceAction}  = $payload;
     
     IOWrite($hash,$payload,$hash->{DEVICEID},$abilities);
     Log3 $name, 4, "GardenaSmartBridge ($name) - IOWrite: $payload $hash->{DEVICEID} $abilities IODevHash=$hash->{IODev}";

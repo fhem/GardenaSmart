@@ -398,7 +398,7 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
                 Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: connect to gardena cloud is timed out. check network";
             }
         
-            elsif( $err =~ /Keine Route zum Zielrechner/ ) {
+            elsif( $err =~ /Keine Route zum Zielrechner/ or $err =~ /no route to target/ ) {
         
                 Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: no route to target. bad network configuration or network is down";
         
@@ -411,6 +411,8 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
 
             Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: GardenaSmartBridge RequestErrorHandling: error while requesting gardena cloud: $err";
 
+            delete $dhash->{helper}{deviceAction} if( defined($dhash->{helper}{deviceAction}) );
+            
             return;
         }
     }
@@ -422,7 +424,7 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
 
         readingsBulkUpdateIfChanged( $dhash, "lastRequestState", "request_error", 1 );
         
-        if( $param->{code} == 401 ) {
+        if( $param->{code} == 401  and $hash eq $dhash ) {
         
             if( ReadingsVal($dname,'token','none') eq 'none' ) {
                 readingsBulkUpdate( $dhash, "state", "no token available", 1);
@@ -430,6 +432,11 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
             }
             
             Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: ".$param->{code};
+        
+        } elsif( $param->{code} == 204 and $dhash ne $hash and defined($dhash->{helper}{deviceAction}) ) {
+            
+            readingsBulkUpdate( $dhash, "state", "the set command is processed", 1);
+            GardenaSmartBridge_getDevices($hash);
         
         } elsif( $param->{code} != 200 ) {
 
@@ -439,6 +446,8 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
         readingsEndUpdate( $dhash, 1 );
         
         Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: received http code ".$param->{code}." without any data after requesting gardena cloud";
+        
+        delete $dhash->{helper}{deviceAction} if( defined($dhash->{helper}{deviceAction}) );
 
         return;
     }
@@ -452,8 +461,8 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
         if( $param->{code} == 400 ) {
             if( defined(eval{decode_json($data)}->{errors}) and ref(eval{decode_json($data)}->{errors}) eq "ARRAY" ) {
                 readingsBulkUpdate( $dhash, "state", eval{decode_json($data)}->{errors}[0]{error} . ' ' . eval{decode_json($data)}->{errors}[0]{attribute}, 1);
-                #readingsBulkUpdate( $dhash, "lastRequestState", eval{decode_json($data)}->{errors}{error} eval{decode_json($data)}->{errors}{attribute}, 1 );
-                #Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: eval{decode_json($data)}->{errors}{error} eval{decode_json($data)}->{errors}{attribute}";
+                readingsBulkUpdate( $dhash, "lastRequestState", eval{decode_json($data)}->{errors}[0]{error} . ' ' . eval{decode_json($data)}->{errors}[0]{attribute}, 1 );
+                Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: " . eval{decode_json($data)}->{errors}[0]{error} . " " . eval{decode_json($data)}->{errors}[0]{attribute};
             } else {
                 readingsBulkUpdate( $dhash, "lastRequestState", "Error 400 Bad Request", 1 );
                 Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: Error 400 Bad Request";
@@ -462,6 +471,14 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
 
             Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: Error 503 Service Unavailable";
             readingsBulkUpdate( $dhash, "lastRequestState", "Error 503 Service Unavailable", 1 );
+            
+        } elsif( $param->{code} == 404 ) {
+            if( defined($dhash->{helper}{deviceAction}) and $dhash ne $hash ) {
+                readingsBulkUpdate( $dhash, "lastRequestState", "device id not found", 1 );
+                readingsBulkUpdate( $dhash, "state", "device Id not found", 1 );
+            }
+            
+            Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: Error 404 Not Found";
         
         } elsif( $param->{code} == 500 ) {
         
@@ -475,6 +492,8 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
         readingsEndUpdate( $dhash, 1 );
         
         Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: received http code ".$param->{code}." receive Error after requesting gardena cloud";
+        
+        delete $dhash->{helper}{deviceAction} if( defined($dhash->{helper}{deviceAction}) );
 
         return;
     }
