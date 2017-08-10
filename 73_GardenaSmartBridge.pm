@@ -65,7 +65,7 @@ eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.35";
+my $version = "0.0.42";
 
 
 
@@ -330,11 +330,20 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
     
     my $hash                        = $param->{hash};
     my $name                        = $hash->{NAME};
+    
+    my $dhash;
+    if( defined( $param->{'device_id'}) ) {
+        $dhash                      = $modules{GardenaSmartDevice}{defptr}{$param->{'device_id'}};
+    } else {
+        $dhash                      = $hash;
+    }
+    my $dname                       = $dhash->{NAME};
 
 
     ###todo Das gesamte Errorhandling muss hier noch rein
     
     #Log3 $name, 1, "GardenaSmartBridge ($name) - Header:\n".Dumper($param->{header});
+    #Log3 $name, 1, "GardenaSmartBridge ($name) - CODE:\n".Dumper($param->{code});
     #Log3 $name, 1, "GardenaSmartBridge ($name) - Error:\n".Dumper($err);
     #Log3 $name, 1, "GardenaSmartBridge ($name) - Data:\n".Dumper($data);
     
@@ -368,13 +377,115 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
    #     </body>
    # </html>
    # ';
+   
+   
+   # 2017.08.10 11:17:20 1: GardenaSmartBridge (myGardena) - Data:
+   # $VAR1 = '{"errors":[{"attribute":"password","error":"invalid"}]}';
 
+   
+   
+   
+   if( defined( $err ) ) {
+        if( $err ne "" ) {
+            
+            readingsBeginUpdate( $dhash );
+            readingsBulkUpdate( $dhash, "state", "$err") if( ReadingsVal( $dname, "state", 1 ) ne "initialized" );
+
+            readingsBulkUpdate( $dhash, "lastRequestState", "request_error", 1 );
+        
+            if( $err =~ /timed out/ ) {
+        
+                Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: connect to gardena cloud is timed out. check network";
+            }
+        
+            elsif( $err =~ /Keine Route zum Zielrechner/ ) {
+        
+                Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: no route to target. bad network configuration or network is down";
+        
+            } else {
+
+                Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: $err";
+            }
+
+            readingsEndUpdate( $dhash, 1 );
+
+            Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: GardenaSmartBridge RequestErrorHandling: error while requesting gardena cloud: $err";
+
+            return;
+        }
+    }
+
+    if( $data eq "" and exists( $param->{code} ) && $param->{code} != 200 ) {
+        
+        readingsBeginUpdate( $dhash );
+        readingsBulkUpdate( $dhash, "state", $param->{code}, 1 ) if( ReadingsVal( $dname, "state", 1 ) ne "initialized" );
+
+        readingsBulkUpdateIfChanged( $dhash, "lastRequestState", "request_error", 1 );
+        
+        if( $param->{code} == 401 ) {
+        
+            if( ReadingsVal($dname,'token','none') eq 'none' ) {
+                readingsBulkUpdate( $dhash, "state", "no token available", 1);
+                readingsBulkUpdateIfChanged( $dhash, "lastRequestState", "no token available", 1 );
+            }
+            
+            Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: ".$param->{code};
+        
+        } elsif( $param->{code} != 200 ) {
+
+            Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: ".$param->{code};
+        }
+
+        readingsEndUpdate( $dhash, 1 );
+        
+        Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: received http code ".$param->{code}." without any data after requesting gardena cloud";
+
+        return;
+    }
+
+    if( ( ($data =~ /Error/ ) or defined(eval{decode_json($data)}->{errors}) ) and exists( $param->{code} ) ) {    
+        readingsBeginUpdate( $dhash );
+        readingsBulkUpdate( $dhash, "state", $param->{code}, 1 ) if( ReadingsVal( $dname, "state" ,0) ne "initialized" );
+
+        readingsBulkUpdate( $dhash, "lastRequestState", "request_error", 1 );
+
+        if( $param->{code} == 400 ) {
+            if( defined(eval{decode_json($data)}->{errors}) and ref(eval{decode_json($data)}->{errors}) eq "ARRAY" ) {
+                readingsBulkUpdate( $dhash, "state", eval{decode_json($data)}->{errors}[0]{error} . ' ' . eval{decode_json($data)}->{errors}[0]{attribute}, 1);
+                #readingsBulkUpdate( $dhash, "lastRequestState", eval{decode_json($data)}->{errors}{error} eval{decode_json($data)}->{errors}{attribute}, 1 );
+                #Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: eval{decode_json($data)}->{errors}{error} eval{decode_json($data)}->{errors}{attribute}";
+            } else {
+                readingsBulkUpdate( $dhash, "lastRequestState", "Error 400 Bad Request", 1 );
+                Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: Error 400 Bad Request";
+            }
+        } elsif( $param->{code} == 503 ) {
+
+            Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: Error 503 Service Unavailable";
+            readingsBulkUpdate( $dhash, "lastRequestState", "Error 503 Service Unavailable", 1 );
+        
+        } elsif( $param->{code} == 500 ) {
+        
+            Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: check the ???";
+        
+        } else {
+
+            Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: http error ".$param->{code};
+        }
+
+        readingsEndUpdate( $dhash, 1 );
+        
+        Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: received http code ".$param->{code}." receive Error after requesting gardena cloud";
+
+        return;
+    }
     
+    
+
+
 
 
     readingsSingleUpdate($hash,'state','connect to cloud',1) if( defined($hash->{helper}{locations_id}) );
     GardenaSmartBridge_ResponseProcessing($hash,$data);
-
 }
 
 sub GardenaSmartBridge_ResponseProcessing($$) {
