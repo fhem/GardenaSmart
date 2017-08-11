@@ -65,7 +65,7 @@ eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.43";
+my $version = "0.0.48";
 
 
 
@@ -459,10 +459,12 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
         readingsBulkUpdate( $dhash, "lastRequestState", "request_error", 1 );
 
         if( $param->{code} == 400 ) {
-            if( defined(eval{decode_json($data)}->{errors}) and ref(eval{decode_json($data)}->{errors}) eq "ARRAY" ) {
-                readingsBulkUpdate( $dhash, "state", eval{decode_json($data)}->{errors}[0]{error} . ' ' . eval{decode_json($data)}->{errors}[0]{attribute}, 1);
-                readingsBulkUpdate( $dhash, "lastRequestState", eval{decode_json($data)}->{errors}[0]{error} . ' ' . eval{decode_json($data)}->{errors}[0]{attribute}, 1 );
-                Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: " . eval{decode_json($data)}->{errors}[0]{error} . " " . eval{decode_json($data)}->{errors}[0]{attribute};
+            if( eval{decode_json($data)} ) {
+                if( ref(eval{decode_json($data)}->{errors}) eq "ARRAY" and defined(eval{decode_json($data)}->{errors}) ) {
+                    readingsBulkUpdate( $dhash, "state", eval{decode_json($data)}->{errors}[0]{error} . ' ' . eval{decode_json($data)}->{errors}[0]{attribute}, 1);
+                    readingsBulkUpdate( $dhash, "lastRequestState", eval{decode_json($data)}->{errors}[0]{error} . ' ' . eval{decode_json($data)}->{errors}[0]{attribute}, 1 );
+                    Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: " . eval{decode_json($data)}->{errors}[0]{error} . " " . eval{decode_json($data)}->{errors}[0]{attribute};
+                }
             } else {
                 readingsBulkUpdate( $dhash, "lastRequestState", "Error 400 Bad Request", 1 );
                 Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: Error 400 Bad Request";

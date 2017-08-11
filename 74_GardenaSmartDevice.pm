@@ -62,7 +62,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.44";
+my $version = "0.0.48";
 
 
 
@@ -255,7 +255,7 @@ sub GardenaSmartDevice_Set($@) {
         my $list    = '';
         $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440' if( AttrVal($name,'model','unknown') eq 'mower' );
         $list       .= 'manualOverride:slider,0,1,59 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
-        $list       .= 'refresh:temperature,light,humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
+        $list       .= 'refresh:temperature,light' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
     }
@@ -324,7 +324,23 @@ sub GardenaSmartDevice_WriteReadings($$) {
         
         if( ref($decode_json->{abilities}[$abilities]{properties}) eq "ARRAY" and scalar(@{$decode_json->{abilities}[$abilities]{properties}}) > 0 ) {;
             foreach my $propertie (@{$decode_json->{abilities}[$abilities]{properties}}) {
-                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},$propertie->{value}) if( defined($propertie->{value}) );
+                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},$propertie->{value}) if( defined($propertie->{value})
+                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'radio-quality'
+                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'battery-level'
+                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'internal_temperature-temperature'
+                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'ambient_temperature-temperature'
+                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'soil_temperature-temperature'
+                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'humidity-humidity'
+                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'light-light' );
+                                                            
+                readingsBulkUpdate($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},$propertie->{value}) if( defined($propertie->{value})
+                                                            and ($decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'radio-quality'
+                                                            or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'battery-level'
+                                                            or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'internal_temperature-temperature'
+                                                            or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'ambient_temperature-temperature'
+                                                            or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'soil_temperature-temperature'
+                                                            or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'humidity-humidity'
+                                                            or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'light-light') );
             }
         }
 
@@ -335,7 +351,7 @@ sub GardenaSmartDevice_WriteReadings($$) {
     readingsBulkUpdate($hash,'state',ReadingsVal($name,'mower-status','readingsValError')) if( AttrVal($name,'model','unknown') eq 'mower' );
     readingsBulkUpdate($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? "open" : "closed")) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
     
-    readingsBulkUpdate($hash,'state','T: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . '°C, H: ' . ReadingsVal($name,'humidity-humidity','readingsValError') . '%, Light: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . 'lux') if( AttrVal($name,'model','unknown') eq 'sensor' );
+    readingsBulkUpdate($hash,'state','T: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . '°C, H: ' . ReadingsVal($name,'humidity-humidity','readingsValError') . '%, L: ' . ReadingsVal($name,'light-light','readingsValError') . 'lux') if( AttrVal($name,'model','unknown') eq 'sensor' );
 
     readingsEndUpdate( $hash, 1 );
     
