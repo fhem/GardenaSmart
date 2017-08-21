@@ -62,7 +62,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.53";
+my $version = "0.0.55";
 
 
 
@@ -351,7 +351,7 @@ sub GardenaSmartDevice_WriteReadings($$) {
     
     
     readingsBulkUpdate($hash,'state',ReadingsVal($name,'mower-status','readingsValError')) if( AttrVal($name,'model','unknown') eq 'mower' );
-    readingsBulkUpdate($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? "open" : "closed")) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+    readingsBulkUpdate($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? GardenaSmartDevice_ReadingLangGerman($hash,'open') : GardenaSmartDevice_ReadingLangGerman($hash,'closed'))) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
     
     readingsBulkUpdate($hash,'state','T: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . '°C, H: ' . ReadingsVal($name,'humidity-humidity','readingsValError') . '%, L: ' . ReadingsVal($name,'light-light','readingsValError') . 'lux') if( AttrVal($name,'model','unknown') eq 'sensor' );
 
@@ -455,7 +455,16 @@ sub GardenaSmartDevice_ReadingLangGerman($$) {
                 'idle'                              =>  'nichts zu tun',
                 'firmware_cancel'                   =>  'firmwareupload unterbrochen',
                 'firmware_upload'                   =>  'firmwareupload',
-                'unsupported'                       =>  'nicht unterstützt'
+                'unsupported'                       =>  'nicht unterstützt',
+                'up_to_date'                        =>  'auf dem neusten Stand',
+                'mower'                             =>  'mäher',
+                'watering_computer'                 =>  'bewässerungscomputer',
+                'no_frost'                          =>  'kein Frost',
+                'open'                              =>  'offen',
+                'closed'                            =>  'geschlossen',
+                'included'                          =>  'inbegriffen',
+                'active'                            =>  'aktiv',
+                'inactive'                          =>  'nicht aktiv'
     );
     
     if( defined($langGermanMapp{$readingValue}) and (AttrVal('global','language','none') eq 'DE' or AttrVal($name,'readingValueLanguage','none') eq 'de') ) {
