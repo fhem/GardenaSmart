@@ -335,7 +335,7 @@ sub GardenaSmartDevice_WriteReadings($$) {
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'humidity-humidity'
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'light-light' );
                                                             
-                readingsBulkUpdate($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},$propertie->{value}) if( defined($propertie->{value})
+                readingsBulkUpdate($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},GardenaSmartDevice_ReadingLangGerman($hash,$propertie->{value})) if( defined($propertie->{value})
                                                             and ($decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'radio-quality'
                                                             or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'battery-level'
                                                             or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'internal_temperature-temperature'
