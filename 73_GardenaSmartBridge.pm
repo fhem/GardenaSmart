@@ -65,7 +65,7 @@ eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.48";
+my $version = "0.0.50";
 
 
 
@@ -436,7 +436,7 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
         } elsif( $param->{code} == 204 and $dhash ne $hash and defined($dhash->{helper}{deviceAction}) ) {
             
             readingsBulkUpdate( $dhash, "state", "the command is processed", 1);
-            GardenaSmartBridge_getDevices($hash);
+            InternalTimer( gettimeofday()+3,"GardenaSmartBridge_getDevices", $hash, 1 );
         
         } elsif( $param->{code} != 200 ) {
 
@@ -472,12 +472,13 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
         } elsif( $param->{code} == 503 ) {
 
             Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: Error 503 Service Unavailable";
+            readingsBulkUpdate( $dhash, "state", "Service Unavailable", 1 );
             readingsBulkUpdate( $dhash, "lastRequestState", "Error 503 Service Unavailable", 1 );
             
         } elsif( $param->{code} == 404 ) {
             if( defined($dhash->{helper}{deviceAction}) and $dhash ne $hash ) {
-                readingsBulkUpdate( $dhash, "lastRequestState", "device id not found", 1 );
                 readingsBulkUpdate( $dhash, "state", "device Id not found", 1 );
+                readingsBulkUpdate( $dhash, "lastRequestState", "device id not found", 1 );
             }
             
             Log3 $dname, 5, "GardenaSmartBridge ($dname) - RequestERROR: Error 404 Not Found";
