@@ -62,7 +62,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.48";
+my $version = "0.0.53";
 
 
 
@@ -75,6 +75,7 @@ sub GardenaSmartDevice_Set($@);
 sub GardenaSmartDevice_Undef($$);
 sub GardenaSmartDevice_WriteReadings($$);
 sub GardenaSmartDevice_Parse($$);
+sub GardenaSmartDevice_ReadingLangGerman($$);
 
 
 
@@ -92,6 +93,7 @@ sub GardenaSmartDevice_Initialize($) {
     
     $hash->{AttrFn}     = "GardenaSmartDevice_Attr";
     $hash->{AttrList}   = "disable:1 ".
+                            "readingValueLanguage:de ".
                             "model ".
                             $readingFnAttributes;
     
@@ -324,7 +326,7 @@ sub GardenaSmartDevice_WriteReadings($$) {
         
         if( ref($decode_json->{abilities}[$abilities]{properties}) eq "ARRAY" and scalar(@{$decode_json->{abilities}[$abilities]{properties}}) > 0 ) {;
             foreach my $propertie (@{$decode_json->{abilities}[$abilities]{properties}}) {
-                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},$propertie->{value}) if( defined($propertie->{value})
+                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},GardenaSmartDevice_ReadingLangGerman($hash,$propertie->{value})) if( defined($propertie->{value})
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'radio-quality'
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'battery-level'
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'internal_temperature-temperature'
@@ -362,7 +364,106 @@ sub GardenaSmartDevice_WriteReadings($$) {
 ##################################
 #### my little helpers ###########
 
+sub GardenaSmartDevice_ReadingLangGerman($$) {
 
+    my ($hash,$readingValue)    = @_;
+    my $name                    = $hash->{NAME};
+    
+    
+    my %langGermanMapp = (
+                'ok_cutting'                        =>  'mähen',
+                'paused'                            =>  'pausiert',
+                'ok_searching'                      =>  'suche Ladestation',
+                'ok_charging'                       =>  'lädt',
+                'ok_leaving'                        =>  'mähen',
+                'wait_updating'                     =>  'wird aktualisiert ...',
+                'wait_power_up'                     =>  'wird eingeschaltet ...',
+                'parked_timer'                      =>  'geparkt nach Zeitplan',
+                'parked_park_selected'              =>  'geparkt',
+                'off_disabled'                      =>  'der Mäher ist ausgeschaltet',
+                'off_hatch_open'                    =>  'deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich',
+                'unknown'                           =>  'unbekannter Status',
+                'error'                             =>  'fehler',
+                'error_at_power_up'                 =>  'neustart ...',
+                'off_hatch_closed'                  =>  'deaktiviert. Manueller Start erforderlich',
+                'ok_cutting_timer_overridden'       =>  'manuelles mähen',
+                'parked_autotimer'                  =>  'geparkt durch SensorControl',
+                'parked_daily_limit_reached'        =>  'abgeschlossen',
+                'no_message'                        =>  'kein Fehler',
+                'outside_working_area'              =>  'außerhalb des Arbeitsbereichs',
+                'no_loop_signal'                    =>  'kein Schleifensignal',
+                'wrong_loop_signal'                 =>  'falsches Schleifensignal',
+                'loop_sensor_problem_front'         =>  'problem Schleifensensor, vorne',
+                'loop_sensor_problem_rear'          =>  'problem Schleifensensor, hinten',
+                'trapped'                           =>  'eingeschlossen',
+                'upside_down'                       =>  'steht auf dem Kopf',
+                'low_battery'                       =>  'niedriger Batteriestand',
+                'empty_battery'                     =>  'empty_battery',
+                'no_drive'                          =>  'no_drive',
+                'lifted'                            =>  'angehoben',
+                'stuck_in_charging_station'         =>  'eingeklemmt in Ladestation',
+                'charging_station_blocked'          =>  'ladestation blockiert',
+                'collision_sensor_problem_rear'     =>  'problem Stoßsensor hinten',
+                'collision_sensor_problem_front'    =>  'problem Stoßsensor vorne',
+                'wheel_motor_blocked_right'         =>  'radmotor rechts blockiert',
+                'wheel_motor_blocked_left'          =>  'radmotor links blockiert',
+                'wheel_drive_problem_right'         =>  'problem Antrieb, rechts',
+                'wheel_drive_problem_left'          =>  'problem Antrieb, links',
+                'cutting_system_blocked'            =>  'schneidsystem blockiert',
+                'invalid_sub_device_combination'    =>  'Fehlerhafte Verbindung',
+                'settings_restored'                 =>  'standardeinstellungen',
+                'electronic_problem'                =>  'elektronisches Problem',
+                'charging_system_problem'           =>  'problem Ladesystem',
+                'tilt_sensor_problem'               =>  'kippsensorproblem',
+                'wheel_motor_overloaded_right'      =>  'rechter Radmotor überlastet',
+                'wheel_motor_overloaded_left'       =>  'linker Radmotor überlastet',
+                'charging_current_too_high'         =>  'ladestrom zu hoch',
+                'temporary_problem'                 =>  'vorübergehendes Problem',
+                'guide_1_not_found'                 =>  'sk 1 nicht gefunden',
+                'guide_2_not_found'                 =>  'sk 2 nicht gefunden',
+                'guide_3_not_found'                 =>  'sk 3 nicht gefunden',
+                'difficult_finding_home'            =>  'problem die Ladestation zu finden',
+                'guide_calibration_accomplished'    =>  'kalibration des Suchkabels beendet',
+                'guide_calibration_failed'          =>  'kalibration des Suchkabels fehlgeschlagen',
+                'temporary_battery_problem'         =>  'kurzzeitiges Batterieproblem',
+                'battery_problem'                   =>  'batterieproblem',
+                'alarm_mower_switched_off'          =>  'alarm! Mäher ausgeschalten',
+                'alarm_mower_stopped'               =>  'alarm! Mäher gestoppt',
+                'alarm_mower_lifted'                =>  'alarm! Mäher angehoben',
+                'alarm_mower_tilted'                =>  'alarm! Mäher gekippt',
+                'connection_changed'                =>  'verbindung geändert',
+                'connection_not_changed'            =>  'verbindung nicht geändert',
+                'com_board_not_available'           =>  'com board nicht verfügbar',
+                'slipped'                           =>  'rutscht',
+                'out_of_operation'                  =>  'ausser Betrieb',
+                'replace_now'                       =>  'kritischer Batteriestand, wechseln Sie jetzt',
+                'low'                               =>  'niedrig',
+                'ok'                                =>  'oK',
+                'no_source'                         =>  'oK',
+                'mower_charging'                    =>  'mäher wurde geladen',
+                'completed_cutting_autotimer'       =>  'sensorControl erreicht',
+                'week_timer'                        =>  'wochentimer erreicht',
+                'countdown_timer'                   =>  'stoppuhr Timer',
+                'undefined'                         =>  'unklar',
+                'unknown'                           =>  'unklar',
+                'status_device_unreachable'         =>  'gerät ist nicht in Reichweite',
+                'status_device_alive'               =>  'gerät ist in Reichweite',
+                'bad'                               =>  'schlecht',
+                'poor'                              =>  'schwach',
+                'good'                              =>  'gut',
+                'undefined'                         =>  'unklar',
+                'idle'                              =>  'nichts zu tun',
+                'firmware_cancel'                   =>  'firmwareupload unterbrochen',
+                'firmware_upload'                   =>  'firmwareupload',
+                'unsupported'                       =>  'nicht unterstützt'
+    );
+    
+    if( defined($langGermanMapp{$readingValue}) and (AttrVal('global','language','none') eq 'DE' or AttrVal($name,'readingValueLanguage','none') eq 'de') ) {
+        return $langGermanMapp{$readingValue};
+    } else {
+        return $readingValue;
+    }
+}
 
 
 
