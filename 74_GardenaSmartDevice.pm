@@ -55,6 +55,7 @@ my $missingModul = "";
 
 use strict;
 use warnings;
+use Time::Local;
 
 use Data::Dumper;   #debugging
 
@@ -62,7 +63,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.55";
+my $version = "0.0.58";
 
 
 
@@ -76,6 +77,8 @@ sub GardenaSmartDevice_Undef($$);
 sub GardenaSmartDevice_WriteReadings($$);
 sub GardenaSmartDevice_Parse($$);
 sub GardenaSmartDevice_ReadingLangGerman($$);
+sub GardenaSmartDevice_RigRadingsValue($$);
+sub GardenaSmartDevice_Zulu2LocalString($);
 
 
 
@@ -326,7 +329,7 @@ sub GardenaSmartDevice_WriteReadings($$) {
         
         if( ref($decode_json->{abilities}[$abilities]{properties}) eq "ARRAY" and scalar(@{$decode_json->{abilities}[$abilities]{properties}}) > 0 ) {;
             foreach my $propertie (@{$decode_json->{abilities}[$abilities]{properties}}) {
-                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},GardenaSmartDevice_ReadingLangGerman($hash,$propertie->{value})) if( defined($propertie->{value})
+                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},GardenaSmartDevice_RigRadingsValue($hash,$propertie->{value})) if( defined($propertie->{value})
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'radio-quality'
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'battery-level'
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'internal_temperature-temperature'
@@ -335,7 +338,7 @@ sub GardenaSmartDevice_WriteReadings($$) {
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'humidity-humidity'
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'light-light' );
                                                             
-                readingsBulkUpdate($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},GardenaSmartDevice_ReadingLangGerman($hash,$propertie->{value})) if( defined($propertie->{value})
+                readingsBulkUpdate($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},GardenaSmartDevice_RigRadingsValue($hash,$propertie->{value})) if( defined($propertie->{value})
                                                             and ($decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'radio-quality'
                                                             or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'battery-level'
                                                             or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'internal_temperature-temperature'
@@ -351,7 +354,7 @@ sub GardenaSmartDevice_WriteReadings($$) {
     
     
     readingsBulkUpdate($hash,'state',ReadingsVal($name,'mower-status','readingsValError')) if( AttrVal($name,'model','unknown') eq 'mower' );
-    readingsBulkUpdate($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? GardenaSmartDevice_ReadingLangGerman($hash,'open') : GardenaSmartDevice_ReadingLangGerman($hash,'closed'))) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+    readingsBulkUpdate($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? GardenaSmartDevice_RigRadingsValue($hash,'open') : GardenaSmartDevice_RigRadingsValue($hash,'closed'))) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
     
     readingsBulkUpdate($hash,'state','T: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . '°C, H: ' . ReadingsVal($name,'humidity-humidity','readingsValError') . '%, L: ' . ReadingsVal($name,'light-light','readingsValError') . 'lux') if( AttrVal($name,'model','unknown') eq 'sensor' );
 
@@ -472,6 +475,39 @@ sub GardenaSmartDevice_ReadingLangGerman($$) {
     } else {
         return $readingValue;
     }
+}
+
+sub GardenaSmartDevice_RigRadingsValue($$) {
+
+    my ($hash,$readingValue)    = @_;
+
+    my $rigReadingValue;
+    
+    
+    if( $readingValue =~ /^(\d+)-(\d\d)-(\d\d)T.*/ ) {
+        $rigReadingValue = GardenaSmartDevice_Zulu2LocalString($readingValue);
+    } else {
+        $rigReadingValue = GardenaSmartDevice_ReadingLangGerman($hash,$readingValue);
+    }
+
+    return $rigReadingValue;
+}
+
+sub GardenaSmartDevice_Zulu2LocalString($) {
+
+    my $t = shift;
+    my ($datehour,$datemin,$rest) = split(/:/,$t,3);
+
+
+    my ($year, $month, $day, $hour,$min) = $datehour =~ /(\d+)-(\d\d)-(\d\d)T(\d\d)/;
+    my $epoch = timegm (0,0,$hour,$day,$month-1,$year);
+
+    my ($lyear,$lmonth,$lday,$lhour,$isdst) = (localtime($epoch))[5,4,3,2,-1];
+
+    $lyear += 1900;  # year is 1900 based
+    $lmonth++;       # month number is zero based
+
+    return ( sprintf("%04d-%02d-%02d %02d:%02d:%s",$lyear,$lmonth,$lday,$lhour,$datemin,substr($rest,0,2)) );
 }
 
 
