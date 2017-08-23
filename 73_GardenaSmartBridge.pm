@@ -5,6 +5,11 @@
 #  (c) 2017 Copyright: Marko Oldenburg (leongaultier at gmail dot com)
 #  All rights reserved
 #
+#   Special thanks goes to comitters:
+#       - Michael (mbrak)       Thanks for Commandref
+#       - Matthias (Kenneth)    Thanks for Wiki entry
+#
+#
 #  This script is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -65,7 +70,7 @@ eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 ###todo Hier fehlt noch Modulabfrage für ssl
 
 
-my $version = "0.0.58";
+my $version = "0.1.0";
 
 
 
@@ -746,17 +751,128 @@ sub GardenaSmartBridge_ParseJSON($$) {
 =pod
 
 =item device
-=item summary    Gardena Smart
-=item summary_DE Gardena Smart
+=item summary       Modul to communicate with the GardenaCloud
+=item summary_DE    Modul zur Datenübertragung zur GardenaCloud
 
 =begin html
 
-
+<a name="GardenaSmartBridge"></a>
+<h3>GardenaSmartBridge</h3>
+<ul>
+  <u><b>Prerequisite</b></u>
+  <br><br>
+  <li>In combination with GardenaSmartDevice this FHEM Module controls the communication between the GardenaCloud and connected Devices like Mover, Watering_Computer, Temperature_Sensors</li>
+  <li>Installation of the following packages: apt-get install libio-socket-ssl-perl</li>
+  <li>The Gardena-Gateway and all connected Devices must be correctly installed in the GardenaAPP</li>
+</ul>
+<br>
+<a name="GardenaSmartBridgedefine"></a>
+<b>Define</b>
+<ul><br>
+  <code>define &lt;name&gt; GardenaSmartBridge &lt;Account-EMail&gt; &lt;Account-Passwort&gt;</code>
+  <br><br>
+  Beispiel:
+  <ul><br>
+    <code>define Gardena_Bridge GardenaSmartBridge me@email.me secret</code><br>
+  </ul>
+  <br>
+  &lt;Account-EMail&gt; Email Adresse which was used in the GardenaAPP<br>
+  &lt;Account-Passwort&gt; Passwort which was used in the GardenaAPP<br>
+  The GardenaSmartBridge device is created in the room GardenaSmart, then the devices of Your system are recognized automatically and created in FHEM. From now on the devices can be controlled and changes in the GardenaAPP are synchronized with the state and readings of the devices.
+  <br><br>
+  <a name="GardenaSmartBridgereadings"></a>
+  <br><br>
+  <b>Readings</b>
+  <ul>
+    <li>address - your Adress (Longversion)</li>
+    <li>authorized_user_ids - </li>
+    <li>city - Zip, City</li>
+    <li>devices - Number of Devices in the Cloud (Gateway included)</li>
+    <li>lastRequestState - Last Status Result</li>
+    <li>latitude - Breitengrad des Grundstücks</li>
+    <li>longitude - Längengrad des Grundstücks</li>
+    <li>name - Name of your Garden – Default „My Garden“</li>
+    <li>state - State of the Bridge</li>
+    <li>token - SessionID</li>
+    <li>zones - </li>
+  </ul>
+  <br><br>
+  <a name="GardenaSmartBridgeset"></a>
+  <b>set</b>
+  <ul>
+    <li>getDeviceState - Starts a Datarequest</li>
+    <li>getToken - Gets a new Session-ID</li>
+  </ul>
+  <br><br>
+  <a name="GardenaSmartBridgeattributes"></a>
+  <b>Attributes</b>
+  <ul>
+    <li>debugJSON - </li>
+    <li>disable - Disables the Bridge</li>
+    <li>interval - Interval in Minutes (Default=5)</li>
+  </ul>
+</ul>
 
 =end html
 =begin html_DE
 
-
+<a name="GardenaSmartBridge"></a>
+<h3>GardenaSmartBridge</h3>
+<ul>
+  <u><b>Voraussetzungen</b></u>
+  <br><br>
+  <li>Zusammen mit dem Device GardenaSmartDevice stellt dieses FHEM Modul die Kommunikation zwischen der GardenaCloud und Fhem her. Es k&ouml;nnen damit Rasenm&auml;her, Bew&auml;sserungscomputer und Bodensensoren überwacht und gesteuert werden</li>
+  <li>Das Perl-Modul "SSL Packet" wird ben&ouml;tigt.</li>
+  <li>Unter Debian (basierten) System, kann dies mittels "apt-get install libio-socket-ssl-perl" installiert werden.</li>
+  <li>Das Gardena-Gateway und alle damit verbundenen Ger&auml;te und Sensoren m&uuml;ssen vorab in der GardenaApp eingerichtet sein.</li>
+</ul>
+<br>
+<a name="GardenaSmartBridgedefine"></a>
+<b>Define</b>
+<ul><br>
+  <code>define &lt;name&gt; GardenaSmartBridge &lt;Account-EMail&gt; &lt;Account-Passwort&gt;</code>
+  <br><br>
+  Beispiel:
+  <ul><br>
+    <code>define Gardena_Bridge GardenaSmartBridge me@email.me secret</code><br>
+  </ul>
+  <br>
+  &lt;Account-EMail&gt; Email Adresse, die auch in der GardenaApp verwendet wurde<br>
+  &lt;Account-Passwort&gt; Passwort, welches in der GardenaApp verwendet wurde<br>
+  Das Bridge Device wird im Raum GardenaSmart angelegt und danach erfolgt das Einlesen und automatische Anlegen der Ger&auml;te. Von nun an k&ouml;nnen die eingebundenen Ger&auml;te gesteuert werden. &Auml;nderungen in der APP werden mit den Readings und dem Status syncronisiert.
+  <br><br>
+  <a name="GardenaSmartBridgereadings"></a>
+  <br><br>
+  <b>Readings</b>
+  <ul>
+    <li>address - Adresse, welche in der App eingetragen wurde (Langversion)</li>
+    <li>authorized_user_ids - </li>
+    <li>city - PLZ, Stadt</li>
+    <li>devices - Anzahl der Ger&auml;te, welche in der GardenaCloud angemeldet sind (Gateway z&auml;hlt mit)</li>
+    <li>lastRequestState - Letzter abgefragter Status der Bridge</li>
+    <li>latitude - Breitengrad des Grundst&uuml;cks</li>
+    <li>longitude - Längengrad des Grundst&uuml;cks</li>
+    <li>name - Name für das Grundst&uuml;ck – Default „My Garden“</li>
+    <li>state - Status der Bridge</li>
+    <li>token - SessionID</li>
+    <li>zones - </li>
+  </ul>
+  <br><br>
+  <a name="GardenaSmartBridgeset"></a>
+  <b>set</b>
+  <ul>
+    <li>getDeviceState - Startet eine Abfrage der Daten.</li>
+    <li>getToken - Holt eine neue Session-ID</li>
+  </ul>
+  <br><br>
+  <a name="GardenaSmartBridgeattributes"></a>
+  <b>Attribute</b>
+  <ul>
+    <li>debugJSON - JSON Fehlermeldungen</li>
+    <li>disable - Schaltet die Daten&uuml;bertragung der Bridge ab</li>
+    <li>interval - Abfrageinterval in Sekunden (default: 300)</li>
+  </ul>
+</ul>
 
 =end html_DE
 =cut

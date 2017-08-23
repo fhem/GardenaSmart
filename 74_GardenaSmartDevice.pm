@@ -5,6 +5,11 @@
 #  (c) 2017 Copyright: Marko Oldenburg (leongaultier at gmail dot com)
 #  All rights reserved
 #
+#   Special thanks goes to comitters:
+#       - Michael (mbrak)       Thanks for Commandref
+#       - Matthias (Kenneth)    Thanks for Wiki entry
+#
+#
 #  This script is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -63,7 +68,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.0.58";
+my $version = "0.1.0";
 
 
 
@@ -95,8 +100,7 @@ sub GardenaSmartDevice_Initialize($) {
     $hash->{ParseFn}    = "GardenaSmartDevice_Parse";
     
     $hash->{AttrFn}     = "GardenaSmartDevice_Attr";
-    $hash->{AttrList}   = "disable:1 ".
-                            "readingValueLanguage:de ".
+    $hash->{AttrList}   = "readingValueLanguage:de,en ".
                             "model ".
                             $readingFnAttributes;
     
@@ -470,7 +474,7 @@ sub GardenaSmartDevice_ReadingLangGerman($$) {
                 'inactive'                          =>  'nicht aktiv'
     );
     
-    if( defined($langGermanMapp{$readingValue}) and (AttrVal('global','language','none') eq 'DE' or AttrVal($name,'readingValueLanguage','none') eq 'de') ) {
+    if( defined($langGermanMapp{$readingValue}) and (AttrVal('global','language','none') eq 'DE' or AttrVal($name,'readingValueLanguage','none') eq 'de') and AttrVal($name,'readingValueLanguage','none') ne 'en') {
         return $langGermanMapp{$readingValue};
     } else {
         return $readingValue;
@@ -520,17 +524,284 @@ sub GardenaSmartDevice_Zulu2LocalString($) {
 =pod
 
 =item device
-=item summary    Gardena Smart
-=item summary_DE Gardena Smart
+=item summary    Modul to control GardenaSmart Devices
+=item summary_DE Modul zur Steuerung von GardenaSmartger&aumlten
 
 =begin html
 
-
+<a name="GardenaSmartDevice"></a>
+<h3>GardenaSmartDevice</h3>
+<ul>
+    In combination with GardenaSmartBridge this FHEM Module controls the GardenaSmart Device using the GardenaCloud
+    <br><br>
+    Once the Bridge device is created, the connected devices are automatically recognized and created in FHEM. <br>
+    From now on the devices can be controlled and changes in the GardenaAPP are synchronized with the state and readings of the devices.
+    <a name="GardenaSmartDevicereadings"></a>
+    <br><br><br>
+    <b>Readings</b>
+    <ul>
+        <li>battery-charging - Indicator if the Battery is charged (0/1) or with newer Firmware (false/true)</li>
+        <li>battery-level - load percentage of the Battery</li>
+        <li>battery-rechargeable_battery_status - healthyness of the battery (out_of_operation/replace_now/low/ok)</li>
+        <li>device_info-category - category of device (mower/watering_computer)</li>
+        <li>device_info-last_time_online - timestamp of last radio contact</li>
+        <li>device_info-manufacturer - manufacturer</li>
+        <li>device_info-product - product type</li>
+        <li>device_info-serial_number - serial number</li>
+        <li>device_info-sgtin - </li>
+        <li>device_info-version - firmware version</li>
+        <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - firmware status </li>
+        <li>firmware-firmware_update_start - indicator when a firmwareupload is started</li>
+        <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
+        <li>firmware-inclusion_status - inclusion status</li>
+        <li>internal_temperature-temperature - internal device temperature</li>
+        <li>mower-error - actual error message
+        <ul>
+            <li>no_message</li>
+            <li>outside_working_area</li>
+            <li>no_loop_signal</li>
+            <li>wrong_loop_signal</li>
+            <li>loop_sensor_problem_front</li>
+            <li>loop_sensor_problem_rear</li>
+            <li>trapped</li>
+            <li>upside_down</li>
+            <li>low_battery</li>
+            <li>empty_battery</li>
+            <li>no_drive</li>
+            <li>lifted</li>
+            <li>stuck_in_charging_station</li>
+            <li>charging_station_blocked</li>
+            <li>collision_sensor_problem_rear</li>
+            <li>collision_sensor_problem_front</li>
+            <li>wheel_motor_blocked_right</li>
+            <li>wheel_motor_blocked_left</li>
+            <li>wheel_drive_problem_right</li>
+            <li>wheel_drive_problem_left</li>
+            <li>cutting_system_blocked</li>
+            <li>invalid_sub_device_combination</li>
+            <li>settings_restored</li>
+            <li>electronic_problem</li>
+            <li>charging_system_problem</li>
+            <li>tilt_sensor_problem</li>
+            <li>wheel_motor_overloaded_right</li>
+            <li>wheel_motor_overloaded_left</li>
+            <li>charging_current_too_high</li>
+            <li>temporary_problem</li>
+            <li>guide_1_not_found</li>
+            <li>guide_2_not_found</li>
+            <li>guide_3_not_found</li>
+            <li>difficult_finding_home</li>
+            <li>guide_calibration_accomplished</li>
+            <li>guide_calibration_failed</li>
+            <li>temporary_battery_problem</li>
+            <li>battery_problem</li>
+            <li>alarm_mower_switched_off</li>
+            <li>alarm_mower_stopped</li>
+            <li>alarm_mower_lifted</li>
+            <li>alarm_mower_tilted</li>
+            <li>connection_changed</li>
+            <li>connection_not_changed</li>
+            <li>com_board_not_available</li>
+            <li>slipped</li>
+        </ul>
+        </li>
+        <li>mower-manual_operation - (0/1) or with newer Firmware (false/true)</li>
+        <li>mower-override_end_time - manual override end time</li>
+        <li>mower-source_for_next_start - source for the next start
+        <ul>
+            <li>no_source</li>
+            <li>mower_charging</li>
+            <li>completed_cutting_autotimer</li>
+            <li>week_timer</li>
+            <li>countdown_timer</li>
+            <li>undefined</li>
+        </ul>
+        </li>  
+        <li>mower-status - mower state (see state)</li>
+        <li>mower-timestamp_next_start - timestamp of next scheduled start</li>
+        <li>radio-connection_status - state of connection</li>
+        <li>radio-quality - percentage of the radio quality</li>
+        <li>radio-state - radio state (bad/poor/good/undefined)</li>
+        <li>state - state of the mower
+        <ul>
+            <li>paused</li>
+            <li>ok_cutting</li>
+            <li>ok_searching</li>
+            <li>ok_charging</li>
+            <li>ok_leaving</li>
+            <li>wait_updating</li>
+            <li>wait_power_up</li>
+            <li>parked_timer</li>
+            <li>parked_park_selected</li>
+            <li>off_disabled</li>
+            <li>off_hatch_open</li>
+            <li>unknown</li>
+            <li>error</li>
+            <li>error_at_power_up</li>
+            <li>off_hatch_closed</li>
+            <li>ok_cutting_timer_overridden</li>
+            <li>parked_autotimer</li>
+            <li>parked_daily_limit_reached</li>
+        </ul>
+        </li>
+    </ul>
+    <br><br>
+    <a name="GardenaSmartDeviceattributes"></a>
+    <b>Attributes</b>
+    <ul>
+        <li>readingValueLanguage - Change the Language of Readings (de,en/if not set the default is english and the global language is not set at german) </li>
+        <li>model - </li>
+    </ul>
+    <br><br>
+    <a name="GardenaSmartDeviceset"></a>
+    <b>set</b>
+    <ul>
+        <li>parkUntilFurtherNotice</li>
+        <li>parkUntilNextTimer</li>
+        <li>startOverrideTimer - 0 to 59 Minutes</li>
+        <li>startResumeSchedule</li>
+    </ul>
+</ul>
 
 =end html
 =begin html_DE
 
-
+<a name="GardenaSmartDevice"></a>
+<h3>GardenaSmartDevice</h3>
+<ul>
+    Zusammen mit dem Device GardenaSmartDevice stellt dieses FHEM Modul die Kommunikation zwischen der GardenaCloud und Fhem her.
+    <br><br>
+    Wenn das GardenaSmartBridge Device erzeugt wurde, werden verbundene Ger&auml;te automatisch erkannt und in Fhem angelegt.<br> 
+    Von nun an k&ouml;nnen die eingebundenen Ger&auml;te gesteuert werden. &Auml;nderungen in der APP werden mit den Readings und dem Status syncronisiert.
+    <a name="GardenaSmartDevicereadings"></a>
+    </ul>
+    <br>
+    <ul>
+    <b>Readings</b>
+    <ul>
+        <li>battery-charging - Ladeindikator (0/1) oder mit neuerer Firmware (false/true)</li>
+        <li>battery-level - Ladezustand der Batterie in Prozent</li>
+        <li>battery-rechargeable_battery_status - Zustand der Batterie (Ausser Betrieb/Kritischer Batteriestand, wechseln Sie jetzt/Niedrig/oK)</li>
+        <li>device_info-category - Eigenschaft des Ger&Auml;tes (M&auml;her/Bew&auml;sserungscomputer/Bodensensor)</li>
+        <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
+        <li>device_info-manufacturer - Hersteller</li>
+        <li>device_info-product - Produkttyp</li>
+        <li>device_info-serial_number - Seriennummer</li>
+        <li>device_info-sgtin - </li>
+        <li>device_info-version - Firmware Version</li>
+        <li>firmware-firmware_command - Firmware Kommando (Nichts zu tun/Firmwareupload unterbrochen/Firmwareupload/nicht unterst&uuml;tzt)</li>
+        <li>firmware-firmware_status - Firmware Status </li>
+        <li>firmware-firmware_update_start - Firmwareupdate (0/1) oder mit neuerer Firmware (false/true)</li>
+        <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
+        <li>firmware-inclusion_status - Einbindungsstatus</li>
+        <li>internal_temperature-temperature - Interne Ger&auml;te Temperatur</li>
+        <li>mower-error - Aktuelle Fehler Meldung
+        <ul>
+            <li>Kein Fehler</li>
+            <li>Au&szl;igerhalb des Arbeitsbereichs</li>
+            <li>Kein Schleifensignal</li>
+            <li>Falsches Schleifensignal</li>
+            <li>Problem Schleifensensor, vorne</li>
+            <li>Problem Schleifensensor, hinten</li>
+            <li>Eingeschlossen</li>
+            <li>Steht auf dem Kopf</li>
+            <li>Niedriger Batteriestand</li>
+            <li>Batterie ist leer</li>
+            <li>Kein Antrieb</li>
+            <li>Angehoben</li>
+            <li>Eingeklemmt in Ladestation</li>
+            <li>Ladestation blockiert</li>
+            <li>Problem Sto&szl;igsensor hinten</li>
+            <li>Problem Sto&szl;igsensor vorne</li>
+            <li>Radmotor rechts blockiert</li>
+            <li>Radmotor links blockiert</li>
+            <li>Problem Antrieb, rechts</li>
+            <li>Problem Antrieb, links</li>
+            <li>Schneidsystem blockiert</li>
+            <li>Fehlerhafte Verbindung</li>
+            <li>Standardeinstellungen</li>
+            <li>Elektronisches Problem</li>
+            <li>Problem Ladesystem</li>
+            <li>Kippsensorproblem</li>
+            <li>Rechter Radmotor &uuml;berlastet</li>
+            <li>Linker Radmotor &uuml;berlastet</li>
+            <li>Ladestrom zu hoch</li>
+            <li>Vor&uuml;bergehendes Problem</li>
+            <li>SK 1 nicht gefunden</li>
+            <li>SK 2 nicht gefunden</li>
+            <li>SK 3 nicht gefunden</li>
+            <li>Problem die Ladestation zu finden</li>
+            <li>Kalibration des Suchkabels beendet</li>
+            <li>Kalibration des Suchkabels fehlgeschlagen</li>
+            <li>Kurzzeitiges Batterieproblem</li>
+            <li>Batterieproblem</li>
+            <li>Alarm! M&auml;her ausgeschalten</li>
+            <li>Alarm! M&auml;her gestoppt</li>
+            <li>Alarm! M&auml;her angehoben</li>
+            <li>Alarm! M&auml;her gekippt</li>
+            <li>Verbindung geändert</li>
+            <li>Verbindung nicht ge&auml;ndert</li>
+            <li>COM board nicht verf&uuml;gbar</li>
+            <li>Rutscht</li>
+        </ul>
+        </li>
+        <li>mower-manual_operation - Manueller Betrieb (0/1) oder mit neuerer Firmware (false/true)</li>
+        <li>mower-override_end_time - Zeitpunkt wann der manuelle Betrieb beendet ist</li>
+        <li>mower-source_for_next_start - Grudn f&uuml;r den n&auml;chsten Start
+        <ul>
+            <li>Kein Grund</li>
+            <li>M&auml;her wurde geladen</li>
+            <li>SensorControl erreicht</li>
+            <li>Wochentimer erreicht</li>
+            <li>Stoppuhr Timer</li>
+            <li>Undefiniert</li>
+        </ul>
+        </li>  
+        <li>mower-status - M&auml;her Status (siehe state</li>
+        <li>mower-timestamp_next_start - Zeitpunkt des n&auml;chsten geplanten Starts</li>
+        <li>radio-connection_status - Status der Funkverbindung</li>
+        <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
+        <li>radio-state - radio state (schlecht/schwach/gut/Undefiniert)</li>
+        <li>state - Staus des M&auml;hers
+        <ul>
+            <li>Pausiert</li>
+            <li>M&auml;hen</li>
+            <li>Suche Ladestation</li>
+            <li>L&auml;dt</li>
+            <li>M&auml;hen</li>
+            <li>Wird aktualisiert ...</li>
+            <li>Wird eingeschaltet ...</li>
+            <li>Geparkt nach Zeitplan</li>
+            <li>Geparkt</li>
+            <li>Der M&auml;her ist ausgeschaltet</li>
+            <li>Deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich</li>
+            <li>Unbekannter Status</li>
+            <li>Fehler</li>
+            <li>Neustart ...</li>
+            <li>Deaktiviert. Manueller Start erforderlich</li>
+            <li>Manuelles M&auml;hen</li>
+            <li>Geparkt durch SensorControl</li>
+            <li>Abgeschlossen</li>
+        </ul>
+        </li>
+    </ul>
+    <br><br>
+    <a name="GardenaSmartDeviceattributes"></a>
+    <b>Attribute</b>
+    <ul>
+        <li>readingValueLanguage - &Auml;nderung der Sprache der Readings (de,en/wenn nichts gesetzt ist, dann Englisch es sei denn deutsch ist als globale Sprache gesetzt) </li>
+        <li>model - </li>
+    </ul>
+    <a name="GardenaSmartDeviceset"></a>
+    <b>set</b>
+    <ul>
+        <li>parkUntilFurtherNotice - Parken des M&auml;hers unter Umgehung des Zeitplans</li>
+        <li>parkUntilNextTimer - Parken bis zum n&auml;chsten Zeitplan</li>
+        <li>startOverrideTimer - Manuelles m&auml;hen (0 bis 59 Minuten)</li>
+        <li>startResumeSchedule - Weiterf&uuml;hrung des Zeitplans</li>
+    </ul>
+</ul>
 
 =end html_DE
 =cut
