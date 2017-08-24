@@ -68,7 +68,7 @@ eval "use Encode qw(encode encode_utf8 decode_utf8);1" or $missingModul .= "Enco
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "0.1.0";
+my $version = "0.1.1";
 
 
 
@@ -488,7 +488,7 @@ sub GardenaSmartDevice_RigRadingsValue($$) {
     my $rigReadingValue;
     
     
-    if( $readingValue =~ /^(\d+)-(\d\d)-(\d\d)T.*/ ) {
+    if( $readingValue =~ /^(\d+)-(\d\d)-(\d\d)T(\d\d)/ ) {
         $rigReadingValue = GardenaSmartDevice_Zulu2LocalString($readingValue);
     } else {
         $rigReadingValue = GardenaSmartDevice_ReadingLangGerman($hash,$readingValue);
@@ -511,7 +511,13 @@ sub GardenaSmartDevice_Zulu2LocalString($) {
     $lyear += 1900;  # year is 1900 based
     $lmonth++;       # month number is zero based
 
-    return ( sprintf("%04d-%02d-%02d %02d:%02d:%s",$lyear,$lmonth,$lday,$lhour,$datemin,substr($rest,0,2)) );
+    if( defined($rest) ) {
+        return ( sprintf("%04d-%02d-%02d %02d:%02d:%s",$lyear,$lmonth,$lday,$lhour,$datemin,substr($rest,0,2)));
+    } elsif( $lyear < 2000 ) {
+        return "illegal year";
+    } else {
+        return ( sprintf("%04d-%02d-%02d %02d:%02d",$lyear,$lmonth,$lday,$lhour,substr($datemin,0,2)));
+    }
 }
 
 
