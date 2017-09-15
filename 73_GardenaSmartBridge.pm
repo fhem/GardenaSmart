@@ -68,7 +68,7 @@ eval "use JSON;1" or $missingModul .= "JSON ";
 eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 
 
-my $version = "0.2.4";
+my $version = "0.2.5";
 
 
 
@@ -114,6 +114,7 @@ sub GardenaSmartBridge_Initialize($) {
     $hash->{AttrList}   = "debugJSON:0,1 ".
                           "disable:1 ".
                           "interval ".
+                          "disabledForIntervals ".
                           $readingFnAttributes;
     
     foreach my $d(sort keys %{$modules{GardenaSmartBridge}{defptr}}) {
@@ -322,15 +323,7 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
     unless( not defined( $param->{'device_id'}) );
     
     my $dname                       = $dhash->{NAME};
-    
-    
-    #if( defined( $param->{'device_id'}) ) {
-    #    $dhash                      = $modules{GardenaSmartDevice}{defptr}{$param->{'device_id'}};
-    #} else {
-    #    $dhash                      = $hash;
-    #}
 
-    #my $dname                       = $dhash->{NAME};
 
    
    
