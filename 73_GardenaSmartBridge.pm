@@ -333,7 +333,7 @@ sub GardenaSmartBridge_Write($@) {
     
     
     ($payload,$session_id,$header,$uri,$method,$deviceId,$abilities)      = GardenaSmartBridge_createHttpValueStrings($hash,$payload,$deviceId,$abilities);
-    
+
     HttpUtils_NonblockingGet(
         {
             url         => $hash->{URL} . $uri,
@@ -418,7 +418,9 @@ sub GardenaSmartBridge_ErrorHandling($$$) {
         } elsif( $param->{code} == 204 and $dhash ne $hash and defined($dhash->{helper}{deviceAction}) ) {
             
             readingsBulkUpdate( $dhash, "state", "the command is processed", 1);
-            InternalTimer( gettimeofday()+3,"GardenaSmartBridge_getDevices", $hash, 1 );
+            #InternalTimer( gettimeofday()+3,"GardenaSmartBridge_getDevices", $hash, 1 );
+            #Refresh after 10 seconds to get newly set information as the gardena cloud takes a while to reflect changes
+            InternalTimer( gettimeofday()+10,"GardenaSmartBridge_getDevices", $hash, 1 );
         
         } elsif( $param->{code} != 200 ) {
 
@@ -531,7 +533,7 @@ sub GardenaSmartBridge_ResponseProcessing($$) {
             GardenaSmartBridge_WriteReadings($hash,$location);
         }
         
-        Log3 $name, 3, "GardenaSmartBridge ($name) - processed locations id. ID ist " . $hash->{helper}{locations_id};
+        Log3 $name, 3, "GardenaSmartBridge ($name) - processed locations id. ID is " . $hash->{helper}{locations_id};
         GardenaSmartBridge_Write($hash,undef,undef,undef);
         
         return;
@@ -729,7 +731,6 @@ sub GardenaSmartBridge_createHttpValueStrings($@) {
     $payload                        = '{' . $payload . '}'                                                  if( defined($payload) );
     $payload                        = '{}'                                                                  if( not defined($payload) );
 
-
     if( $payload eq '{}' ) {
         $method                         = 'GET';
         $uri                            .= '/locations/?user_id=' . $hash->{helper}{user_id}                if( not defined($hash->{helper}{locations_id}) );
@@ -741,7 +742,14 @@ sub GardenaSmartBridge_createHttpValueStrings($@) {
     $uri                            .= '/sessions'                                                          if( not defined($hash->{helper}{session_id}));
     
     if( defined($hash->{helper}{locations_id}) ) {
-        $uri                            .= '/devices/' . $deviceId . '/abilities/' . $abilities . '/command'    if( defined($abilities) and defined($payload) );
+        
+        if ($abilities eq 'mower_settings') {
+          $method   = 'PUT';
+          my $dhash = $modules{GardenaSmartDevice}{defptr}{$deviceId};
+          $uri                            .= '/devices/' . $deviceId . '/settings/' . $dhash->{helper}{STARTINGPOINTID}   if( defined($abilities) and defined($payload) and $abilities eq 'mower_settings');      
+        } else {
+          $uri                            .= '/devices/' . $deviceId . '/abilities/' . $abilities . '/command'    if( defined($abilities) and defined($payload) and $abilities ne 'mower_settings');        
+        }
         $uri                            .= '?locationId=' . $hash->{helper}{locations_id};
     }
 
