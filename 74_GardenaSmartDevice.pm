@@ -206,6 +206,42 @@ sub GardenaSmartDevice_Set($@) {
         my $duration     = join( " ", @args );
         $payload    = '"name":"start_override_timer","parameters":{"duration":' . $duration . '}';
     
+    } elsif( lc $cmd eq 'startpoint' ) {
+        my ($startpoint_state,$startpoint_num,@morestartpoints) = @args;
+        if (defined($startpoint_state) && defined($startpoint_num) ) {
+          if (defined($hash->{helper}{STARTINGPOINTS}) && $hash->{helper}{STARTINGPOINTS} ne '') {
+              # add needed parameters to saved settings config and change the value in request
+              my $decode_json_settings = eval{decode_json($hash->{helper}{STARTINGPOINTS})};
+              if($@){
+                Log3 $name, 3, "GardenaSmartBridge ($name) - JSON error while setting startpoint: $@";
+              }
+              $decode_json_settings->{device} = $hash->{DEVICEID};
+              my $setval = $startpoint_state eq 'disable' ? \0 : \1;
+              $decode_json_settings->{value}[$startpoint_num-1]{enabled} = $setval;
+              
+              #set more startpoints
+              if (defined @morestartpoints && (scalar(@morestartpoints) == 2 || scalar(@morestartpoints) == 4 )) {
+                if (scalar(@morestartpoints) == 2) {
+                  $setval = $morestartpoints[0] eq 'disable' ? \0 : \1;
+                  $decode_json_settings->{value}[$morestartpoints[1]-1]{enabled} = $setval;
+                  
+                } elsif (scalar(@morestartpoints) == 4) {
+                  $setval = $morestartpoints[0] eq 'disable' ? \0 : \1;
+                  $decode_json_settings->{value}[$morestartpoints[1]-1]{enabled} = $setval;
+                  $setval = $morestartpoints[2] eq 'disable' ? \0 : \1;
+                  $decode_json_settings->{value}[$morestartpoints[3]-1]{enabled} = $setval;
+                }
+              }
+              
+              
+              $payload = '"settings": '. encode_json($decode_json_settings);
+              $abilities = 'mower_settings';
+            } else {
+              return "startingpoints not loaded yet, please wait a couple of minutes";
+          }
+        } else {
+          return "startpoint usage: set ".$hash->{NAME}." startpoint disable 1 [enable 2] [disable 3]";
+        }
     ### watering_computer
     } elsif( lc $cmd eq 'manualoverride' ) {
     
@@ -251,15 +287,15 @@ sub GardenaSmartDevice_Set($@) {
     } else {
     
         my $list    = '';
-        $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440' if( AttrVal($name,'model','unknown') eq 'mower' );
+        $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440 startpoint' if( AttrVal($name,'model','unknown') eq 'mower' );
         $list       .= 'manualOverride:slider,0,1,59 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
         $list       .= 'refresh:temperature,light' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
     }
     
-    $abilities  = 'mower' if( AttrVal($name,'model','unknown') eq 'mower' );
-    $abilities  = 'outlet' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+    $abilities  = 'mower' if( AttrVal($name,'model','unknown') eq 'mower' and $abilities eq '' );
+    $abilities  = 'outlet' if( AttrVal($name,'model','unknown') eq 'watering_computer' and $abilities eq '');
     
     
     $hash->{helper}{deviceAction}  = $payload;
@@ -314,7 +350,7 @@ sub GardenaSmartDevice_WriteReadings($$) {
     
     my $name                    = $hash->{NAME};
     my $abilities               = scalar (@{$decode_json->{abilities}});
-
+    my $settings               = scalar (@{$decode_json->{settings}});
     
     readingsBeginUpdate($hash);
     
@@ -344,7 +380,25 @@ sub GardenaSmartDevice_WriteReadings($$) {
 
         $abilities--;
     } while ($abilities >= 0);
-    
+
+    do {
+        
+        if( ref($decode_json->{settings}[$settings]{value}) eq "ARRAY" and $decode_json->{settings}[$settings]{name} eq 'starting_points' ) {;
+            
+            #save the startingpointid needed to update the startingpoints
+            if ($hash->{helper}{STARTINGPOINTID} ne $decode_json->{settings}[$settings]{id}) {
+              $hash->{helper}{STARTINGPOINTID} = $decode_json->{settings}[$settings]{id};
+            }
+            $hash->{helper}{STARTINGPOINTS} = '{ "name": "starting_points", "value": '. encode_json($decode_json->{settings}[$settings]{value}) . '}';
+            my $startpoint_cnt = 0;
+            foreach my $startingpoint (@{$decode_json->{settings}[$settings]{value}}) {
+                $startpoint_cnt++;
+                readingsBulkUpdateIfChanged($hash,'startpoint-'.$startpoint_cnt.'-enabled',$startingpoint->{enabled});
+            }
+        }
+
+        $settings--;
+    } while ($settings >= 0);    
     
     readingsBulkUpdate($hash,'state',ReadingsVal($name,'mower-status','readingsValError')) if( AttrVal($name,'model','unknown') eq 'mower' );
     readingsBulkUpdate($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? GardenaSmartDevice_RigRadingsValue($hash,'open') : GardenaSmartDevice_RigRadingsValue($hash,'closed'))) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
@@ -654,8 +708,13 @@ sub GardenaSmartDevice_Zulu2LocalString($) {
     <ul>
         <li>parkUntilFurtherNotice</li>
         <li>parkUntilNextTimer</li>
-        <li>startOverrideTimer - 0 to 59 Minutes</li>
+        <li>startOverrideTimer - (in minutes, 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
         <li>startResumeSchedule</li>
+        <li>startpoint enable|disable 1|2|3 - enables or disables one or more predefined start points</li>
+        <ul>
+          <li>set NAME startpoint enable 1</li>
+          <li>set NAME startpoint disable 3 enable 1</li>
+        </ul>
     </ul>
 </ul>
 
@@ -793,8 +852,13 @@ sub GardenaSmartDevice_Zulu2LocalString($) {
     <ul>
         <li>parkUntilFurtherNotice - Parken des M&auml;hers unter Umgehung des Zeitplans</li>
         <li>parkUntilNextTimer - Parken bis zum n&auml;chsten Zeitplan</li>
-        <li>startOverrideTimer - Manuelles m&auml;hen (0 bis 59 Minuten)</li>
+        <li>startOverrideTimer - Manuelles m&auml;hen (in Minuten, 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
         <li>startResumeSchedule - Weiterf&uuml;hrung des Zeitplans</li>
+        <li>startpoint enable|disable 1|2|3 - Aktiviert oder deaktiviert einen vordefinierten Startbereich</li>
+        <ul>
+          <li>set NAME startpoint enable 1</li>
+          <li>set NAME startpoint disable 3 enable 1</li>
+        </ul>        
     </ul>
 </ul>
 
