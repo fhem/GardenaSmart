@@ -879,8 +879,6 @@ sub GardenaSmartBridge_createHttpValueStrings($@) {
     <code>define Gardena_Bridge GardenaSmartBridge</code><br>
   </ul>
   <br>
-  &lt;Account-EMail&gt; Email Adresse, die auch in der GardenaApp verwendet wurde<br>
-  &lt;Account-Passwort&gt; Passwort, welches in der GardenaApp verwendet wurde<br>
   Das Bridge Device wird im Raum GardenaSmart angelegt und danach erfolgt das Einlesen und automatische Anlegen der Ger&auml;te. Von nun an k&ouml;nnen die eingebundenen Ger&auml;te gesteuert werden. &Auml;nderungen in der APP werden mit den Readings und dem Status syncronisiert.
   <br><br>
   <a name="GardenaSmartBridgereadings"></a>
