@@ -66,7 +66,7 @@ use Time::Local;
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "1.0.0";
+my $version = "1.0.1";
 
 
 
@@ -100,7 +100,7 @@ sub GardenaSmartDevice_Initialize($) {
     
     $hash->{AttrFn}     = "GardenaSmartDevice_Attr";
     $hash->{AttrList}   = "readingValueLanguage:de,en ".
-                            "model ".
+                            "model:watering_computer,sensor,mower ".
                             "IODev ".
                             $readingFnAttributes;
     
