@@ -66,7 +66,7 @@ use Time::Local;
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "1.0.2";
+my $version = "1.0.3";
 
 
 
@@ -249,7 +249,7 @@ sub GardenaSmartDevice_Set($@) {
         my $list    = '';
         $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440 startpoint' if( AttrVal($name,'model','unknown') eq 'mower' );
         $list       .= 'manualOverride:slider,0,1,59 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
-        $list       .= 'refresh:temperature,light' if( AttrVal($name,'model','unknown') eq 'sensor' );
+        $list       .= 'refresh:temperature,light,humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
     }
