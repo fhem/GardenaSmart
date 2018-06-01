@@ -66,7 +66,7 @@ use Time::Local;
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "1.0.3";
+my $version = "1.0.4";
 
 
 
@@ -281,7 +281,7 @@ sub GardenaSmartDevice_Parse($$) {
     }
     
     Log3 $name, 4, "GardenaSmartDevice ($name) - ParseFn was called";
-    Log3 $name, 5, "GardenaSmartDevice ($name) - JSON: $json";
+    Log3 $name, 4, "GardenaSmartDevice ($name) - JSON: $json";
 
     
     if( defined($decode_json->{id}) ) {
@@ -326,7 +326,8 @@ sub GardenaSmartDevice_WriteReadings($$) {
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'ambient_temperature-temperature'
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'soil_temperature-temperature'
                                                             and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'humidity-humidity'
-                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'light-light' );
+                                                            and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} ne 'light-light'
+                                                            and ref($propertie->{value}) ne "HASH" );
                                                             
                 readingsBulkUpdate($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},GardenaSmartDevice_RigRadingsValue($hash,$propertie->{value})) if( defined($propertie->{value})
                                                             and ($decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'radio-quality'
@@ -336,6 +337,16 @@ sub GardenaSmartDevice_WriteReadings($$) {
                                                             or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'soil_temperature-temperature'
                                                             or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'humidity-humidity'
                                                             or $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'light-light') );
+                                                            
+                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},join(',',@{$propertie->{value}})) if( defined($propertie->{value}) and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'ic24-valves_connected' );
+                
+                readingsBulkUpdateIfChanged($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name},join(',',@{$propertie->{value}})) if( defined($propertie->{value}) and $decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name} eq 'ic24-valves_master_config' );
+
+                if( ref($propertie->{value}) eq "HASH" ) {
+                    while( my ($r,$v) = each %{$propertie->{value}} ) {
+                        readingsBulkUpdate($hash,$decode_json->{abilities}[$abilities]{name}.'-'.$propertie->{name}.'_'.$r,GardenaSmartDevice_RigRadingsValue($hash,$v));
+                    }
+                }
             }
         }
 

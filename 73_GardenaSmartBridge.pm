@@ -755,7 +755,7 @@ sub GardenaSmartBridge_ParseJSON($$) {
         }
     }
     
-    Log3 $name, 4, "GardenaSmartBridge ($name) - return msg: $msg and tail: $tail";
+    Log3 $name, 5, "GardenaSmartBridge ($name) - return msg: $msg and tail: $tail";
     return ($msg,$tail);
 }
 
