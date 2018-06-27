@@ -100,7 +100,7 @@ sub GardenaSmartDevice_Initialize($) {
     
     $hash->{AttrFn}     = "GardenaSmartDevice_Attr";
     $hash->{AttrList}   = "readingValueLanguage:de,en ".
-                            "model:watering_computer,sensor,mower ".
+                            "model:watering_computer,sensor,mower,ic24 ".
                             "IODev ".
                             $readingFnAttributes;
     
@@ -227,6 +227,12 @@ sub GardenaSmartDevice_Set($@) {
     
         $payload    = '"name":"cancel_override"';
     
+    ### Watering ic24
+    } elsif( lc $cmd eq 'watering_timer_1' ) {
+    
+        my $duration     = join( " ", @args );
+        $payload    = '"name":"watering_timer_1","parameters":{"duration":' . $duration . '}';
+    
     ### Sensors
     } elsif( lc $cmd eq 'refresh' ) {
     
@@ -249,6 +255,7 @@ sub GardenaSmartDevice_Set($@) {
         my $list    = '';
         $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440 startpoint' if( AttrVal($name,'model','unknown') eq 'mower' );
         $list       .= 'manualOverride:slider,0,1,59 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+        $list       .= 'watering_timer_1,0,1,59' if( AttrVal($name,'model','unknown') eq 'ic24' );
         $list       .= 'refresh:temperature,light,humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
@@ -256,6 +263,7 @@ sub GardenaSmartDevice_Set($@) {
     
     $abilities  = 'mower' if( AttrVal($name,'model','unknown') eq 'mower' ) and $abilities ne 'mower_settings';
     $abilities  = 'outlet' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
+    $abilities  = 'watering' if( AttrVal($name,'model','unknown') eq 'ic24' );
     
     
     $hash->{helper}{deviceAction}  = $payload;
