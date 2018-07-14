@@ -68,7 +68,7 @@ eval "use JSON;1" or $missingModul .= "JSON ";
 eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
 
 
-my $version = "1.0.4";
+my $version = "1.2.0";
 
 
 
@@ -83,8 +83,8 @@ sub GardenaSmartBridge_Undef($$);
 sub GardenaSmartBridge_Delete($$);
 sub GardenaSmartBridge_ResponseProcessing($$);
 sub GardenaSmartBridge_ErrorHandling($$$);
-sub GardenaSmartBridge_encrypt($);
-sub GardenaSmartBridge_decrypt($);
+#sub GardenaSmartBridge_encrypt($);
+#sub GardenaSmartBridge_decrypt($);
 sub GardenaSmartBridge_WriteReadings($$);
 sub GardenaSmartBridge_ParseJSON($$);
 sub GardenaSmartBridge_getDevices($);
@@ -782,17 +782,26 @@ sub GardenaSmartBridge_createHttpValueStrings($@) {
     $uri                            .= '/sessions'                                                          if( not defined($hash->{helper}{session_id}));
     
     if( defined($hash->{helper}{locations_id}) ) {
-        #$uri                            .= '/devices/' . $deviceId . '/abilities/' . $abilities . '/command'    if( defined($abilities) and defined($payload) );
         if ( defined($abilities) and $abilities eq 'mower_settings') {
         
             $method   = 'PUT';
             my $dhash = $modules{GardenaSmartDevice}{defptr}{$deviceId};
-            $uri                            .= '/devices/' . $deviceId . '/settings/' . $dhash->{helper}{STARTINGPOINTID}   if( defined($abilities) and defined($payload) and $abilities eq 'mower_settings');      
+            $uri                            .= '/devices/' . $deviceId . '/settings/' . $dhash->{helper}{STARTINGPOINTID}   if( defined($abilities) and defined($payload) and $abilities eq 'mower_settings');
+            
+        } elsif( defined($abilities) and defined($payload) and $abilities eq 'watering') {
+            my $valve_id;
+            $method   = 'PUT';
+            
+            if( $payload =~ m#watering_timer_(\d)# ) {
+                $valve_id    = $1;
+            }
+            $uri                            .= '/devices/' . $deviceId . '/abilities/' . $abilities . '/properties/watering_timer_' . $valve_id;
+
         } else {
-            $uri                            .= '/devices/' . $deviceId . '/abilities/' . $abilities . '/command'    if( defined($abilities) and defined($payload) and $abilities ne 'mower_settings');        
+            $uri                            .= '/devices/' . $deviceId . '/abilities/' . $abilities . '/command'    if( defined($abilities) and defined($payload) );
         }
         
-        $uri                            .= '?locationId=' . $hash->{helper}{locations_id};
+        $uri                                .= '?locationId=' . $hash->{helper}{locations_id};
     }
 
     return ($payload,$session_id,$header,$uri,$method,$deviceId,$abilities);

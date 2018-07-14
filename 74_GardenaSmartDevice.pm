@@ -66,7 +66,7 @@ use Time::Local;
 eval "use JSON;1" or $missingModul .= "JSON ";
 
 
-my $version = "1.0.4";
+my $version = "1.2.0";
 
 
 
@@ -190,26 +190,26 @@ sub GardenaSmartDevice_Set($@) {
     #my ($arg, @params) = @args;
     
     my $payload;
-    my $abilities   = '';
+    my $abilities       = '';
     
     
     ### mower
     if( lc $cmd eq 'parkuntilfurthernotice' ) {
 
-        $payload    = '"name":"park_until_further_notice"';
+        $payload        = '"name":"park_until_further_notice"';
     
     } elsif( lc $cmd eq 'parkuntilnexttimer' ) {
     
-        $payload    = '"name":"park_until_next_timer"';
+        $payload        = '"name":"park_until_next_timer"';
         
     } elsif( lc $cmd eq 'startresumeschedule' ) {
     
-        $payload    = '"name":"start_resume_schedule"';
+        $payload        = '"name":"start_resume_schedule"';
     
     } elsif( lc $cmd eq 'startoverridetimer' ) {
     
         my $duration     = join( " ", @args );
-        $payload    = '"name":"start_override_timer","parameters":{"duration":' . $duration . '}';
+        $payload        = '"name":"start_override_timer","parameters":{"duration":' . $duration . '}';
 
     } elsif( lc $cmd eq 'startpoint' ) {
         my $err;
@@ -220,23 +220,29 @@ sub GardenaSmartDevice_Set($@) {
     ### watering_computer
     } elsif( lc $cmd eq 'manualoverride' ) {
     
-        my $duration     = join( " ", @args );
-        $payload    = '"name":"manual_override","parameters":{"duration":' . $duration . '}';
+        my $duration    = join( " ", @args );
+        $payload        = '"name":"manual_override","parameters":{"duration":' . $duration . '}';
     
     } elsif( lc $cmd eq 'canceloverride' ) {
     
-        $payload    = '"name":"cancel_override"';
+        $payload        = '"name":"cancel_override"';
     
     ### Watering ic24
-    } elsif( lc $cmd eq 'wateringtimertalve1' ) {
+    } elsif( $cmd =~ /manualDurationValve/ ) {
     
-        my $duration     = join( " ", @args );
-        $payload    = '"name":"watering_timer_valve_1","parameters":{"duration":' . $duration . '}';
+        my $valve_id;
+        my $duration    = join( " ", @args );
+        
+        if( $cmd =~ m#(\d)$# ) {
+            $valve_id   = $1;
+        }
+
+        $payload        = '"properties":{"name":"watering_timer_' . $valve_id . '","value":{"state":"manual","duration":' . $duration . ',"valve_id":' . $valve_id . '}}';
     
     ### Sensors
     } elsif( lc $cmd eq 'refresh' ) {
     
-        my $sensname     = join( " ", @args );
+        my $sensname    = join( " ", @args );
         if( lc $sensname eq 'temperature' ) {
             $payload    = '"name":"measure_ambient_temperature"';
             $abilities  = 'ambient_temperature';
@@ -255,7 +261,7 @@ sub GardenaSmartDevice_Set($@) {
         my $list    = '';
         $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440 startpoint' if( AttrVal($name,'model','unknown') eq 'mower' );
         $list       .= 'manualOverride:slider,0,1,59 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
-        $list       .= 'wateringTimerValve1:slider,0,1,59' if( AttrVal($name,'model','unknown') eq 'ic24' );
+        $list       .= 'manualDurationValve1:slider,0,1,59 manualDurationValve2:slider,0,1,59 manualDurationValve3:slider,0,1,59 manualDurationValve4:slider,0,1,59 manualDurationValve5:slider,0,1,59 manualDurationValve6:slider,0,1,59' if( AttrVal($name,'model','unknown') eq 'ic24' );
         $list       .= 'refresh:temperature,light,humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
@@ -387,6 +393,8 @@ sub GardenaSmartDevice_WriteReadings($$) {
     readingsBulkUpdate($hash,'state',(ReadingsVal($name,'outlet-valve_open','readingsValError') == 1 ? GardenaSmartDevice_RigRadingsValue($hash,'open') : GardenaSmartDevice_RigRadingsValue($hash,'closed'))) if( AttrVal($name,'model','unknown') eq 'watering_computer' );
     
     readingsBulkUpdate($hash,'state','T: ' . ReadingsVal($name,'ambient_temperature-temperature','readingsValError') . '°C, H: ' . ReadingsVal($name,'humidity-humidity','readingsValError') . '%, L: ' . ReadingsVal($name,'light-light','readingsValError') . 'lux') if( AttrVal($name,'model','unknown') eq 'sensor' );
+    
+    readingsBulkUpdate($hash,'state','scheduled watering next start: ' . (ReadingsVal($name,'scheduling-scheduled_watering_next_start','readingsValError'))) if( AttrVal($name,'model','unknown') eq 'ic24' );
 
     readingsEndUpdate( $hash, 1 );
     
