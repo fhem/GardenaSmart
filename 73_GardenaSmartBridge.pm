@@ -8,6 +8,8 @@
 #   Special thanks goes to comitters:
 #       - Michael (mbrak)       Thanks for Commandref
 #       - Matthias (Kenneth)    Thanks for Wiki entry
+#       - BioS                  Thanks for predefined start points Code
+#       - fettgu                Thanks for Debugging Irrigation Control data flow
 #
 #
 #  This script is free software; you can redistribute it and/or modify

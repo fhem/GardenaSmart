@@ -9,6 +9,7 @@
 #       - Michael (mbrak)       Thanks for Commandref
 #       - Matthias (Kenneth)    Thanks for Wiki entry
 #       - BioS                  Thanks for predefined start points Code
+#       - fettgu                Thanks for Debugging Irrigation Control data flow
 #
 #
 #  This script is free software; you can redistribute it and/or modify
@@ -261,7 +262,7 @@ sub GardenaSmartDevice_Set($@) {
         my $list    = '';
         $list       .= 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,60,1440 startpoint' if( AttrVal($name,'model','unknown') eq 'mower' );
         $list       .= 'manualOverride:slider,0,1,59 cancelOverride:noArg' if( AttrVal($name,'model','unknown') eq 'watering_computer' );
-        $list       .= 'manualDurationValve1:slider,0,1,59 manualDurationValve2:slider,0,1,59 manualDurationValve3:slider,0,1,59 manualDurationValve4:slider,0,1,59 manualDurationValve5:slider,0,1,59 manualDurationValve6:slider,0,1,59' if( AttrVal($name,'model','unknown') eq 'ic24' );
+        $list       .= 'manualDurationValve1:slider,1,1,59 manualDurationValve2:slider,1,1,59 manualDurationValve3:slider,1,1,59 manualDurationValve4:slider,1,1,59 manualDurationValve5:slider,1,1,59 manualDurationValve6:slider,1,1,59' if( AttrVal($name,'model','unknown') eq 'ic24' );
         $list       .= 'refresh:temperature,light,humidity' if( AttrVal($name,'model','unknown') eq 'sensor' );
         
         return "Unknown argument $cmd, choose one of $list";
