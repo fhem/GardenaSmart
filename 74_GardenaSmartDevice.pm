@@ -2,7 +2,7 @@
 #
 # Developed with Kate
 #
-#  (c) 2017-2018 Copyright: Marko Oldenburg (leongaultier at gmail dot com)
+#  (c) 2017-2019 Copyright: Marko Oldenburg (leongaultier at gmail dot com)
 #  All rights reserved
 #
 #   Special thanks goes to comitters:
@@ -66,12 +66,12 @@ sub GardenaSmartDevice_Initialize($) {
 
     $hash->{Match} = '^{"id":".*';
 
-    $hash->{SetFn}   = "GardenaSmartDevice::Set";
-    $hash->{DefFn}   = "GardenaSmartDevice::Define";
-    $hash->{UndefFn} = "GardenaSmartDevice::Undef";
-    $hash->{ParseFn} = "GardenaSmartDevice::Parse";
+    $hash->{SetFn}   = "FHEM::GardenaSmartDevice::Set";
+    $hash->{DefFn}   = "FHEM::GardenaSmartDevice::Define";
+    $hash->{UndefFn} = "FHEM::GardenaSmartDevice::Undef";
+    $hash->{ParseFn} = "FHEM::GardenaSmartDevice::Parse";
 
-    $hash->{AttrFn} = "GardenaSmartDevice::Attr";
+    $hash->{AttrFn} = "FHEM::GardenaSmartDevice::Attr";
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
       . "model:watering_computer,sensor,mower,ic24,power "
@@ -86,7 +86,7 @@ sub GardenaSmartDevice_Initialize($) {
 }
 
 ## unserer packagename
-package GardenaSmartDevice;
+package FHEM::GardenaSmartDevice;
 
 use GPUtils qw(GP_Import)
   ;    # wird für den Import der FHEM Funktionen aus der fhem.pl benötigt

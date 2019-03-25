@@ -2,7 +2,7 @@
 #
 # Developed with Kate
 #
-#  (c) 2017-2018 Copyright: Marko Oldenburg (leongaultier at gmail dot com)
+#  (c) 2017-2019 Copyright: Marko Oldenburg (leongaultier at gmail dot com)
 #  All rights reserved
 #
 #   Special thanks goes to comitters:
@@ -66,19 +66,19 @@ sub GardenaSmartBridge_Initialize($) {
     my ($hash) = @_;
 
     # Provider
-    $hash->{WriteFn}   = "GardenaSmartBridge::Write";
+    $hash->{WriteFn}   = "FHEM::GardenaSmartBridge::Write";
     $hash->{Clients}   = ":GardenaSmartDevice:";
     $hash->{MatchList} = { "1:GardenaSmartDevice" => '^{"id":".*' };
 
     # Consumer
-    $hash->{SetFn}    = "GardenaSmartBridge::Set";
-    $hash->{DefFn}    = "GardenaSmartBridge::Define";
-    $hash->{UndefFn}  = "GardenaSmartBridge::Undef";
-    $hash->{DeleteFn} = "GardenaSmartBridge::Delete";
-    $hash->{RenameFn} = "GardenaSmartBridge::Rename";
-    $hash->{NotifyFn} = "GardenaSmartBridge::Notify";
+    $hash->{SetFn}    = "FHEM::GardenaSmartBridge::Set";
+    $hash->{DefFn}    = "FHEM::GardenaSmartBridge::Define";
+    $hash->{UndefFn}  = "FHEM::GardenaSmartBridge::Undef";
+    $hash->{DeleteFn} = "FHEM::GardenaSmartBridge::Delete";
+    $hash->{RenameFn} = "FHEM::GardenaSmartBridge::Rename";
+    $hash->{NotifyFn} = "FHEM::GardenaSmartBridge::Notify";
 
-    $hash->{AttrFn} = "GardenaSmartBridge::Attr";
+    $hash->{AttrFn} = "FHEM::GardenaSmartBridge::Attr";
     $hash->{AttrList} =
         "debugJSON:0,1 "
       . "disable:1 "
@@ -94,7 +94,7 @@ sub GardenaSmartBridge_Initialize($) {
     }
 }
 
-package GardenaSmartBridge;
+package FHEM::GardenaSmartBridge;
 use GPUtils qw(GP_Import)
   ;    # wird für den Import der FHEM Funktionen aus der fhem.pl benötigt
 
