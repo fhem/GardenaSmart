@@ -558,7 +558,7 @@ sub WriteReadings($$) {
           . (
             ReadingsVal(
                 $name, 'scheduling-scheduled_watering_next_start',
-                'readingsValError'
+                'no timer'
             )
           )
     ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
