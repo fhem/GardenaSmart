@@ -301,7 +301,7 @@ sub Notify($$) {
     {
 
         InternalTimer( gettimeofday() + $hash->{INTERVAL},
-            "GardenaSmartBridge::getDevices", $hash );
+            "FHEM::GardenaSmartBridge::getDevices", $hash );
         Log3 $name, 4,
 "GardenaSmartBridge ($name) - set internal timer function for recall getDevices sub";
     }
