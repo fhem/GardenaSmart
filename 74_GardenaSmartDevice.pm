@@ -238,7 +238,7 @@ sub Set($@) {
           SetPredefinedStartPoints( $hash, @args );
         return $err if ( defined($err) );
 
-        ### watering_computer
+    ### watering_computer
     }
     elsif ( lc $cmd eq 'manualoverride' ) {
 
@@ -251,20 +251,15 @@ sub Set($@) {
 
         $payload = '"name":"cancel_override"';
 
-        ### Watering ic24
+        
     }
     elsif ( lc $cmd eq 'on' or lc $cmd eq 'off' or lc $cmd eq 'on-for-timer' ) {
     
-        my $duration = join( " ", @args );
-        if ( lc $cmd eq 'on-for-timer' ) {
-            $payload = '"name":"power_timer","parameters":{"duration":'
-            . $duration . '}';
-        }
-        else { $payload = '"name":"power_timer","parameters":{"duration":'
-            . lc $cmd . '}';
-        }
+        my $val = ( defined($args[0]) ? join( " ", @args ) : lc $cmd );
+        $payload =
+            '"properties":{"value":"' . $val . '"}';
     }
-    
+    ### Watering ic24
     elsif ( $cmd =~ /manualDurationValve/ ) {
 
         my $valve_id;
