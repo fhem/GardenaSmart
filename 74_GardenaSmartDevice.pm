@@ -58,7 +58,7 @@ package main;
 use strict;
 use warnings;
 
-my $version = "1.4.0";
+my $version = "1.4.1";
 
 sub GardenaSmartDevice_Initialize($) {
 
@@ -74,7 +74,7 @@ sub GardenaSmartDevice_Initialize($) {
     $hash->{AttrFn} = "GardenaSmartDevice::Attr";
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
-      . "model:watering_computer,sensor,mower,ic24 "
+      . "model:watering_computer,sensor,mower,ic24,power "
       . "IODev "
       . $readingFnAttributes;
 
@@ -88,7 +88,7 @@ sub GardenaSmartDevice_Initialize($) {
 ## unserer packagename
 package GardenaSmartDevice;
 
-use GPUtils qw(:all)
+use GPUtils qw(GP_Import)
   ;    # wird für den Import der FHEM Funktionen aus der fhem.pl benötigt
 
 my $missingModul = "";
@@ -253,6 +253,18 @@ sub Set($@) {
 
         ### Watering ic24
     }
+    elsif ( lc $cmd eq 'on' or lc $cmd eq 'off' or lc $cmd eq 'on-for-timer' ) {
+    
+        my $duration = join( " ", @args );
+        if ( lc $cmd eq 'on-for-timer' ) {
+            $payload = '"name":"power_timer","parameters":{"duration":'
+            . $duration . '}';
+        }
+        else { $payload = '"name":"power_timer","parameters":{"duration":'
+            . lc $cmd . '}';
+        }
+    }
+    
     elsif ( $cmd =~ /manualDurationValve/ ) {
 
         my $valve_id;
@@ -304,6 +316,8 @@ sub Set($@) {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
         $list .= 'refresh:temperature,light,humidity'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
+        $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,180'
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
 
         return "Unknown argument $cmd, choose one of $list";
     }
@@ -315,6 +329,8 @@ sub Set($@) {
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
     $abilities = 'watering'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+    $abilities = 'power'
+      if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
 
     $hash->{helper}{deviceAction} = $payload;
     readingsSingleUpdate( $hash, "state", "send command to gardena cloud", 1 );

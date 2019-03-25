@@ -58,7 +58,7 @@ package main;
 use strict;
 use warnings;
 
-my $version = "1.4.0";
+my $version = "1.4.1";
 
 
 sub GardenaSmartBridge_Initialize($) {
@@ -95,7 +95,7 @@ sub GardenaSmartBridge_Initialize($) {
 }
 
 package GardenaSmartBridge;
-use GPUtils qw(:all)
+use GPUtils qw(GP_Import)
   ;    # wird für den Import der FHEM Funktionen aus der fhem.pl benötigt
 
 my $missingModul = "";
