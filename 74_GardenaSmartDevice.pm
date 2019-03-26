@@ -58,7 +58,7 @@ package main;
 use strict;
 use warnings;
 
-my $version = "1.4.2";
+my $version = "1.6.0";
 
 sub GardenaSmartDevice_Initialize($) {
 
@@ -83,6 +83,8 @@ sub GardenaSmartDevice_Initialize($) {
         my $hash = $modules{GardenaSmartDevice}{defptr}{$d};
         $hash->{VERSION} = $version;
     }
+    
+    return FHEM::Meta::InitMod( __FILE__, $hash );
 }
 
 ## unserer packagename
@@ -126,6 +128,7 @@ sub Define($$) {
     my ( $hash, $def ) = @_;
     my @a = split( "[ \t]+", $def );
 
+    return $@ unless ( FHEM::Meta::SetInternals($hash) );
     return
       "too few parameters: define <NAME> GardenaSmartDevice <device_Id> <model>"
       if ( @a < 3 );
@@ -1109,4 +1112,49 @@ sub SetPredefinedStartPoints($@) {
 </ul>
 
 =end html_DE
+
+=for :application/json;q=META.json 74_GardenaSmartDevice.pm
+{
+  "abstract": "Modul to control GardenaSmart Devices",
+  "x_lang": {
+    "de": {
+      "abstract": "Modul zur Steuerung von Gardena Smart Ger&aumlten"
+    }
+  },
+  "keywords": [
+    "fhem-mod-device",
+    "fhem-core",
+    "Garden",
+    "Gardena",
+    "Smart"
+  ],
+  "release_status": "stable",
+  "license": "GPL_2",
+  "author": [
+    "Marko Oldenburg <leongaultier@gmail.com>"
+  ],
+  "x_fhem_maintainer": [
+    "CoolTux"
+  ],
+  "x_fhem_maintainer_github": [
+    "LeonGaultier"
+  ],
+  "prereqs": {
+    "runtime": {
+      "requires": {
+        "FHEM": 5.00918799,
+        "perl": 5.016, 
+        "Meta": 0,
+        "JSON": 0,
+        "Time::Local": 0
+      },
+      "recommends": {
+      },
+      "suggests": {
+      }
+    }
+  }
+}
+=end :application/json;q=META.json
+
 =cut

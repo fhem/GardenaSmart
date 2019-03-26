@@ -58,7 +58,7 @@ package main;
 use strict;
 use warnings;
 
-my $version = "1.4.2";
+my $version = "1.6.0";
 
 
 sub GardenaSmartBridge_Initialize($) {
@@ -92,6 +92,8 @@ sub GardenaSmartBridge_Initialize($) {
         my $hash = $modules{GardenaSmartBridge}{defptr}{$d};
         $hash->{VERSION} = $version;
     }
+    
+    return FHEM::Meta::InitMod( __FILE__, $hash );
 }
 
 package FHEM::GardenaSmartBridge;
@@ -145,6 +147,7 @@ sub Define($$) {
 
     my @a = split( "[ \t][ \t]*", $def );
 
+    return $@ unless ( FHEM::Meta::SetInternals($hash) );
     return "too few parameters: define <NAME> GardenaSmartBridge"
       if ( @a != 2 );
     return
@@ -1143,11 +1146,58 @@ sub DeletePassword($) {
   <b>Attribute</b>
   <ul>
     <li>debugJSON - JSON Fehlermeldungen</li>
-    <li>disable - Schaltet die Daten&uuml;bertragung der Bridge ab</li>
+    <li>disable - Schaltet die Datenübertragung der Bridge ab</li>
     <li>interval - Abfrageinterval in Sekunden (default: 300)</li>
     <li>gardenaAccountEmail - Email Adresse, die auch in der GardenaApp verwendet wurde</li>
   </ul>
 </ul>
 
 =end html_DE
+
+=for :application/json;q=META.json 73_GardenaSmartBridge.pm
+{
+  "abstract": "Modul to communicate with the GardenaCloud",
+  "x_lang": {
+    "de": {
+      "abstract": "Modul zur Datenübertragung zur GardenaCloud"
+    }
+  },
+  "keywords": [
+    "fhem-mod-device",
+    "fhem-core",
+    "Garden",
+    "Gardena",
+    "Smart"
+  ],
+  "release_status": "stable",
+  "license": "GPL_2",
+  "author": [
+    "Marko Oldenburg <leongaultier@gmail.com>"
+  ],
+  "x_fhem_maintainer": [
+    "CoolTux"
+  ],
+  "x_fhem_maintainer_github": [
+    "LeonGaultier"
+  ],
+  "prereqs": {
+    "runtime": {
+      "requires": {
+        "FHEM": 5.00918799,
+        "perl": 5.016, 
+        "Meta": 0,
+        "IO::Socket::SSL": 0,
+        "JSON": 0,
+        "HttpUtils": 0,
+        "Encode": 0
+      },
+      "recommends": {
+      },
+      "suggests": {
+      }
+    }
+  }
+}
+=end :application/json;q=META.json
+
 =cut
