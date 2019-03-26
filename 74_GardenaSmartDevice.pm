@@ -311,7 +311,7 @@ sub Set($@) {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
         $list .= 'refresh:temperature,light,humidity'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
-        $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,180'
+        $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,3600'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
 
         return "Unknown argument $cmd, choose one of $list";

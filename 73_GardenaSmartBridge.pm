@@ -155,7 +155,7 @@ sub Define($$) {
     $hash->{BRIDGE}    = 1;
     $hash->{URL}       = 'https://sg-api.dss.husqvarnagroup.net/sg-1';
     $hash->{VERSION}   = $version;
-    $hash->{INTERVAL}  = 300;
+    $hash->{INTERVAL}  = 60;
     $hash->{NOTIFYDEV} = "global,$name";
 
     CommandAttr( undef, $name . ' room GardenaSmart' )
@@ -234,9 +234,9 @@ sub Attr(@) {
 
         elsif ( $cmd eq "del" ) {
             RemoveInternalTimer($hash);
-            $hash->{INTERVAL} = 300;
+            $hash->{INTERVAL} = 60;
             Log3 $name, 3,
-"GardenaSmartBridge ($name) - delete User interval and set default: 300";
+"GardenaSmartBridge ($name) - delete User interval and set default: 60";
         }
     }
 
@@ -1082,7 +1082,7 @@ sub DeletePassword($) {
   <ul>
     <li>debugJSON - </li>
     <li>disable - Disables the Bridge</li>
-    <li>interval - Interval in seconds (Default=300)</li>
+    <li>interval - Interval in seconds (Default=60)</li>
     <li>gardenaAccountEmail - Email Adresse which was used in the GardenaAPP</li>
   </ul>
 </ul>
