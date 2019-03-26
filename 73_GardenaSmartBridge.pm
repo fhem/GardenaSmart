@@ -58,7 +58,7 @@ package main;
 use strict;
 use warnings;
 
-my $version = "1.4.1";
+my $version = "1.4.2";
 
 
 sub GardenaSmartBridge_Initialize($) {
@@ -470,7 +470,7 @@ sub ErrorHandling($$$) {
 
             readingsBulkUpdate( $dhash, "state", "the command is processed",
                 1 );
-            InternalTimer( gettimeofday() + 5, "GardenaSmartBridge::getDevices", $hash, 1 );
+            InternalTimer( gettimeofday() + 5, "FHEM::GardenaSmartBridge::getDevices", $hash, 1 );
 
         }
         elsif ( $param->{code} != 200 ) {

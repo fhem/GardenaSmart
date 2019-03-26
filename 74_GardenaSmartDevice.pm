@@ -58,7 +58,7 @@ package main;
 use strict;
 use warnings;
 
-my $version = "1.4.1";
+my $version = "1.4.2";
 
 sub GardenaSmartDevice_Initialize($) {
 
@@ -557,6 +557,14 @@ sub WriteReadings($$) {
             )
           )
     ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+    
+    readingsBulkUpdate(
+        $hash, 'state',
+        ReadingsVal(
+                $name, 'power-power_timer',
+                'no info from power-timer'
+            )
+    ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
 
     readingsEndUpdate( $hash, 1 );
 
