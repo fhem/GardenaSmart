@@ -386,10 +386,10 @@ sub Write($@) {
         }
     );
 
-    Log3 $name, 4,
-"GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method";
-#     Log3 $name, 3,
-# "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method";
+#     Log3($name, 4,
+#         "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method");
+    Log3($name, 3,
+        "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
 }
 
 sub ErrorHandling($$$) {
@@ -985,6 +985,21 @@ sub createHttpValueStrings($@) {
               . $abilities
               . '/properties/watering_timer_'
               . $valve_id;
+
+        }
+        elsif ( defined($abilities)
+            and defined($payload)
+            and $abilities eq 'manual_watering' )
+        {
+            my $valve_id;
+            $method = 'PUT';
+
+            $uri .=
+                '/devices/'
+              . $deviceId
+              . '/abilities/'
+              . $abilities
+              . '/properties/manual_watering_timer';
 
         }
         elsif ( defined($abilities)
