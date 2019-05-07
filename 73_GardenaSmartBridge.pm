@@ -497,14 +497,12 @@ sub ErrorHandling($$$) {
         return;
     }
 
-    if ( defined($param)
-        and $param
+    if ( defined($data)
+        and $data
         (
             ( $data =~ /Error/ )
             or defined( eval { decode_json($data) }->{errors} )
         )
-        and ref($param->{code}) eq 'HASH'
-        and exists( $param->{code} )
       )
     {
         readingsBeginUpdate($dhash);
