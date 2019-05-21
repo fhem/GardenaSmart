@@ -59,7 +59,7 @@ use strict;
 use warnings;
 use FHEM::Meta;
 
-my $version = "1.6.1";
+my $version = "1.6.2";
 
 sub GardenaSmartDevice_Initialize($) {
 
@@ -367,7 +367,7 @@ sub Parse($$) {
     my $decode_json = eval { decode_json($json) };
     if ($@) {
         Log3 $name, 3,
-          "GardenaSmartBridge ($name) - JSON error while request: $@";
+          "GardenaSmartDevice ($name) - JSON error while request: $@";
     }
 
     Log3 $name, 4, "GardenaSmartDevice ($name) - ParseFn was called";
