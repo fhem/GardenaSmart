@@ -59,7 +59,7 @@ use strict;
 use warnings;
 use FHEM::Meta;
 
-my $version = "1.6.4";
+my $version = '1.6.4.1';
 
 
 sub GardenaSmartBridge_Initialize($) {
@@ -67,25 +67,26 @@ sub GardenaSmartBridge_Initialize($) {
     my ($hash) = @_;
 
     # Provider
-    $hash->{WriteFn}   = "FHEM::GardenaSmartBridge::Write";
-    $hash->{Clients}   = ":GardenaSmartDevice:";
-    $hash->{MatchList} = { "1:GardenaSmartDevice" => '^{"id":".*' };
+    $hash->{WriteFn}   = 'FHEM::GardenaSmartBridge::Write';
+    $hash->{Clients}   = ':GardenaSmartDevice:';
+    $hash->{MatchList} = { '1:GardenaSmartDevice' => '^{"id":".*' };
 
     # Consumer
-    $hash->{SetFn}    = "FHEM::GardenaSmartBridge::Set";
-    $hash->{DefFn}    = "FHEM::GardenaSmartBridge::Define";
-    $hash->{UndefFn}  = "FHEM::GardenaSmartBridge::Undef";
-    $hash->{DeleteFn} = "FHEM::GardenaSmartBridge::Delete";
-    $hash->{RenameFn} = "FHEM::GardenaSmartBridge::Rename";
-    $hash->{NotifyFn} = "FHEM::GardenaSmartBridge::Notify";
+    $hash->{SetFn}    = 'FHEM::GardenaSmartBridge::Set';
+    $hash->{DefFn}    = 'FHEM::GardenaSmartBridge::Define';
+    $hash->{UndefFn}  = 'FHEM::GardenaSmartBridge::Undef';
+    $hash->{DeleteFn} = 'FHEM::GardenaSmartBridge::Delete';
+    $hash->{RenameFn} = 'FHEM::GardenaSmartBridge::Rename';
+    $hash->{NotifyFn} = 'FHEM::GardenaSmartBridge::Notify';
 
-    $hash->{AttrFn} = "FHEM::GardenaSmartBridge::Attr";
+    $hash->{AttrFn} = 'FHEM::GardenaSmartBridge::Attr';
     $hash->{AttrList} =
-        "debugJSON:0,1 "
-      . "disable:1 "
-      . "interval "
-      . "disabledForIntervals "
-      . "gardenaAccountEmail "
+        'debugJSON:0,1 '
+      . 'disable:1 '
+      . 'interval '
+      . 'disabledForIntervals '
+      . 'gardenaAccountEmail '
+      . 'gardenaBaseURL '
       . $readingFnAttributes;
 
     foreach my $d ( sort keys %{ $modules{GardenaSmartBridge}{defptr} } ) {
@@ -101,7 +102,7 @@ package FHEM::GardenaSmartBridge;
 use GPUtils qw(GP_Import)
   ;    # wird für den Import der FHEM Funktionen aus der fhem.pl benötigt
 
-my $missingModul = "";
+my $missingModul = '';
 
 use strict;
 use warnings;
@@ -112,8 +113,8 @@ use HttpUtils;
 
 eval "use Encode qw(encode encode_utf8 decode_utf8);1"
   or $missingModul .= "Encode ";
-eval "use JSON;1"            or $missingModul .= "JSON ";
-eval "use IO::Socket::SSL;1" or $missingModul .= "IO::Socket::SSL ";
+eval "use JSON;1"            or $missingModul .= 'JSON ';
+eval "use IO::Socket::SSL;1" or $missingModul .= 'IO::Socket::SSL ';
 
 BEGIN {
     GP_Import(
@@ -147,18 +148,18 @@ sub Define($$) {
 
     my ( $hash, $def ) = @_;
 
-    my @a = split( "[ \t][ \t]*", $def );
+    my @a = split( '[ \t][ \t]*', $def );
 
     return $@ unless ( FHEM::Meta::SetInternals($hash) );
-    return "too few parameters: define <NAME> GardenaSmartBridge"
+    return 'too few parameters: define <NAME> GardenaSmartBridge'
       if ( @a != 2 );
     return
-"Cannot define Gardena Bridge device. Perl modul ${missingModul}is missing."
+'Cannot define Gardena Bridge device. Perl modul ' . ${missingModul} . ' is missing.'
       if ($missingModul);
 
     my $name = $a[0];
     $hash->{BRIDGE}    = 1;
-    $hash->{URL}       = 'https://sg-api.dss.husqvarnagroup.net/sg-1';
+    $hash->{URL}       = AttrVal($name,'gardenaBaseURL','https://sg-api.dss.husqvarnagroup.net') . '/sg-1';
     $hash->{VERSION}   = $version;
     $hash->{INTERVAL}  = 60;
     $hash->{NOTIFYDEV} = "global,$name";
@@ -191,7 +192,7 @@ sub Delete($$) {
 
     my ( $hash, $name ) = @_;
 
-    setKeyValue( $hash->{TYPE} . "_" . $name . "_passwd", undef );
+    setKeyValue( $hash->{TYPE} . '_' . $name . '_passwd', undef );
     return undef;
 }
 
@@ -200,48 +201,53 @@ sub Attr(@) {
     my ( $cmd, $name, $attrName, $attrVal ) = @_;
     my $hash = $defs{$name};
 
-    if ( $attrName eq "disable" ) {
-        if ( $cmd eq "set" and $attrVal eq "1" ) {
+    if ( $attrName eq 'disable' ) {
+        if ( $cmd eq 'set' and $attrVal eq '1' ) {
             RemoveInternalTimer($hash);
-            readingsSingleUpdate( $hash, "state", "inactive", 1 );
+            readingsSingleUpdate( $hash, 'state', 'inactive', 1 );
             Log3 $name, 3, "GardenaSmartBridge ($name) - disabled";
         }
-
-        elsif ( $cmd eq "del" ) {
-            readingsSingleUpdate( $hash, "state", "active", 1 );
+        elsif ( $cmd eq 'del' ) {
+            readingsSingleUpdate( $hash, 'state', 'active', 1 );
             Log3 $name, 3, "GardenaSmartBridge ($name) - enabled";
         }
     }
-
-    elsif ( $attrName eq "disabledForIntervals" ) {
-        if ( $cmd eq "set" ) {
+    elsif ( $attrName eq 'disabledForIntervals' ) {
+        if ( $cmd eq 'set' ) {
             return
 "check disabledForIntervals Syntax HH:MM-HH:MM or 'HH:MM-HH:MM HH:MM-HH:MM ...'"
               unless ( $attrVal =~ /^((\d{2}:\d{2})-(\d{2}:\d{2})\s?)+$/ );
             Log3 $name, 3, "GardenaSmartBridge ($name) - disabledForIntervals";
         }
-
-        elsif ( $cmd eq "del" ) {
-            readingsSingleUpdate( $hash, "state", "active", 1 );
+        elsif ( $cmd eq 'del' ) {
+            readingsSingleUpdate( $hash, 'state', 'active', 1 );
             Log3 $name, 3, "GardenaSmartBridge ($name) - enabled";
         }
     }
-
-    elsif ( $attrName eq "interval" ) {
-        if ( $cmd eq "set" ) {
+    elsif ( $attrName eq 'interval' ) {
+        if ( $cmd eq 'set' ) {
             RemoveInternalTimer($hash);
-            return "Interval must be greater than 0"
+            return 'Interval must be greater than 0'
               unless ( $attrVal > 0 );
             $hash->{INTERVAL} = $attrVal;
             Log3 $name, 3,
               "GardenaSmartBridge ($name) - set interval: $attrVal";
         }
-
-        elsif ( $cmd eq "del" ) {
+        elsif ( $cmd eq 'del' ) {
             RemoveInternalTimer($hash);
             $hash->{INTERVAL} = 60;
             Log3 $name, 3,
 "GardenaSmartBridge ($name) - delete User interval and set default: 60";
+        }
+    }
+    elsif ( $attrName eq 'gardenaBaseURL' ) {
+        if ( $cmd eq 'set' ) {
+            $hash->{URL} = $attrVal . '/sg-1';
+            Log3 $name, 3,
+              "GardenaSmartBridge ($name) - set gardenaBaseURL to: $attrVal";
+        }
+        elsif ( $cmd eq 'del' ) {
+            $hash->{URL} = 'https://sg-api.dss.husqvarnagroup.net/sg-1';
         }
     }
 
