@@ -753,8 +753,8 @@ sub WriteReadings($$) {
                 scalar( @{ $decode_json->{zones} } ) );
         }
         elsif ( $decode_json->{id} ne $hash->{helper}{locations_id}
-            and ref($decode_json->{abilities}) eq 'ARRAY'
-            and ref($decode_json->{abilities}[0]{properties}) eq 'ARRAY' )
+            and ref( $decode_json->{abilities} ) eq 'ARRAY'
+            and ref( $decode_json->{abilities}[0]{properties} ) eq 'ARRAY' )
         {
             my $properties =
               scalar( @{ $decode_json->{abilities}[0]{properties} } );
