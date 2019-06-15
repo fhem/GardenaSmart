@@ -59,7 +59,7 @@ use strict;
 use warnings;
 use FHEM::Meta;
 
-my $version = '1.6.5.3';
+my $version = '1.6.6';
 
 sub GardenaSmartBridge_Initialize($) {
 
