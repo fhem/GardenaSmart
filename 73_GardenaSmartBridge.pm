@@ -68,6 +68,7 @@ our $VERSION = '1.6.7';
 my $missingModul = '';
 eval "use Encode qw(encode encode_utf8 decode_utf8);1"
   or $missingModul .= "Encode ";
+
 # eval "use JSON;1"            or $missingModul .= 'JSON ';
 eval "use IO::Socket::SSL;1" or $missingModul .= 'IO::Socket::SSL ';
 
