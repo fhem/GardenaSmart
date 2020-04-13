@@ -680,7 +680,7 @@ sub ReadingLangGerman($$) {
         'paused'               => 'pausiert',
         'ok_searching'         => 'suche Ladestation',
         'ok_charging'          => 'lädt',
-        'ok_leaving'           => 'mähen',
+        'ok_leaving'           => 'unterwegs zum Startpunkt',
         'wait_updating'        => 'wird aktualisiert ...',
         'wait_power_up'        => 'wird eingeschaltet ...',
         'parked_timer'         => 'geparkt nach Zeitplan',
