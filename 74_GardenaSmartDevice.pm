@@ -339,20 +339,28 @@ sub Set($@) {
     ### watering_computer
     elsif ( lc $cmd eq 'manualoverride' ) {
 
-        my $duration = join( " ", @args );
+        my $duration = join(' ', @args);
         $payload =
             '"properties":{"name":"watering_timer_1'
           . '","value":{"state":"manual","duration":'
           . $duration * 60
           . ',"valve_id":1}}';
     }
-    elsif ( lc $cmd eq 'canceloverride' ) {
+    elsif ( $cmd =~ m{\AcancelOverrideValve\d\z}xms ) {
+
+        my $valve_id = 1;
+
+        if ( $cmd =~ m{\AcancelOverrideValve(\d)\z}xms ) {
+            $valve_id = $1;
+        }
 
         $payload =
-            '"properties":{"name":"watering_timer_1'
+            '"properties":{"name":"watering_timer_'
+          . $valve_id
           . '","value":{"state":"idle","duration":'
           . 0
-          . ',"valve_id":1}}';
+          . ',"valve_id":'
+          . $valve_id . '}}';
     }
     elsif ( lc $cmd eq 'on' or lc $cmd eq 'off' or lc $cmd eq 'on-for-timer' ) {
 
@@ -360,12 +368,12 @@ sub Set($@) {
         $payload = '"properties":{"value":"' . $val . '"}';
     }
     ### Watering ic24
-    elsif ( $cmd =~ /manualDurationValve/ ) {
+    elsif ( $cmd =~ m{\AmanualDurationValve\d\z}xms ) {
 
         my $valve_id;
         my $duration = join( " ", @args );
 
-        if ( $cmd =~ m#(\d)$# ) {
+        if ( $cmd =~ m{\AmanualDurationValve(\d)\z}xms ) {
             $valve_id = $1;
         }
 
@@ -405,7 +413,7 @@ sub Set($@) {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
         $list .=
-'manualDurationValve1:slider,1,1,59 manualDurationValve2:slider,1,1,59 manualDurationValve3:slider,1,1,59 manualDurationValve4:slider,1,1,59 manualDurationValve5:slider,1,1,59 manualDurationValve6:slider,1,1,59'
+'manualDurationValve1:slider,1,1,59 manualDurationValve2:slider,1,1,59 manualDurationValve3:slider,1,1,59 manualDurationValve4:slider,1,1,59 manualDurationValve5:slider,1,1,59 manualDurationValve6:slider,1,1,59 cancelOverrideValve1:noArg cancelOverrideValve2:noArg cancelOverrideValve3:noArg cancelOverrideValve4:noArg cancelOverrideValve5:noArg cancelOverrideValve6:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         $list .= 'refresh:temperature,light,humidity'
