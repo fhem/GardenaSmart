@@ -340,14 +340,19 @@ sub Set($@) {
     elsif ( lc $cmd eq 'manualoverride' ) {
 
         my $duration = join( " ", @args );
-        $payload = '"name":"manual_override","parameters":{"duration":'
-          . $duration . '}';
-
+        $payload =
+            '"properties":{"name":"watering_timer_1'
+          . '","value":{"state":"manual","duration":'
+          . $duration * 60
+          . ',"valve_id":1}}';
     }
     elsif ( lc $cmd eq 'canceloverride' ) {
 
-        $payload = '"name":"cancel_override"';
-
+        $payload =
+            '"properties":{"name":"watering_timer_1'
+          . '","value":{"state":"idle","duration":'
+          . 0
+          . ',"valve_id":1}}';
     }
     elsif ( lc $cmd eq 'on' or lc $cmd eq 'off' or lc $cmd eq 'on-for-timer' ) {
 
