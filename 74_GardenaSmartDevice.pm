@@ -346,7 +346,7 @@ sub Set($@) {
           . $duration * 60
           . ',"valve_id":1}}';
     }
-    elsif ( $cmd =~ m{\AcancelOverrideValve\d\z}xms ) {
+    elsif ( $cmd =~ m{\AcancelOverride}xms ) {
 
         my $valve_id = 1;
 
