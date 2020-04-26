@@ -400,11 +400,13 @@ sub Set($@) {
     else {
 
         my $list = '';
+        
+        $list .= 'manualOverride:slider,1,1,59 cancelOverride:noArg'
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
         $list .=
 'manualDurationValve1:slider,1,1,59 manualDurationValve2:slider,1,1,59 manualDurationValve3:slider,1,1,59 manualDurationValve4:slider,1,1,59 manualDurationValve5:slider,1,1,59 manualDurationValve6:slider,1,1,59'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
-            || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         $list .= 'refresh:temperature,light,humidity'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
