@@ -635,9 +635,10 @@ sub WriteReadings($$) {
     readingsBulkUpdate(
         $hash, 'state',
         (
-              ReadingsVal( $name, 'outlet-valve_open', 0 ) == 1
-            ? RigRadingsValue( $hash, 'open' )
-            : RigRadingsValue( $hash, 'closed' )
+              ReadingsVal( $name, 'watering-watering_timer_1_state', 0 )
+                eq 'idle'
+            ? RigRadingsValue( $hash, 'closed' )
+            : RigRadingsValue( $hash, 'open' )
         )
     ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
