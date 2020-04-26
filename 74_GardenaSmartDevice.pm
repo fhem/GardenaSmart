@@ -66,7 +66,7 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 use Time::Local;
-our $VERSION = '1.6.7';
+our $VERSION = '2.0.0';
 
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
@@ -395,19 +395,11 @@ sub Set($@) {
     else {
 
         my $list = '';
-        $list .=
-'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,1,60 startpoint'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
-
-        $list .= 'manualOverride:slider,0,1,59 cancelOverride:noArg'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
-
-#         $list .= 'pumpTimer:slider,0,1,59'
-#           if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
 
         $list .=
 'manualDurationValve1:slider,1,1,59 manualDurationValve2:slider,1,1,59 manualDurationValve3:slider,1,1,59 manualDurationValve4:slider,1,1,59 manualDurationValve5:slider,1,1,59 manualDurationValve6:slider,1,1,59'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
+            || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
         $list .= 'refresh:temperature,light,humidity'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
@@ -421,10 +413,9 @@ sub Set($@) {
     $abilities = 'mower'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' )
       and $abilities ne 'mower_settings';
-    $abilities = 'outlet'
-      if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
     $abilities = 'watering'
-      if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+      if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
+        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
     $abilities = 'power'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
     $abilities = 'manual_watering'

@@ -63,7 +63,7 @@ use POSIX;
 use FHEM::Meta;
 
 use HttpUtils;
-our $VERSION = '1.6.9';
+our $VERSION = '2.0.0';
 
 my $missingModul = '';
 eval "use Encode qw(encode encode_utf8 decode_utf8);1"
