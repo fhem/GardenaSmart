@@ -55,9 +55,7 @@
 
 ## unserer packagename
 package FHEM::GardenaSmartDevice;
-
-use GPUtils qw(GP_Import)
-  ;    # wird für den Import der FHEM Funktionen aus der fhem.pl benötigt
+use GPUtils qw(GP_Import GP_Export);
 
 my $missingModul = "";
 
@@ -66,7 +64,6 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 use Time::Local;
-our $VERSION = '2.0.0';
 
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
@@ -163,70 +160,54 @@ BEGIN {
     );
 }
 
-# _Export - Export references to main context using a different naming schema
-sub _Export {
-    no strict qw/refs/;    ## no critic
-    my $pkg  = caller(0);
-    my $main = $pkg;
-    $main =~ s/^(?:.+::)?([^:]+)$/main::$1\_/g;
-    foreach (@_) {
-        *{ $main . $_ } = *{ $pkg . '::' . $_ };
-    }
-}
-
 #-- Export to main context with different name
-_Export(
+GP_Export(
     qw(
       Initialize
       )
 );
 
-sub Initialize($) {
-
-    my ($hash) = @_;
+sub Initialize {
+    my $hash = shift;
 
     $hash->{Match} = '^{"id":".*';
 
-    $hash->{SetFn}   = "FHEM::GardenaSmartDevice::Set";
-    $hash->{DefFn}   = "FHEM::GardenaSmartDevice::Define";
-    $hash->{UndefFn} = "FHEM::GardenaSmartDevice::Undef";
-    $hash->{ParseFn} = "FHEM::GardenaSmartDevice::Parse";
+    $hash->{SetFn}   = \&Set;
+    $hash->{DefFn}   = \&Define;
+    $hash->{UndefFn} = \&Undef;
+    $hash->{ParseFn} = \&Parse;
 
-    $hash->{AttrFn} = "FHEM::GardenaSmartDevice::Attr";
+    $hash->{AttrFn} = \&Attr;
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
       . "model:watering_computer,sensor,mower,ic24,power,electronic_pressure_pump "
       . "IODev "
       . $readingFnAttributes;
-
-    foreach my $d ( sort keys %{ $modules{GardenaSmartDevice}{defptr} } ) {
-
-        my $hash = $modules{GardenaSmartDevice}{defptr}{$d};
-        $hash->{VERSION} = $VERSION;
-    }
+    $hash->{parseParams} = 1;
 
     return FHEM::Meta::InitMod( __FILE__, $hash );
 }
 
-sub Define($$) {
-
-    my ( $hash, $def ) = @_;
-    my @a = split( "[ \t]+", $def );
+sub Define {
+    my $hash = shift;
+    my $a    = shift;
 
     return $@ unless ( FHEM::Meta::SetInternals($hash) );
+    use version 0.60; our $VERSION = FHEM::Meta::Get( $hash, 'version' );
+
     return
       "too few parameters: define <NAME> GardenaSmartDevice <device_Id> <model>"
-      if ( @a < 3 );
+      if ( scalar( @{$a} ) < 3 );
     return
 "Cannot define Gardena Bridge device. Perl modul $missingModul is missing."
       if ($missingModul);
 
-    my $name     = $a[0];
-    my $deviceId = $a[2];
-    my $category = $a[3];
+    my $name     = $a->[0];
+    my $deviceId = $a->[2];
+    my $category = $a->[3];
 
     $hash->{DEVICEID}                = $deviceId;
-    $hash->{VERSION}                 = $VERSION;
+    $hash->{VERSION}                 = version->parse($VERSION)->normal;
     $hash->{helper}{STARTINGPOINTID} = '';
 
     CommandAttr( undef,
@@ -267,83 +248,75 @@ sub Define($$) {
 
     $modules{GardenaSmartDevice}{defptr}{$deviceId} = $hash;
 
-    return undef;
+    return;
 }
 
-sub Undef($$) {
+sub Undef {
+    my $hash = shift;
+    my $arg  = shift;
 
-    my ( $hash, $arg ) = @_;
     my $name     = $hash->{NAME};
     my $deviceId = $hash->{DEVICEID};
 
     delete $modules{GardenaSmartDevice}{defptr}{$deviceId};
 
-    return undef;
+    return;
 }
 
-sub Attr(@) {
+sub Attr {
 
     my ( $cmd, $name, $attrName, $attrVal ) = @_;
     my $hash = $defs{$name};
 
-    return undef;
+    return;
 }
 
-sub Set($@) {
+sub Set {
+    my $hash = shift;
+    my $a    = shift;
 
-    my ( $hash, $name, $cmd, @args ) = @_;
+    my $name = shift @$a;
+    my $cmd  = shift @$a // return qq{"set $name" needs at least one argument};
 
     my $payload;
     my $abilities = '';
 
     ### mower
     if ( lc $cmd eq 'parkuntilfurthernotice' ) {
-
         $payload = '"name":"park_until_further_notice"';
-
     }
     elsif ( lc $cmd eq 'parkuntilnexttimer' ) {
-
         $payload = '"name":"park_until_next_timer"';
 
     }
     elsif ( lc $cmd eq 'startresumeschedule' ) {
-
         $payload = '"name":"start_resume_schedule"';
 
     }
     elsif ( lc $cmd eq 'startoverridetimer' ) {
-
-        my $duration = join( " ", @args );
         $payload = '"name":"start_override_timer","parameters":{"duration":'
-          . $duration * 60 . '}';
+          . $a->[0] * 60 . '}';
 
     }
     elsif ( lc $cmd eq 'startpoint' ) {
         my $err;
 
-        ( $err, $payload, $abilities ) =
-          SetPredefinedStartPoints( $hash, @args );
+        ( $err, $payload, $abilities ) = SetPredefinedStartPoints( $hash, @$a );
         return $err if ( defined($err) );
 
     }
     ### electronic_pressure_pump
     elsif ( lc $cmd eq 'pumptimer' ) {
-
-        my $duration = join( " ", @args );
-
         $payload =
           '"name":"pump_manual_watering_timer","parameters":{"duration":'
-          . $duration . '}';
+          . $a->[0] . '}';
     }
     ### watering_computer
     elsif ( lc $cmd eq 'manualoverride' ) {
-
-        my $duration = join(' ', @args);
         $payload =
             '"properties":{"name":"watering_timer_1'
           . '","value":{"state":"manual","duration":'
-          . $duration * 60
+          . $a->[0] * 60
           . ',"valve_id":1}}';
     }
     elsif ( $cmd =~ m{\AcancelOverride}xms ) {
@@ -363,15 +336,17 @@ sub Set($@) {
           . $valve_id . '}}';
     }
     elsif ( lc $cmd eq 'on' or lc $cmd eq 'off' or lc $cmd eq 'on-for-timer' ) {
+        my $val = (
+            defined($a) and ref($a) eq 'ARRAY'
+            ? $a->[0] * 60
+            : lc $cmd
+        );
 
-        my $val = ( defined( $args[0] ) ? join( " ", @args ) * 60 : lc $cmd );
         $payload = '"properties":{"value":"' . $val . '"}';
     }
     ### Watering ic24
     elsif ( $cmd =~ m{\AmanualDurationValve\d\z}xms ) {
-
         my $valve_id;
-        my $duration = join( " ", @args );
 
         if ( $cmd =~ m{\AmanualDurationValve(\d)\z}xms ) {
             $valve_id = $1;
@@ -381,14 +356,14 @@ sub Set($@) {
             '"properties":{"name":"watering_timer_'
           . $valve_id
           . '","value":{"state":"manual","duration":'
-          . $duration * 60
+          . $a->[0] * 60
           . ',"valve_id":'
           . $valve_id . '}}';
     }
     ### Sensors
     elsif ( lc $cmd eq 'refresh' ) {
 
-        my $sensname = join( " ", @args );
+        my $sensname = $a->[0];
         if ( lc $sensname eq 'temperature' ) {
             $payload   = '"name":"measure_ambient_temperature"';
             $abilities = 'ambient_temperature';
@@ -408,7 +383,7 @@ sub Set($@) {
     else {
 
         my $list = '';
-        
+
         $list .= 'manualOverride:slider,1,1,59 cancelOverride:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
@@ -443,12 +418,12 @@ sub Set($@) {
     Log3 $name, 4,
 "GardenaSmartBridge ($name) - IOWrite: $payload $hash->{DEVICEID} $abilities IODevHash=$hash->{IODev}";
 
-    return undef;
+    return;
 }
 
-sub Parse($$) {
-
-    my ( $io_hash, $json ) = @_;
+sub Parse {
+    my $io_hash = shift;
+    my $json    = shift;
 
     my $name = $io_hash->{NAME};
 
@@ -487,11 +462,13 @@ sub Parse($$) {
               . " GardenaSmartDevice $decode_json->{id} $decode_json->{category}";
         }
     }
+
+    return;
 }
 
-sub WriteReadings($$) {
-
-    my ( $hash, $decode_json ) = @_;
+sub WriteReadings {
+    my $hash        = shift;
+    my $decode_json = shift;
 
     my $name      = $hash->{NAME};
     my $abilities = scalar( @{ $decode_json->{abilities} } );
@@ -635,8 +612,7 @@ sub WriteReadings($$) {
     readingsBulkUpdate(
         $hash, 'state',
         (
-              ReadingsVal( $name, 'watering-watering_timer_1_state', 0 )
-                eq 'idle'
+            ReadingsVal( $name, 'watering-watering_timer_1_state', 0 ) eq 'idle'
             ? RigRadingsValue( $hash, 'closed' )
             : RigRadingsValue( $hash, 'open' )
         )
@@ -671,17 +647,19 @@ sub WriteReadings($$) {
     readingsEndUpdate( $hash, 1 );
 
     Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written}";
+
+    return;
 }
 
 ##################################
 ##################################
 #### my little helpers ###########
 
-sub ReadingLangGerman($$) {
+sub ReadingLangGerman {
+    my $hash         = shift;
+    my $readingValue = shift;
 
-    my ( $hash, $readingValue ) = @_;
-    my $name = $hash->{NAME};
-
+    my $name           = $hash->{NAME};
     my %langGermanMapp = (
         'ok_cutting'           => 'mähen',
         'paused'               => 'pausiert',
@@ -794,11 +772,13 @@ sub ReadingLangGerman($$) {
     else {
         return $readingValue;
     }
+
+    return;
 }
 
-sub RigRadingsValue($$) {
-
-    my ( $hash, $readingValue ) = @_;
+sub RigRadingsValue {
+    my $hash         = shift;
+    my $readingValue = shift;
 
     my $rigReadingValue;
 
@@ -812,9 +792,9 @@ sub RigRadingsValue($$) {
     return $rigReadingValue;
 }
 
-sub Zulu2LocalString($) {
-
+sub Zulu2LocalString {
     my $t = shift;
+
     my ( $datehour, $datemin, $rest ) = split( /:/, $t, 3 );
 
     my ( $year, $month, $day, $hour, $min ) =
@@ -847,11 +827,16 @@ sub Zulu2LocalString($) {
             )
         );
     }
+
+    return;
 }
 
-sub SetPredefinedStartPoints($@) {
+sub SetPredefinedStartPoints {
+    my $hash = shift;
+    my $a    = shift;
 
-    my ( $hash, $startpoint_state, $startpoint_num, @morestartpoints ) = @_;
+    my ( $startpoint_state, $startpoint_num, @morestartpoints ) = @$a;
+
     my $name = $hash->{NAME};
     my $payload;
     my $abilities;
@@ -1228,6 +1213,7 @@ sub SetPredefinedStartPoints($@) {
   ],
   "release_status": "stable",
   "license": "GPL_2",
+  "version": "v2.0.0",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],

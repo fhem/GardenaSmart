@@ -54,8 +54,9 @@
 ##
 
 package FHEM::GardenaSmartBridge;
-use GPUtils qw(GP_Import)
-  ;    # wird für den Import der FHEM Funktionen aus der fhem.pl benötigt
+use GPUtils qw(GP_Import GP_Export);
+
+# use Data::Dumper;    #only for Debugging
 
 use strict;
 use warnings;
@@ -63,7 +64,6 @@ use POSIX;
 use FHEM::Meta;
 
 use HttpUtils;
-our $VERSION = '2.0.0';
 
 my $missingModul = '';
 eval "use Encode qw(encode encode_utf8 decode_utf8);1"
@@ -176,42 +176,30 @@ BEGIN {
     );
 }
 
-# _Export - Export references to main context using a different naming schema
-sub _Export {
-    no strict qw/refs/;    ## no critic
-    my $pkg  = caller(0);
-    my $main = $pkg;
-    $main =~ s/^(?:.+::)?([^:]+)$/main::$1\_/g;
-    foreach (@_) {
-        *{ $main . $_ } = *{ $pkg . '::' . $_ };
-    }
-}
-
 #-- Export to main context with different name
-_Export(
+GP_Export(
     qw(
       Initialize
       )
 );
 
-sub Initialize($) {
-
-    my ($hash) = @_;
+sub Initialize {
+    my $hash = shift;
 
     # Provider
-    $hash->{WriteFn}   = 'FHEM::GardenaSmartBridge::Write';
+    $hash->{WriteFn}   = \&Write;
     $hash->{Clients}   = ':GardenaSmartDevice:';
     $hash->{MatchList} = { '1:GardenaSmartDevice' => '^{"id":".*' };
 
     # Consumer
-    $hash->{SetFn}    = 'FHEM::GardenaSmartBridge::Set';
-    $hash->{DefFn}    = 'FHEM::GardenaSmartBridge::Define';
-    $hash->{UndefFn}  = 'FHEM::GardenaSmartBridge::Undef';
-    $hash->{DeleteFn} = 'FHEM::GardenaSmartBridge::Delete';
-    $hash->{RenameFn} = 'FHEM::GardenaSmartBridge::Rename';
-    $hash->{NotifyFn} = 'FHEM::GardenaSmartBridge::Notify';
+    $hash->{SetFn}    = \&Set;
+    $hash->{DefFn}    = \&Define;
+    $hash->{UndefFn}  = \&Undef;
+    $hash->{DeleteFn} = \&Delete;
+    $hash->{RenameFn} = \&Rename;
+    $hash->{NotifyFn} = \&Notify;
 
-    $hash->{AttrFn} = 'FHEM::GardenaSmartBridge::Attr';
+    $hash->{AttrFn} = \&Attr;
     $hash->{AttrList} =
         'debugJSON:0,1 '
       . 'disable:1 '
@@ -220,38 +208,33 @@ sub Initialize($) {
       . 'gardenaAccountEmail '
       . 'gardenaBaseURL '
       . $readingFnAttributes;
-
-    foreach my $d ( sort keys %{ $modules{GardenaSmartBridge}{defptr} } ) {
-
-        my $hash = $modules{GardenaSmartBridge}{defptr}{$d};
-        $hash->{VERSION} = $VERSION;
-    }
+    $hash->{parseParams} = 1;
 
     return FHEM::Meta::InitMod( __FILE__, $hash );
 }
 
-sub Define($$) {
-
-    my ( $hash, $def ) = @_;
-
-    my @a = split( '[ \t][ \t]*', $def );
+sub Define {
+    my $hash = shift;
+    my $a    = shift;
 
     return $@ unless ( FHEM::Meta::SetInternals($hash) );
+    use version 0.60; our $VERSION = FHEM::Meta::Get( $hash, 'version' );
+
     return 'too few parameters: define <NAME> GardenaSmartBridge'
-      if ( @a != 2 );
+      if ( scalar( @{$a} ) != 2 );
     return
         'Cannot define Gardena Bridge device. Perl modul '
       . ${missingModul}
       . ' is missing.'
       if ($missingModul);
 
-    my $name = $a[0];
+    my $name = shift @$a;
     $hash->{BRIDGE} = 1;
     $hash->{URL} =
       AttrVal( $name, 'gardenaBaseURL',
         'https://sg-api.dss.husqvarnagroup.net' )
       . '/sg-1';
-    $hash->{VERSION}   = $VERSION;
+    $hash->{VERSION}   = version->parse($VERSION)->normal;
     $hash->{INTERVAL}  = 60;
     $hash->{NOTIFYDEV} = "global,$name";
 
@@ -265,30 +248,29 @@ sub Define($$) {
 
     $modules{GardenaSmartBridge}{defptr}{BRIDGE} = $hash;
 
-    return undef;
+    return;
 }
 
-sub Undef($$) {
-
-    my ( $hash, $name ) = @_;
+sub Undef {
+    my $hash = shift;
+    my $name = shift;
 
     RemoveInternalTimer($hash);
     delete $modules{GardenaSmartBridge}{defptr}{BRIDGE}
       if ( defined( $modules{GardenaSmartBridge}{defptr}{BRIDGE} ) );
 
-    return undef;
+    return;
 }
 
-sub Delete($$) {
-
-    my ( $hash, $name ) = @_;
+sub Delete {
+    my $hash = shift;
+    my $name = shift;
 
     setKeyValue( $hash->{TYPE} . '_' . $name . '_passwd', undef );
-    return undef;
+    return;
 }
 
-sub Attr(@) {
-
+sub Attr {
     my ( $cmd, $name, $attrName, $attrVal ) = @_;
     my $hash = $defs{$name};
 
@@ -342,12 +324,13 @@ sub Attr(@) {
         }
     }
 
-    return undef;
+    return;
 }
 
-sub Notify($$) {
+sub Notify {
+    my $hash = shift;
+    my $dev  = shift;
 
-    my ( $hash, $dev ) = @_;
     my $name = $hash->{NAME};
     return if ( IsDisabled($name) );
 
@@ -411,9 +394,12 @@ sub Notify($$) {
     return;
 }
 
-sub Set($@) {
+sub Set {
+    my $hash = shift;
+    my $a    = shift;
 
-    my ( $hash, $name, $cmd, @args ) = @_;
+    my $name = shift @$a;
+    my $cmd  = shift @$a // return qq{"set $name" needs at least one argument};
 
     if ( lc $cmd eq 'getdevicesstate' ) {
         getDevices($hash);
@@ -423,44 +409,39 @@ sub Set($@) {
         return "please set Attribut gardenaAccountEmail first"
           if ( AttrVal( $name, 'gardenaAccountEmail', 'none' ) eq 'none' );
         return "please set gardenaAccountPassword first"
-          if ( not defined( ReadPassword($hash,$name) ) );
+          if ( not defined( ReadPassword( $hash, $name ) ) );
         return "token is up to date"
           if ( defined( $hash->{helper}{session_id} ) );
 
         getToken($hash);
-
     }
     elsif ( lc $cmd eq 'gardenaaccountpassword' ) {
         return "please set Attribut gardenaAccountEmail first"
           if ( AttrVal( $name, 'gardenaAccountEmail', 'none' ) eq 'none' );
-        return "usage: $cmd <password>" if ( @args != 1 );
+        return "usage: $cmd <password>" if ( scalar( @{$a} ) != 0 );
 
-        my $passwd = join( ' ', @args );
-        StorePassword( $hash, $name, $passwd );
-
+        StorePassword( $hash, $name, $a->[0] );
     }
     elsif ( lc $cmd eq 'deleteaccountpassword' ) {
-        return "usage: $cmd <password>" if ( @args != 0 );
+        return "usage: $cmd <password>" if ( scalar( @{$a} ) != 0 );
 
         DeletePassword($hash);
-
     }
     else {
 
         my $list = "getDevicesState:noArg getToken:noArg"
-          if ( defined( ReadPassword($hash,$name) ) );
+          if ( defined( ReadPassword( $hash, $name ) ) );
         $list .= " gardenaAccountPassword"
-          if ( not defined( ReadPassword($hash,$name) ) );
+          if ( not defined( ReadPassword( $hash, $name ) ) );
         $list .= " deleteAccountPassword:noArg"
-          if ( defined( ReadPassword($hash,$name) ) );
+          if ( defined( ReadPassword( $hash, $name ) ) );
         return "Unknown argument $cmd, choose one of $list";
     }
 
-    return undef;
+    return;
 }
 
-sub Write($@) {
-
+sub Write {
     my ( $hash, $payload, $deviceId, $abilities ) = @_;
     my $name = $hash->{NAME};
 
@@ -489,11 +470,14 @@ sub Write($@) {
 
 #     Log3($name, 3,
 #         "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
+
+    return;
 }
 
-sub ErrorHandling($$$) {
-
-    my ( $param, $err, $data ) = @_;
+sub ErrorHandling {
+    my $param = shift;
+    my $err   = shift;
+    my $data  = shift;
 
     my $hash  = $param->{hash};
     my $name  = $hash->{NAME};
@@ -701,11 +685,13 @@ sub ErrorHandling($$$) {
       if ( defined( $hash->{helper}{locations_id} ) );
     ResponseProcessing( $hash, $data )
       if ( ref($decode_json) eq 'HASH' );
+
+    return;
 }
 
-sub ResponseProcessing($$) {
-
-    my ( $hash, $json ) = @_;
+sub ResponseProcessing {
+    my $hash = shift;
+    my $json = shift;
 
     my $name = $hash->{NAME};
 
@@ -809,11 +795,16 @@ sub ResponseProcessing($$) {
     }
 
     Log3 $name, 3, "GardenaSmartBridge ($name) - no Match for processing data";
+
+    return;
 }
 
-sub WriteReadings($$) {
+sub WriteReadings {
+    my $hash        = shift;
+    my $decode_json = shift;
 
-    my ( $hash, $decode_json ) = @_;
+    #     print Dumper $decode_json;
+
     my $name = $hash->{NAME};
 
     if (    defined( $decode_json->{id} )
@@ -914,15 +905,17 @@ sub WriteReadings($$) {
     }
 
     Log3 $name, 4, "GardenaSmartBridge ($name) - readings would be written";
+
+    return;
 }
 
 ####################################
 ####################################
 #### my little helpers Sub's #######
 
-sub getDevices($) {
-
+sub getDevices {
     my $hash = shift;
+
     my $name = $hash->{NAME};
 
     RemoveInternalTimer($hash);
@@ -938,11 +931,13 @@ sub getDevices($) {
         readingsSingleUpdate( $hash, 'state', 'disabled', 1 );
         Log3 $name, 3, "GardenaSmartBridge ($name) - device is disabled";
     }
+
+    return;
 }
 
-sub getToken($) {
-
+sub getToken {
     my $hash = shift;
+
     my $name = $hash->{NAME};
 
     return readingsSingleUpdate( $hash, 'state',
@@ -950,7 +945,7 @@ sub getToken($) {
       if ( AttrVal( $name, 'gardenaAccountEmail', 'none' ) eq 'none' );
     return readingsSingleUpdate( $hash, 'state',
         'please set gardena account password first', 1 )
-      if ( not defined( ReadPassword($hash,$name) ) );
+      if ( not defined( ReadPassword( $hash, $name ) ) );
     readingsSingleUpdate( $hash, 'state', 'get token', 1 );
 
     delete $hash->{helper}{session_id}
@@ -967,18 +962,22 @@ sub getToken($) {
         '"sessions": {"email": "'
           . AttrVal( $name, 'gardenaAccountEmail', 'none' )
           . '","password": "'
-          . ReadPassword($hash,$name) . '"}',
+          . ReadPassword( $hash, $name ) . '"}',
         undef,
         undef
     );
 
     Log3 $name, 3,
 "GardenaSmartBridge ($name) - send credentials to fetch Token and locationId";
+
+    return;
 }
 
-sub StorePassword($@) {
+sub StorePassword {
+    my $hash     = shift;
+    my $name     = shift;
+    my $password = shift;
 
-    my ( $hash, $name, $password ) = @_;
     my $index   = $hash->{TYPE} . "_" . $name . "_passwd";
     my $key     = getUniqueId() . $index;
     my $enc_pwd = "";
@@ -1002,11 +1001,12 @@ sub StorePassword($@) {
     return "password successfully saved";
 }
 
-sub ReadPassword($$) {
+sub ReadPassword {
+    my $hash = shift;
+    my $name = shift;
 
-    my ( $hash, $name ) = @_;
-    my $index  = $hash->{TYPE} . "_" . $name . "_passwd";
-    my $key    = getUniqueId() . $index;
+    my $index = $hash->{TYPE} . "_" . $name . "_passwd";
+    my $key   = getUniqueId() . $index;
     my ( $password, $err );
 
     Log3 $name, 4, "GardenaSmartBridge ($name) - Read password from file";
@@ -1045,22 +1045,25 @@ sub ReadPassword($$) {
         Log3 $name, 3, "GardenaSmartBridge ($name) - No password in file";
         return undef;
     }
+
+    return;
 }
 
-sub Rename(@) {
+sub Rename {
+    my $new = shift;
+    my $old = shift;
 
-    my ( $new, $old ) = @_;
     my $hash = $defs{$new};
-    
-    StorePassword( $hash, $new, ReadPassword($hash,$old) );
+
+    StorePassword( $hash, $new, ReadPassword( $hash, $old ) );
     setKeyValue( $hash->{TYPE} . "_" . $old . "_passwd", undef );
 
-    return undef;
+    return;
 }
 
-sub ParseJSON($$) {
-
-    my ( $hash, $buffer ) = @_;
+sub ParseJSON {
+    my $hash   = shift;
+    my $buffer = shift;
 
     my $name  = $hash->{NAME};
     my $open  = 0;
@@ -1111,9 +1114,9 @@ sub ParseJSON($$) {
     return ( $msg, $tail );
 }
 
-sub createHttpValueStrings($@) {
-
+sub createHttpValueStrings {
     my ( $hash, $payload, $deviceId, $abilities ) = @_;
+
     my $session_id = $hash->{helper}{session_id};
     my $header     = "Content-Type: application/json";
     my $uri        = '';
@@ -1126,7 +1129,7 @@ sub createHttpValueStrings($@) {
     if ( $payload eq '{}' ) {
         $method = 'GET';
         $uri .= '/locations/?user_id=' . $hash->{helper}{user_id}
-          if (  exists($hash->{helper}{user_id})
+          if ( exists( $hash->{helper}{user_id} )
             and not defined( $hash->{helper}{locations_id} ) );
         readingsSingleUpdate( $hash, 'state', 'fetch locationId', 1 )
           if ( not defined( $hash->{helper}{locations_id} ) );
@@ -1215,13 +1218,12 @@ sub createHttpValueStrings($@) {
         $abilities );
 }
 
-sub DeletePassword($) {
-
+sub DeletePassword {
     my $hash = shift;
 
     setKeyValue( $hash->{TYPE} . "_" . $hash->{NAME} . "_passwd", undef );
 
-    return undef;
+    return;
 }
 
 1;
@@ -1373,6 +1375,7 @@ sub DeletePassword($) {
   ],
   "release_status": "stable",
   "license": "GPL_2",
+  "version": "v2.0.0",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
