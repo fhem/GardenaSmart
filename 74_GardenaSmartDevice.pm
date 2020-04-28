@@ -57,8 +57,6 @@
 package FHEM::GardenaSmartDevice;
 use GPUtils qw(GP_Import GP_Export);
 
-my $missingModul = "";
-
 use strict;
 use warnings;
 use POSIX;
@@ -198,9 +196,6 @@ sub Define {
     return
       "too few parameters: define <NAME> GardenaSmartDevice <device_Id> <model>"
       if ( scalar( @{$a} ) < 3 );
-    return
-"Cannot define Gardena Bridge device. Perl modul $missingModul is missing."
-      if ($missingModul);
 
     my $name     = $a->[0];
     my $deviceId = $a->[2];
@@ -232,9 +227,9 @@ sub Define {
 
     return
 "GardenaSmartDevice device $name on GardenaSmartBridge $iodev already defined."
-      if (  defined($d)
-        and $d->{IODev} == $hash->{IODev}
-        and $d->{NAME} ne $name );
+      if ( defined($d)
+        && $d->{IODev} == $hash->{IODev}
+        && $d->{NAME} ne $name );
 
     CommandAttr( undef, $name . ' room GardenaSmart' )
       if ( AttrVal( $name, 'room', 'none' ) eq 'none' );
@@ -335,9 +330,9 @@ sub Set {
           . ',"valve_id":'
           . $valve_id . '}}';
     }
-    elsif ( lc $cmd eq 'on' or lc $cmd eq 'off' or lc $cmd eq 'on-for-timer' ) {
+    elsif ( lc $cmd eq 'on' || lc $cmd eq 'off' || lc $cmd eq 'on-for-timer' ) {
         my $val = (
-            defined($a) and ref($a) eq 'ARRAY'
+            defined($a) && ref($a) eq 'ARRAY'
             ? $a->[0] * 60
             : lc $cmd
         );
@@ -402,7 +397,7 @@ sub Set {
 
     $abilities = 'mower'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' )
-      and $abilities ne 'mower_settings';
+      && $abilities ne 'mower_settings';
     $abilities = 'watering'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
         || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
@@ -480,11 +475,10 @@ sub WriteReadings {
 
         if (
             ref( $decode_json->{abilities}[$abilities]{properties} ) eq "ARRAY"
-            and
-            scalar( @{ $decode_json->{abilities}[$abilities]{properties} } ) >
-            0 )
+            && scalar( @{ $decode_json->{abilities}[$abilities]{properties} } )
+            > 0 )
         {
-            foreach my $propertie (
+            for my $propertie (
                 @{ $decode_json->{abilities}[$abilities]{properties} } )
             {
                 readingsBulkUpdateIfChanged(
@@ -494,21 +488,21 @@ sub WriteReadings {
                     RigRadingsValue( $hash, $propertie->{value} )
                   )
                   if ( defined( $propertie->{value} )
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'radio-quality'
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'battery-level'
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'internal_temperature-temperature'
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'ambient_temperature-temperature'
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'soil_temperature-temperature'
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'humidity-humidity'
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'light-light'
-                    and ref( $propertie->{value} ) ne "HASH" );
+                    && ref( $propertie->{value} ) ne "HASH" );
 
                 readingsBulkUpdate(
                     $hash,
@@ -518,21 +512,21 @@ sub WriteReadings {
                   )
                   if (
                     defined( $propertie->{value} )
-                    and ( $decode_json->{abilities}[$abilities]{name} . '-'
+                    && (  $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'radio-quality'
-                        or $decode_json->{abilities}[$abilities]{name} . '-'
+                        || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'battery-level'
-                        or $decode_json->{abilities}[$abilities]{name} . '-'
+                        || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq
                         'internal_temperature-temperature'
-                        or $decode_json->{abilities}[$abilities]{name} . '-'
+                        || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq
                         'ambient_temperature-temperature'
-                        or $decode_json->{abilities}[$abilities]{name} . '-'
+                        || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'soil_temperature-temperature'
-                        or $decode_json->{abilities}[$abilities]{name} . '-'
+                        || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'humidity-humidity'
-                        or $decode_json->{abilities}[$abilities]{name} . '-'
+                        || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'light-light' )
                   );
 
@@ -543,7 +537,7 @@ sub WriteReadings {
                     join( ',', @{ $propertie->{value} } )
                   )
                   if ( defined( $propertie->{value} )
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} eq 'ic24-valves_connected' );
 
                 readingsBulkUpdateIfChanged(
@@ -553,7 +547,7 @@ sub WriteReadings {
                     join( ',', @{ $propertie->{value} } )
                   )
                   if ( defined( $propertie->{value} )
-                    and $decode_json->{abilities}[$abilities]{name} . '-'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} eq 'ic24-valves_master_config' );
 
                 if ( ref( $propertie->{value} ) eq "HASH" ) {
@@ -576,7 +570,7 @@ sub WriteReadings {
     do {
 
         if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY"
-            and $decode_json->{settings}[$settings]{name} eq 'starting_points' )
+            && $decode_json->{settings}[$settings]{name} eq 'starting_points' )
         {
             #save the startingpointid needed to update the startingpoints
             if ( $hash->{helper}{STARTINGPOINTID} ne
@@ -591,7 +585,7 @@ sub WriteReadings {
               . encode_json( $decode_json->{settings}[$settings]{value} ) . '}';
             my $startpoint_cnt = 0;
 
-            foreach my $startingpoint (
+            for my $startingpoint (
                 @{ $decode_json->{settings}[$settings]{value} } )
             {
                 $startpoint_cnt++;
@@ -762,9 +756,9 @@ sub ReadingLangGerman {
 
     if (
         defined( $langGermanMapp{$readingValue} )
-        and (  AttrVal( 'global', 'language', 'none' ) eq 'DE'
-            or AttrVal( $name, 'readingValueLanguage', 'none' ) eq 'de' )
-        and AttrVal( $name, 'readingValueLanguage', 'none' ) ne 'en'
+        && (   AttrVal( 'global', 'language', 'none' ) eq 'DE'
+            || AttrVal( $name, 'readingValueLanguage', 'none' ) eq 'de' )
+        && AttrVal( $name, 'readingValueLanguage', 'none' ) ne 'en'
       )
     {
         return $langGermanMapp{$readingValue};
@@ -841,9 +835,9 @@ sub SetPredefinedStartPoints {
     my $payload;
     my $abilities;
 
-    if ( defined($startpoint_state) and defined($startpoint_num) ) {
+    if ( defined($startpoint_state) && defined($startpoint_num) ) {
         if ( defined( $hash->{helper}{STARTINGPOINTS} )
-            and $hash->{helper}{STARTINGPOINTS} ne '' )
+            && $hash->{helper}{STARTINGPOINTS} ne '' )
         {
 # add needed parameters to saved settings config and change the value in request
             my $decode_json_settings =
@@ -861,8 +855,8 @@ sub SetPredefinedStartPoints {
             #set more startpoints
             if (
                 defined scalar(@morestartpoints)
-                and (  scalar(@morestartpoints) == 2
-                    or scalar(@morestartpoints) == 4 )
+                && (   scalar(@morestartpoints) == 2
+                    || scalar(@morestartpoints) == 4 )
               )
             {
                 if ( scalar(@morestartpoints) == 2 ) {
