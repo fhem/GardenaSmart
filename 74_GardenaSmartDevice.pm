@@ -1212,7 +1212,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.0.1",
+  "version": "v2.0.2",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
