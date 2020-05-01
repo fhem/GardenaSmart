@@ -831,10 +831,13 @@ sub Zulu2LocalString {
 }
 
 sub SetPredefinedStartPoints {
-    my $hash = shift;
-    my $a    = shift;
+    my $hash                = shift;
+    my $aArg                = shift;
 
-    my ( $startpoint_state, $startpoint_num, @morestartpoints ) = @$a;
+    my $startpoint_state    = shift @$aArg;
+    my $startpoint_num      = shift @$aArg;
+    
+    my @morestartpoints     = @{$aArg};
 
     my $name = $hash->{NAME};
     my $payload;
