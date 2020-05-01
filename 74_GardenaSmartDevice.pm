@@ -300,7 +300,6 @@ sub Set {
 
         ( $err, $payload, $abilities ) = SetPredefinedStartPoints( $hash, $aArg );
         return $err if ( defined($err) );
-
     }
     ### electronic_pressure_pump
     elsif ( lc $cmd eq 'pumptimer' ) {
