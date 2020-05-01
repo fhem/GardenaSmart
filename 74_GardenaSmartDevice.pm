@@ -298,8 +298,7 @@ sub Set {
     elsif ( lc $cmd eq 'startpoint' ) {
         my $err;
 
-        print Dumper $aArg;
-#         ( $err, $payload, $abilities ) = SetPredefinedStartPoints( $hash, @$aArg );
+        ( $err, $payload, $abilities ) = SetPredefinedStartPoints( $hash, $aArg );
         return $err if ( defined($err) );
 
     }
@@ -834,13 +833,10 @@ sub Zulu2LocalString {
 }
 
 sub SetPredefinedStartPoints {
-    my $hash                = shift;
-    my $aArg                = shift;
+    my $hash                                                = shift;
+    my $aArg                                                = shift;
 
-    my $startpoint_state    = shift @$aArg;
-    my $startpoint_num      = shift @$aArg;
-    
-    my @morestartpoints     = @{$aArg};
+    my ($startpoint_state,$startpoint_num,@morestartpoints) = @{$aArg};
 
     my $name = $hash->{NAME};
     my $payload;
