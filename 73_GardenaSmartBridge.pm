@@ -829,7 +829,8 @@ sub WriteReadings {
             }
 
             readingsBulkUpdateIfChanged( $hash, 'zones',
-                scalar( @{ $decode_json->{zones} } ) );
+                scalar( @{ $decode_json->{zones} } ) )
+                  if ( ref($decode_json->{zones}) eq 'ARRAY' );
         }
         elsif ($decode_json->{id} ne $hash->{helper}{locations_id}
             && ref( $decode_json->{abilities} ) eq 'ARRAY'
@@ -1376,7 +1377,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.0.3",
+  "version": "v2.0.4",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
