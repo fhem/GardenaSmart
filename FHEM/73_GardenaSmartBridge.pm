@@ -791,14 +791,13 @@ sub ResponseProcessing {
               . " Tail: "
               . $tail;
         }
-        elsif ( defined($decode_json->{message})
-             && $decode_json->{message} )
-        {
-        
-            WriteReadings( $hash, $decode_json );
-        }
 
         return;
+    }
+    elsif ( defined($decode_json->{message})
+            && $decode_json->{message} )
+    {
+        WriteReadings( $hash, $decode_json );
     }
 
     Log3 $name, 3, "GardenaSmartBridge ($name) - no Match for processing data";
