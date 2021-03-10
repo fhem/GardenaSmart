@@ -484,11 +484,6 @@ sub ErrorHandling {
     my $hash  = $param->{hash};
     my $name  = $hash->{NAME};
     my $dhash = $hash;
-    
-    Log3($name, 1, qq(GardenaSmartBridge ($name) - Daten: ${data}));
-    Log3($name, 1, qq(GardenaSmartBridge ($name) - Error: ${err}))
-      if (  defined($err)
-        and $err );
 
     $dhash = $modules{GardenaSmartDevice}{defptr}{ $param->{'device_id'} }
       if ( defined( $param->{'device_id'} ) );
@@ -796,6 +791,12 @@ sub ResponseProcessing {
               . " Tail: "
               . $tail;
         }
+        elsif ( defined($decode_json->{message})
+             && $decode_json->{message} )
+        {
+        
+            WriteReadings( $hash, $decode_json );
+        }
 
         return;
     }
@@ -812,6 +813,15 @@ sub WriteReadings {
     #     print Dumper $decode_json;
 
     my $name = $hash->{NAME};
+    
+    
+    if ( defined($decode_json->{message})
+      && $decode_json->{message} )
+    {
+        readingsBeginUpdate($hash);
+        readingsBulkUpdateIfChanged( $hash, 'state', $decode_json->{message} );
+        readingsEndUpdate( $hash, 1 );
+    }
 
     if (   defined( $decode_json->{id} )
         && $decode_json->{id}
