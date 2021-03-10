@@ -485,8 +485,8 @@ sub ErrorHandling {
     my $name  = $hash->{NAME};
     my $dhash = $hash;
     
-    Log3($name, 1, qq(GardenaSmartBridge ($name) - Daten: ${data});
-    Log3($name, 1, qq(GardenaSmartBridge ($name) - Error: ${err})
+    Log3($name, 1, qq(GardenaSmartBridge ($name) - Daten: ${data}));
+    Log3($name, 1, qq(GardenaSmartBridge ($name) - Error: ${err}))
       if (  defined($err)
         and $err );
 
