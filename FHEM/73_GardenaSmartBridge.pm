@@ -232,8 +232,8 @@ sub Define {
     $hash->{BRIDGE} = 1;
     $hash->{URL} =
       AttrVal( $name, 'gardenaBaseURL',
-        'https://sg-api.dss.husqvarnagroup.net' )
-      . '/sg-1';
+        'https://api.smart.gardena.dev' )
+      . '/v1';
     $hash->{VERSION}   = version->parse($VERSION)->normal;
     $hash->{INTERVAL}  = 60;
     $hash->{NOTIFYDEV} = "global,$name";
