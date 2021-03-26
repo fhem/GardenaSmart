@@ -232,8 +232,8 @@ sub Define {
     $hash->{BRIDGE} = 1;
     $hash->{URL} =
       AttrVal( $name, 'gardenaBaseURL',
-        'https://sg-api.dss.husqvarnagroup.net' )
-      . '/sg-1';
+        'https://smart.gardena.com' )
+      . '/v1';
     $hash->{VERSION}   = version->parse($VERSION)->normal;
     $hash->{INTERVAL}  = 60;
     $hash->{NOTIFYDEV} = "global,$name";
@@ -315,12 +315,12 @@ sub Attr {
     }
     elsif ( $attrName eq 'gardenaBaseURL' ) {
         if ( $cmd eq 'set' ) {
-            $hash->{URL} = $attrVal . '/sg-1';
+            $hash->{URL} = $attrVal;
             Log3 $name, 3,
               "GardenaSmartBridge ($name) - set gardenaBaseURL to: $attrVal";
         }
         elsif ( $cmd eq 'del' ) {
-            $hash->{URL} = 'https://sg-api.dss.husqvarnagroup.net/sg-1';
+            $hash->{URL} = 'https://smart.gardena.com/v1';
         }
     }
 
@@ -470,8 +470,8 @@ sub Write {
 "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method"
     );
 
-#     Log3($name, 3,
-#         "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
+    #  Log3($name, 3,
+    #      "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
 
     return;
 }
@@ -490,6 +490,7 @@ sub ErrorHandling {
 
     my $dname = $dhash->{NAME};
 
+   # Log3 $name, 4, Dumper($data);
     my $decode_json = eval { decode_json($data) };
     if ($@) {
         Log3 $name, 3, "GardenaSmartBridge ($name) - JSON error while request";
@@ -710,12 +711,15 @@ sub ResponseProcessing {
         }
     }
 
-    #     print Dumper $decode_json;
+    # print Dumper $decode_json;
 
-    if ( defined( $decode_json->{sessions} ) && $decode_json->{sessions} ) {
+    if ( defined( $decode_json->{data} ) && $decode_json->{data} 
+        && ref($decode_json->{data}) eq 'HASH'
+        && !defined( $hash->{helper}->{user_id})) {
 
-        $hash->{helper}{session_id} = $decode_json->{sessions}{token};
-        $hash->{helper}{user_id}    = $decode_json->{sessions}{user_id};
+        $hash->{helper}{session_id} = $decode_json->{data}{id};
+        $hash->{helper}{user_id}    = $decode_json->{data}{attributes}->{user_id};
+        $hash->{helper}{refresh_tokebn}    = $decode_json->{data}{attributes}->{refresh_token};
 
         Write( $hash, undef, undef, undef );
         Log3 $name, 3, "GardenaSmartBridge ($name) - fetch locations id";
@@ -794,11 +798,6 @@ sub ResponseProcessing {
 
         return;
     }
-    elsif ( defined($decode_json->{message})
-            && $decode_json->{message} )
-    {
-        WriteReadings( $hash, $decode_json );
-    }
 
     Log3 $name, 3, "GardenaSmartBridge ($name) - no Match for processing data";
 
@@ -812,15 +811,6 @@ sub WriteReadings {
     #     print Dumper $decode_json;
 
     my $name = $hash->{NAME};
-    
-    
-    if ( defined($decode_json->{message})
-      && $decode_json->{message} )
-    {
-        readingsBeginUpdate($hash);
-        readingsBulkUpdateIfChanged( $hash, 'state', $decode_json->{message} );
-        readingsEndUpdate( $hash, 1 );
-    }
 
     if (   defined( $decode_json->{id} )
         && $decode_json->{id}
@@ -843,8 +833,7 @@ sub WriteReadings {
             }
 
             readingsBulkUpdateIfChanged( $hash, 'zones',
-                scalar( @{ $decode_json->{zones} } ) )
-                  if ( ref($decode_json->{zones}) eq 'ARRAY' );
+                scalar( @{ $decode_json->{zones} } ) );
         }
         elsif ($decode_json->{id} ne $hash->{helper}{locations_id}
             && ref( $decode_json->{abilities} ) eq 'ARRAY'
@@ -973,16 +962,28 @@ sub getToken {
       if ( defined( $hash->{helper}{locations_id} )
         && $hash->{helper}{locations_id} );
 
+    # Write(
+    #     $hash,
+    #     '"sessions": {"email": "'
+    #       . AttrVal( $name, 'gardenaAccountEmail', 'none' )
+    #       . '","password": "'
+    #       . ReadPassword( $hash, $name ) . '"}',
+    #     undef,
+    #     undef
+    # );
+    
     Write(
-        $hash,
-        '"sessions": {"email": "'
-          . AttrVal( $name, 'gardenaAccountEmail', 'none' )
-          . '","password": "'
-          . ReadPassword( $hash, $name ) . '"}',
-        undef,
-        undef
-    );
+         $hash,
+         '"data": {"type":"token", "attributes":{"username": "' 
+            . AttrVal( $name, 'gardenaAccountEmail', 'none' )      
+            . '","password": "'
+            . ReadPassword( $hash, $name ) . '", "client_id":"smartgarden-jwt-client"}}',
+         undef,
+         undef
+     );
 
+Log3 $name, 4, '"data": {"type":"token", "attributes":{"username": "'      . AttrVal( $name, 'gardenaAccountEmail', 'none' )      . '","password": "'
+          . ReadPassword( $hash, $name ) . '", "client_id":"smartgarden-jwt-client"}}';
     Log3 $name, 3,
 "GardenaSmartBridge ($name) - send credentials to fetch Token and locationId";
 
@@ -1137,25 +1138,31 @@ sub createHttpValueStrings {
     my $header     = "Content-Type: application/json";
     my $uri        = '';
     my $method     = 'POST';
-    $header .= "\r\nX-Session: $session_id"
-      if ( defined( $hash->{helper}{session_id} ) );
+    $header .= "\r\nAuthorization: Bearer $session_id"
+      if ( defined($hash->{helper}{session_id}) );
+    $header .= "\r\nAuthorization-Provider: husqvarna"
+      if ( defined($hash->{helper}{session_id}) );
+
+    #  $header .= "\r\nx-api-key: $session_id"
+    #    if ( defined( $hash->{helper}{session_id} ) );
     $payload = '{' . $payload . '}' if ( defined($payload) );
     $payload = '{}' if ( !defined($payload) );
 
     if ( $payload eq '{}' ) {
         $method = 'GET';
-        $uri .= '/locations/?user_id=' . $hash->{helper}{user_id}
+        $payload = '';
+        $uri .= '/locations/?locatioId=null&user_id=' . $hash->{helper}{user_id}
           if ( exists( $hash->{helper}{user_id} )
             && !defined( $hash->{helper}{locations_id} ) );
         readingsSingleUpdate( $hash, 'state', 'fetch locationId', 1 )
           if ( !defined( $hash->{helper}{locations_id} ) );
-        $uri .= '/sessions' if ( !defined( $hash->{helper}{session_id} ) );
+        $uri .= '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
         $uri .= '/devices'
           if (!defined($abilities)
             && defined( $hash->{helper}{locations_id} ) );
     }
 
-    $uri .= '/sessions' if ( !defined( $hash->{helper}{session_id} ) );
+    $uri .= '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
 
     if ( defined( $hash->{helper}{locations_id} ) ) {
         if ( defined($abilities) && $abilities eq 'mower_settings' ) {
@@ -1391,7 +1398,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.0.4",
+  "version": "v2.1.0",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
