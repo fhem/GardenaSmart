@@ -357,7 +357,7 @@ sub Notify {
             $devtype eq 'GardenaSmartBridge'
             && (
                 grep /^gardenaAccountPassword.+/,
-                @{$events} || ReadingsVal( '$devname', 'token', '' ) eq 'none'
+                @{$events}
             )
         )
       );
@@ -490,7 +490,8 @@ sub ErrorHandling {
 
     my $dname = $dhash->{NAME};
 
-   # Log3 $name, 4, Dumper($data);
+   Log3 $name, 2, "GardenaSmartBridge ($name) - Request: $data";
+   
     my $decode_json = eval { decode_json($data) };
     if ($@) {
         Log3 $name, 3, "GardenaSmartBridge ($name) - JSON error while request";
@@ -717,9 +718,9 @@ sub ResponseProcessing {
         && ref($decode_json->{data}) eq 'HASH'
         && !defined( $hash->{helper}->{user_id})) {
 
-        $hash->{helper}{session_id} = $decode_json->{data}{id};
-        $hash->{helper}{user_id}    = $decode_json->{data}{attributes}->{user_id};
-        $hash->{helper}{refresh_tokebn}    = $decode_json->{data}{attributes}->{refresh_token};
+        $hash->{helper}{session_id}     = $decode_json->{data}{id};
+        $hash->{helper}{user_id}        = $decode_json->{data}{attributes}->{user_id};
+        $hash->{helper}{refresh_token}  = $decode_json->{data}{attributes}->{refresh_token};
 
         Write( $hash, undef, undef, undef );
         Log3 $name, 3, "GardenaSmartBridge ($name) - fetch locations id";

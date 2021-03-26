@@ -1,1 +1,1 @@
-UPD 2021-03-26_22:20:12 43636 FHEM/73_GardenaSmartBridge.pm
+UPD 2021-03-26_23:46:02 43623 FHEM/73_GardenaSmartBridge.pm
