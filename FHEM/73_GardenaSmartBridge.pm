@@ -10,6 +10,7 @@
 #       - Matthias (Kenneth)    Thanks for Wiki entry
 #       - BioS                  Thanks for predefined start points Code
 #       - fettgu                Thanks for Debugging Irrigation Control data flow
+#       - Sebastian (BOFH)      Thanks for new Auth Code after API Change
 #
 #
 #  This script is free software; you can redistribute it and/or modify
@@ -1399,7 +1400,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.1.0",
+  "version": "v2.2.0",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
