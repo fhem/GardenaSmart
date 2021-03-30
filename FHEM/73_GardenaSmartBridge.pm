@@ -833,9 +833,6 @@ sub WriteReadings {
                 $v = encode_utf8($v);
                 readingsBulkUpdateIfChanged( $hash, $t, $v );
             }
-
-            readingsBulkUpdateIfChanged( $hash, 'zones',
-                scalar( @{ $decode_json->{zones} } ) );
         }
         elsif ($decode_json->{id} ne $hash->{helper}{locations_id}
             && ref( $decode_json->{abilities} ) eq 'ARRAY'
@@ -859,11 +856,7 @@ sub WriteReadings {
                           {name} . '-' . $t,
                         $v
                       )
-                      if (
-                        $decode_json->{abilities}[0]{properties}[$properties]
-                        {name} ne 'ethernet_status'
-                        || $decode_json->{abilities}[0]{properties}
-                        [$properties]{name} ne 'wifi_status' );
+                      if ($decode_json->{abilities}[0]{properties}[$properties]{name} !~ /ethernet_status|wifi_status/ );
 
                     if (
                         (
@@ -890,8 +883,10 @@ sub WriteReadings {
                         elsif ( $decode_json->{abilities}[0]{properties}
                             [$properties]{name} eq 'wifi_status' )
                         {
+                            #TODO: read valies if bridge connected to wifi
                             readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-ssid', $v->{ssid} );
+                             'wifi_status-ssid', $v->{ssid} )
+                              if (ref($v->{ssid}) ne 'HASH');
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-mac', $v->{mac} );
                             readingsBulkUpdateIfChanged( $hash,
@@ -1296,8 +1291,7 @@ sub DeletePassword {
     <li>longitude - Längengrad des Grundstücks</li>
     <li>name - Name of your Garden – Default „My Garden“</li>
     <li>state - State of the Bridge</li>
-    <li>token - SessionID</li>
-    <li>zones - </li>
+    <li>token - SessionID</li> 
   </ul>
   <br><br>
   <a name="GardenaSmartBridgeset"></a>
@@ -1358,8 +1352,7 @@ sub DeletePassword {
     <li>longitude - Längengrad des Grundst&uuml;cks</li>
     <li>name - Name für das Grundst&uuml;ck – Default „My Garden“</li>
     <li>state - Status der Bridge</li>
-    <li>token - SessionID</li>
-    <li>zones - </li>
+    <li>token - SessionID</li> 
   </ul>
   <br><br>
   <a name="GardenaSmartBridgeset"></a>
