@@ -859,11 +859,7 @@ sub WriteReadings {
                           {name} . '-' . $t,
                         $v
                       )
-                      if (
-                        $decode_json->{abilities}[0]{properties}[$properties]
-                        {name} ne 'ethernet_status'
-                        || $decode_json->{abilities}[0]{properties}
-                        [$properties]{name} ne 'wifi_status' );
+                      if ($decode_json->{abilities}[0]{properties}[$properties]{name} !~ /ethernet_status|wifi_status/ );
 
                     if (
                         (
@@ -890,8 +886,10 @@ sub WriteReadings {
                         elsif ( $decode_json->{abilities}[0]{properties}
                             [$properties]{name} eq 'wifi_status' )
                         {
+                            #TODO: read valies if bridge connected to wifi
                             readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-ssid', $v->{ssid} );
+                             'wifi_status-ssid', $v->{ssid} )
+                              if (ref($v->{ssid}) ne 'HASH');
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-mac', $v->{mac} );
                             readingsBulkUpdateIfChanged( $hash,
