@@ -425,6 +425,11 @@ sub Set {
 
         StorePassword( $hash, $name, $aArg->[0] );
     }
+    elsif ( lc $cmd eq 'debug_devices_list' ) {
+        $hash->{helper}{debug_device_list} = 'set';
+        Log3 $name, 2, Dumper($hash->{helper});
+        Write($hash, undef, undef, undef, undef);
+    }
     elsif ( lc $cmd eq 'deleteaccountpassword' ) {
         return "usage: $cmd" if ( scalar( @{$aArg} ) != 0 );
 
@@ -438,6 +443,8 @@ sub Set {
           if ( not defined( ReadPassword( $hash, $name ) ) );
         $list .= " deleteAccountPassword:noArg"
           if ( defined( ReadPassword( $hash, $name ) ) );
+        #$list .= " debug_devices_list:noArg"
+        #  if ( AttrVal( $name, "debugJSON", "none") ne "none" );
         return "Unknown argument $cmd, choose one of $list";
     }
 
@@ -748,6 +755,25 @@ sub ResponseProcessing {
         Write( $hash, undef, undef, undef );
 
         return;
+    }
+    elsif ( defined($hash->{helper}{debug_device_list} ) )
+    {
+        Log3 $name, 4, "Debug Devices List";
+        my $msg;
+        $msg = "test krams";
+        
+        my @buffer = split( '"devices":\[', $json );
+        my ( $json, $tail ) = ParseJSON( $hash, $buffer[1] );
+        $decode_json = eval { decode_json($json) };
+        while ( ( my ( $t, $v ) ) = each %{ $decode_json} )
+        {
+
+        Log3 $name, 2, "DEBUG $t  und $v";
+
+        }
+
+        undef($hash->{helper}{debug_device_list});
+        return $msg;
     }
     elsif (defined( $decode_json->{devices} )
         && ref( $decode_json->{devices} ) eq 'ARRAY'
@@ -1148,7 +1174,7 @@ sub createHttpValueStrings {
     if ( $payload eq '{}' ) {
         $method = 'GET';
         $payload = '';
-        $uri .= '/locations/?locatioId=null&user_id=' . $hash->{helper}{user_id}
+        $uri .= '/locations?locatioId=null&user_id=' . $hash->{helper}{user_id}
           if ( exists( $hash->{helper}{user_id} )
             && !defined( $hash->{helper}{locations_id} ) );
         readingsSingleUpdate( $hash, 'state', 'fetch locationId', 1 )
@@ -1159,7 +1185,7 @@ sub createHttpValueStrings {
             && defined( $hash->{helper}{locations_id} ) );
     }
 
-    $uri .= '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
+    $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
 
     if ( defined( $hash->{helper}{locations_id} ) ) {
         if ( defined($abilities) && $abilities eq 'mower_settings' ) {
