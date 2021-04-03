@@ -427,7 +427,7 @@ sub Set {
     }
     elsif ( lc $cmd eq 'debug_devices_list' ) {
         $hash->{helper}{debug_device_list} = 'set';
-        Log3 $name, 2, Dumper($hash->{helper});
+        #Log3 $name, 2, Dumper($hash->{helper});
         Write($hash, undef, undef, undef, undef);
     }
     elsif ( lc $cmd eq 'deleteaccountpassword' ) {
@@ -498,7 +498,7 @@ sub ErrorHandling {
 
     my $dname = $dhash->{NAME};
 
-   Log3 $name, 2, "GardenaSmartBridge ($name) - Request: $data";
+   Log3 $name, 4, "GardenaSmartBridge ($name) - Request: $data";
    
     my $decode_json = eval { decode_json($data) };
     if ($@) {
@@ -756,20 +756,18 @@ sub ResponseProcessing {
 
         return;
     }
-    elsif ( defined($hash->{helper}{debug_device_list} ) )
-    {
+    elsif ( defined($hash->{helper}{debug_device_list} ) )  {
         Log3 $name, 4, "Debug Devices List";
         my $msg;
         $msg = "test krams";
         
         my @buffer = split( '"devices":\[', $json );
         my ( $json, $tail ) = ParseJSON( $hash, $buffer[1] );
+
         $decode_json = eval { decode_json($json) };
-        while ( ( my ( $t, $v ) ) = each %{ $decode_json} )
-        {
-
-        Log3 $name, 2, "DEBUG $t  und $v";
-
+        
+        while ( ( my ( $t, $v ) ) = each %{ $decode_json} ) {
+            Log3 $name, 2, "DEBUG $t  und $v";
         }
 
         undef($hash->{helper}{debug_device_list});
