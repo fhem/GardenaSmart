@@ -57,7 +57,7 @@
 package FHEM::GardenaSmartBridge;
 use GPUtils qw(GP_Import GP_Export);
 
-# use Data::Dumper;    #only for Debugging
+#use Data::Dumper;    #only for Debugging
 
 use strict;
 use warnings;
@@ -194,6 +194,7 @@ sub Initialize {
 
     # Consumer
     $hash->{SetFn}    = \&Set;
+    $hash->{GetFn}    = \&Get;
     $hash->{DefFn}    = \&Define;
     $hash->{UndefFn}  = \&Undef;
     $hash->{DeleteFn} = \&Delete;
@@ -394,6 +395,29 @@ sub Notify {
 
     return;
 }
+sub Get {
+    my $hash = shift // return;
+    my $aArg = shift // return;
+
+    my $name = shift @$aArg // return;
+    my $cmd  = shift @$aArg
+      // return qq{"get $name" needs at least one argument};
+
+    if ( lc $cmd eq 'debug_devices_list' ) {
+        $hash->{helper}{debug_device_list} = 'get';
+        /*Log3 $name, 2, Dumper($hash->{helper});
+        Write($hash, undef, undef, undef, undef);
+        */
+        return 'coming soon';
+    } else {
+      my $list = "";
+      $list .= " debug_devices_list:noArg"
+        if ( AttrVal( $name, "debugJSON", "none") ne "none" );
+      
+      return "Unknown argument $cmd,choose one of $list";
+    
+    }
+}
 
 sub Set {
     my $hash = shift // return;
@@ -425,11 +449,6 @@ sub Set {
 
         StorePassword( $hash, $name, $aArg->[0] );
     }
-    elsif ( lc $cmd eq 'debug_devices_list' ) {
-        $hash->{helper}{debug_device_list} = 'set';
-        Log3 $name, 2, Dumper($hash->{helper});
-        Write($hash, undef, undef, undef, undef);
-    }
     elsif ( lc $cmd eq 'deleteaccountpassword' ) {
         return "usage: $cmd" if ( scalar( @{$aArg} ) != 0 );
 
@@ -443,8 +462,6 @@ sub Set {
           if ( not defined( ReadPassword( $hash, $name ) ) );
         $list .= " deleteAccountPassword:noArg"
           if ( defined( ReadPassword( $hash, $name ) ) );
-        #$list .= " debug_devices_list:noArg"
-        #  if ( AttrVal( $name, "debugJSON", "none") ne "none" );
         return "Unknown argument $cmd, choose one of $list";
     }
 
@@ -498,7 +515,7 @@ sub ErrorHandling {
 
     my $dname = $dhash->{NAME};
 
-   Log3 $name, 2, "GardenaSmartBridge ($name) - Request: $data";
+    Log3 $name, 4, "GardenaSmartBridge ($name) - Request: $data";
    
     my $decode_json = eval { decode_json($data) };
     if ($@) {
@@ -756,9 +773,9 @@ sub ResponseProcessing {
 
         return;
     }
-    elsif ( defined($hash->{helper}{debug_device_list} ) )
+    elsif ( exists($hash->{helper}{debug_device_list} ) )
     {
-        Log3 $name, 4, "Debug Devices List";
+        Log3 $name, 4, 'Debug Devices List';
         my $msg;
         $msg = "test krams";
         
@@ -772,7 +789,7 @@ sub ResponseProcessing {
 
         }
 
-        undef($hash->{helper}{debug_device_list});
+        delete $hash->{helper}{debug_device_list};
         return $msg;
     }
     elsif (defined( $decode_json->{devices} )
@@ -881,9 +898,8 @@ sub WriteReadings {
                         $decode_json->{abilities}[0]{properties}[$properties]
                           {name} . '-' . $t,
                         $v
-                      )
+                      )                     
                       if ($decode_json->{abilities}[0]{properties}[$properties]{name} !~ /ethernet_status|wifi_status/ );
-
                     if (
                         (
                             $decode_json->{abilities}[0]{properties}
@@ -911,7 +927,7 @@ sub WriteReadings {
                         {
                             #TODO: read valies if bridge connected to wifi
                             readingsBulkUpdateIfChanged( $hash,
-                             'wifi_status-ssid', $v->{ssid} )
+                              'wifi_status-ssid', $v->{ssid} )
                               if (ref($v->{ssid}) ne 'HASH');
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-mac', $v->{mac} );
@@ -1317,7 +1333,7 @@ sub DeletePassword {
     <li>longitude - Längengrad des Grundstücks</li>
     <li>name - Name of your Garden – Default „My Garden“</li>
     <li>state - State of the Bridge</li>
-    <li>token - SessionID</li> 
+    <li>token - SessionID</li>
   </ul>
   <br><br>
   <a name="GardenaSmartBridgeset"></a>
@@ -1419,7 +1435,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.2.1",
+  "version": "v2.2.2",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
