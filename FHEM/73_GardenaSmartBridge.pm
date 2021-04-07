@@ -448,7 +448,7 @@ sub Set {
         return "usage: $cmd <password>" if ( scalar( @{$aArg} ) != 1 );
 
         StorePassword( $hash, $name, $aArg->[0] );
-    }
+    }q
     elsif ( lc $cmd eq 'deleteaccountpassword' ) {
         return "usage: $cmd" if ( scalar( @{$aArg} ) != 0 );
 
@@ -773,20 +773,18 @@ sub ResponseProcessing {
 
         return;
     }
-    elsif ( exists($hash->{helper}{debug_device_list} ) )
-    {
-        Log3 $name, 4, 'Debug Devices List';
+    elsif ( defined($hash->{helper}{debug_device_list} ) )  {
+        Log3 $name, 4, "Debug Devices List";
         my $msg;
         $msg = "test krams";
         
         my @buffer = split( '"devices":\[', $json );
         my ( $json, $tail ) = ParseJSON( $hash, $buffer[1] );
+
         $decode_json = eval { decode_json($json) };
-        while ( ( my ( $t, $v ) ) = each %{ $decode_json} )
-        {
-
-        Log3 $name, 2, "DEBUG $t  und $v";
-
+        
+        while ( ( my ( $t, $v ) ) = each %{ $decode_json} ) {
+            Log3 $name, 2, "DEBUG $t  und $v";
         }
 
         delete $hash->{helper}{debug_device_list};
