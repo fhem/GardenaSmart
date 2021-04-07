@@ -1218,7 +1218,7 @@ sub createHttpValueStrings {
                 && defined($payload)
                 && $abilities eq 'mower_settings' );
 
-        } # park until next scheduel
+        } # park until next schedules or override
         elsif (defined($abilities)
             && defined($payload)
             && $abilities eq 'mower_timer' )
