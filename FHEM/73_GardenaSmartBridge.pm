@@ -448,7 +448,7 @@ sub Set {
         return "usage: $cmd <password>" if ( scalar( @{$aArg} ) != 1 );
 
         StorePassword( $hash, $name, $aArg->[0] );
-    }q
+    }
     elsif ( lc $cmd eq 'deleteaccountpassword' ) {
         return "usage: $cmd" if ( scalar( @{$aArg} ) != 0 );
 
