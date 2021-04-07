@@ -271,20 +271,21 @@ sub Attr {
 }
 
 sub Set {
-    my $hash = shift // return;
-    my $aArg = shift // return;
+    my $hash                = shift // return;
+    my $aArg                = shift // return;
 
-    my $name = shift @$aArg;
-    my $cmd  = shift @$aArg // return qq{"set $name" needs at least one argument};
+    my $name                = shift @$aArg;
+    my $cmd                 = shift @$aArg // return qq{"set $name" needs at least one argument};
 
     my $payload;
-    my $abilities = '';
-    my $service_id = '';
+    my $abilities;
+    my $service_id;
+    my $mainboard_version   = ReadingsVal( $name, 'mower_type-mainboard_version', 0.0 );
     ### mower  
     # service_id (eco, parkuntilfurhternotice, startpoints)
     if ( lc $cmd eq 'parkuntilfurthernotice' ) {
         $payload = '"name":"park_until_further_notice"';
-        if ( ReadingsVal( $name, 'mower_type-mainboard_version', '0.0' ) > '10.30' ) {
+        if ( $mainboard_version > 10.30 ) {
           $payload = ' "settings":{"name":"schedules_paused_until","value":"2040-12-31T22:00:00.000Z","device":"'.$hash->{DEVICEID}.'"}';
           $abilities = 'mower_settings'  ;
           $service_id = $hash->{helper}{schedules_paused_until_id};
@@ -292,14 +293,14 @@ sub Set {
     }
     elsif ( lc $cmd eq 'parkuntilnexttimer' ) { 
         $payload = '"name":"park_until_next_timer"';
-        if ( ReadingsVal( $name, 'mower_type-mainboard_version', '0.0' ) > '10.30' ){
+        if ( $mainboard_version > 10.30 ){
           $payload = '"properties":{"name":"mower_timer","value":0}' ;
           $abilities = 'mower_timer'; 
         }
     }
     elsif ( lc $cmd eq 'startresumeschedule' ) {
         $payload = '"name":"start_resume_schedule"';
-        if ( ReadingsVal( $name, 'mower_type-mainboard_version', '0.0' ) > '10.30' ) {
+        if ( $mainboard_version > 10.30 ) {
           $payload = ' "settings":{"name":"schedules_paused_until","value":"","device":"'.$hash->{DEVICEID}.'"}';
           $abilities = 'mower_settings'  ;
           $service_id = $hash->{helper}{schedules_paused_until_id};
@@ -308,7 +309,7 @@ sub Set {
     elsif ( lc $cmd eq 'startoverridetimer' ) {
         $payload = '"name":"start_override_timer","parameters":{"duration":'
           . $aArg->[0] * 60 . '}';
-        if ( ReadingsVal( $name, 'mower_type-mainboard_version', '0.0' ) > '10.30' ){
+        if ( $mainboard_version > 10.30 ){
           $payload = '"properties":{"name":"mower_timer","value":'.$aArg->[0] * 60 .'}';
           $abilities = 'mower_timer'; 
         }
@@ -322,9 +323,9 @@ sub Set {
     }
     elsif ( lc $cmd eq 'eco' ) {
         $payload = '"settings": {"name": "eco_mode", "value": '.$aArg->[0].', "device": "'.$hash->{DEVICEID}.'"}';
-        $abilities = 'mower_settings'  if ( ReadingsVal( $name, 'mower_type-mainboard_version', '0.0' ) > '10.30' );
+        $abilities = 'mower_settings'  if ( $mainboard_version > 10.30 );
         $service_id = $hash->{helper}{eco_mode_id};
-        #$abilities['service_id'] = $hash->{helper}{SCHEDULESID}  if ( ReadingsVal( $name, 'mower_type-mainboard_version', '0.0' ) > '10.30' );
+        #$abilities['service_id'] = $hash->{helper}{SCHEDULESID}  if ( $mainboard_version > 10.30 );
     }
     ### electronic_pressure_pump
     elsif ( lc $cmd eq 'pumptimer' ) {
@@ -1253,7 +1254,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.0.4",
+  "version": "v2.2.2",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
