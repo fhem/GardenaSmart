@@ -405,9 +405,9 @@ sub Get {
 
     if ( lc $cmd eq 'debug_devices_list' ) {
         $hash->{helper}{debug_device_list} = 'get';
-        /*Log3 $name, 2, Dumper($hash->{helper});
-        Write($hash, undef, undef, undef, undef);
-        */
+        #Log3 $name, 2, Dumper($hash->{helper});
+        #Write($hash, undef, undef, undef, undef);
+        
         return 'coming soon';
     } else {
       my $list = "";
@@ -469,13 +469,13 @@ sub Set {
 }
 
 sub Write {
-    my ( $hash, $payload, $deviceId, $abilities ) = @_;
+    my ( $hash, $payload, $deviceId, $abilities, $service_id ) = @_;
     my $name = $hash->{NAME};
 
     my ( $session_id, $header, $uri, $method );
 
-    ( $payload, $session_id, $header, $uri, $method, $deviceId, $abilities ) =
-      createHttpValueStrings( $hash, $payload, $deviceId, $abilities );
+    ( $payload, $session_id, $header, $uri, $method, $deviceId, $service_id ) =
+      createHttpValueStrings( $hash, $payload, $deviceId, $abilities, $service_id );
 
     HttpUtils_NonblockingGet(
         {
@@ -495,8 +495,8 @@ sub Write {
 "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method"
     );
 
-    #  Log3($name, 3,
-    #      "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
+      Log3($name, 3,
+          "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
 
     return;
 }
@@ -1171,7 +1171,7 @@ sub ParseJSON {
 }
 
 sub createHttpValueStrings {
-    my ( $hash, $payload, $deviceId, $abilities ) = @_;
+    my ( $hash, $payload, $deviceId, $abilities, $service_id ) = @_;
 
     my $session_id = $hash->{helper}{session_id};
     my $header     = "Content-Type: application/json";
@@ -1208,14 +1208,30 @@ sub createHttpValueStrings {
 
             $method = 'PUT';
             my $dhash = $modules{GardenaSmartDevice}{defptr}{$deviceId};
+            
             $uri .=
                 '/devices/'
               . $deviceId
               . '/settings/'
-              . $dhash->{helper}{STARTINGPOINTID}
+              . $service_id
               if ( defined($abilities)
                 && defined($payload)
                 && $abilities eq 'mower_settings' );
+
+        } # park until next scheduel
+        elsif (defined($abilities)
+            && defined($payload)
+            && $abilities eq 'mower_timer' )
+        {
+            my $valve_id;
+            $method = 'PUT';
+
+            $uri .=
+                '/devices/'
+              . $deviceId
+              . '/abilities/'
+              . $abilities
+              . '/properties/mower_timer';
 
         }
         elsif (defined($abilities)
