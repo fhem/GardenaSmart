@@ -301,9 +301,9 @@ sub Attr {
     }
     elsif ( $attrName eq 'interval' ) {
         if ( $cmd eq 'set' ) {
-            RemoveInternalTimer($hash);
             return 'Interval must be greater than 0'
               if ( $attrVal == 0 );
+            RemoveInternalTimer($hash);
             $hash->{INTERVAL} = $attrVal;
             Log3 $name, 3,
               "GardenaSmartBridge ($name) - set interval: $attrVal";
@@ -773,7 +773,7 @@ sub ResponseProcessing {
 
         return;
     }
-    elsif ( defined($hash->{helper}{debug_device_list} ) )  {
+    elsif ( exists($hash->{helper}{debug_device_list}) )  {
         Log3 $name, 4, "Debug Devices List";
         my $msg;
         $msg = "test krams";
@@ -782,10 +782,6 @@ sub ResponseProcessing {
         my ( $json, $tail ) = ParseJSON( $hash, $buffer[1] );
 
         $decode_json = eval { decode_json($json) };
-        
-        while ( ( my ( $t, $v ) ) = each %{ $decode_json} ) {
-            Log3 $name, 2, "DEBUG $t  und $v";
-        }
 
         delete $hash->{helper}{debug_device_list};
         return $msg;
