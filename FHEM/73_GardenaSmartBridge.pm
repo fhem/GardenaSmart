@@ -156,8 +156,11 @@ BEGIN {
           readingsBeginUpdate
           readingsEndUpdate
           Log3
+          devspec2array
+          asyncOutput
           CommandAttr
           AttrVal
+          InternalVal
           ReadingsVal
           CommandDefMod
           modules
@@ -402,17 +405,31 @@ sub Get {
     my $name = shift @$aArg // return;
     my $cmd  = shift @$aArg
       // return qq{"get $name" needs at least one argument};
+    
 
     if ( lc $cmd eq 'debug_devices_list' ) {
-        $hash->{helper}{debug_device_list} = 'get';
-        #Log3 $name, 2, Dumper($hash->{helper});
-        #Write($hash, undef, undef, undef, undef);
+        my $device = shift @$aArg;
+        $hash->{helper}{debug_device} = $device;
+        Write($hash, undef, undef, undef, undef);
+        #while (!defined ($hash->{helper}{debug_device_output} )){
+        #  select(undef, undef, undef, 0.5);
+        #}
+        #Log3 $name, 2, "OUTPUT".$hash->{helper}{debug_device_output};
+        #delete $hash->{helper}{debug_device};
+        #delete $hash->{helper}{debug_device_output};
         
-        return 'coming soon';
+        return undef; #$hash->{helper}{debug_device_output};
+    }elsif ( lc $cmd eq 'debug_device' ) {
+      Log3 $name, 2, "DEBUG DEVICE INFOS Device $hash->{helper}{debug_device}";
+      delete $hash->{helper}{debug_device};
+      return $hash->{helper}{debug_device_output};
+
     } else {
       my $list = "";
-      $list .= " debug_devices_list:noArg"
-        if ( AttrVal( $name, "debugJSON", "none") ne "none" );
+      $list .= " debug_devices_list:"
+        .join( ',', @{ $hash->{helper}{deviceList} }) 
+        if ( AttrVal( $name, "debugJSON", "none") ne "none" 
+          && exists($hash->{helper}{deviceList}) );
       
       return "Unknown argument $cmd,choose one of $list";
     
@@ -487,6 +504,7 @@ sub Write {
             method    => $method,
             header    => $header,
             doTrigger => 1,
+            cl        => $hash->{CL},
             callback  => \&ErrorHandling
         }
     );
@@ -514,7 +532,9 @@ sub ErrorHandling {
       if ( defined( $param->{'device_id'} ) );
 
     my $dname = $dhash->{NAME};
-
+    
+    #$param->{cl} = $hash->{CL} if( $hash->{TOKEN} and ref($hash->{CL}) eq 'HASH' );
+   
     Log3 $name, 4, "GardenaSmartBridge ($name) - Request: $data";
    
     my $decode_json = eval { decode_json($data) };
@@ -709,7 +729,31 @@ sub ErrorHandling {
 
         return;
     }
-
+ if (defined($hash->{helper}{debug_device})){
+      Log3 $name, 5, "GardenaSmartBridge DEBUG Device";
+      my @device_spec = ("name", "id", "category");
+      my $devJson=$decode_json->{devices};
+      my $output = '.:{ DEBUG OUTPUT for '.$devJson->{name}.' }:. \n';
+      for my $spec (@device_spec) {
+        $output .= "$spec : $devJson->{$spec} \n";
+      }
+      #settings
+      $output .= '\n=== Settings \n';
+      my $i = 0;
+      for my $dev_settings ( @ { $devJson->{settings} } ) {
+        $output .= "[".$i++."]id: $dev_settings->{id} \n";
+        $output .= "name: $dev_settings->{name} ";
+        if (ref ($dev_settings->{value}) eq 'ARRAY' 
+          || ref ($dev_settings->{value}) eq 'HASH'){
+          $output .= 'N/A \n';
+        } else {
+          $output .= "value: $dev_settings->{value} \n";
+        }
+      }
+      $hash->{helper}{debug_device_output} = $output;
+      asyncOutput($param->{cl},  $hash->{helper}{debug_device_output});
+      return;
+    }
     readingsSingleUpdate( $hash, 'state', 'Connected', 1 )
       if ( defined( $hash->{helper}{locations_id} ) );
     ResponseProcessing( $hash, $data )
@@ -772,19 +816,6 @@ sub ResponseProcessing {
         Write( $hash, undef, undef, undef );
 
         return;
-    }
-    elsif ( exists($hash->{helper}{debug_device_list}) )  {
-        Log3 $name, 4, "Debug Devices List";
-        my $msg;
-        $msg = "test krams";
-        
-        my @buffer = split( '"devices":\[', $json );
-        my ( $json, $tail ) = ParseJSON( $hash, $buffer[1] );
-
-        $decode_json = eval { decode_json($json) };
-
-        delete $hash->{helper}{debug_device_list};
-        return $msg;
     }
     elsif (defined( $decode_json->{devices} )
         && ref( $decode_json->{devices} ) eq 'ARRAY'
@@ -960,6 +991,12 @@ sub getDevices {
 
     if ( not IsDisabled($name) ) {
 
+        delete $hash->{helper}{deviceList};
+        my @list;
+        @list = devspec2array('TYPE=GardenaSmartDevice');
+        for my $gardenaDev (@list){
+          push( @{ $hash->{helper}{deviceList} }, $gardenaDev );
+        }
         Write( $hash, undef, undef, undef );
         Log3 $name, 4,
           "GardenaSmartBridge ($name) - fetch device list and device states";
@@ -1195,6 +1232,7 @@ sub createHttpValueStrings {
             && defined( $hash->{helper}{locations_id} ) );
     }
 
+    $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( exists ($hash->{helper}{debug_device}));
     $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
 
     if ( defined( $hash->{helper}{locations_id} ) ) {
