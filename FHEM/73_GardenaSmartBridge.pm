@@ -405,34 +405,19 @@ sub Get {
     my $name = shift @$aArg // return;
     my $cmd  = shift @$aArg
       // return qq{"get $name" needs at least one argument};
-    
 
     if ( lc $cmd eq 'debug_devices_list' ) {
         my $device = shift @$aArg;
         $hash->{helper}{debug_device} = $device;
-        Write($hash, undef, undef, undef, undef);
-        #while (!defined ($hash->{helper}{debug_device_output} )){
-        #  select(undef, undef, undef, 0.5);
-        #}
-        #Log3 $name, 2, "OUTPUT".$hash->{helper}{debug_device_output};
-        #delete $hash->{helper}{debug_device};
-        #delete $hash->{helper}{debug_device_output};
-        
-        return undef; #$hash->{helper}{debug_device_output};
-    }elsif ( lc $cmd eq 'debug_device' ) {
-      Log3 $name, 2, "DEBUG DEVICE INFOS Device $hash->{helper}{debug_device}";
-      delete $hash->{helper}{debug_device};
-      return $hash->{helper}{debug_device_output};
-
+        Write($hash, undef, undef, undef, undef); 
+        return undef;
     } else {
-      my $list = "";
-      $list .= " debug_devices_list:"
-        .join( ',', @{ $hash->{helper}{deviceList} }) 
-        if ( AttrVal( $name, "debugJSON", "none") ne "none" 
-          && exists($hash->{helper}{deviceList}) );
-      
-      return "Unknown argument $cmd,choose one of $list";
-    
+        my $list = "";
+        $list .= " debug_devices_list:"
+          .join( ',', @{ $hash->{helper}{deviceList} }) 
+          if ( AttrVal( $name, "debugJSON", "none") ne "none" 
+           && exists($hash->{helper}{deviceList}) );
+      return "Unknown argument $cmd,choose one of $list";    
     }
 }
 
@@ -533,8 +518,6 @@ sub ErrorHandling {
 
     my $dname = $dhash->{NAME};
     
-    #$param->{cl} = $hash->{CL} if( $hash->{TOKEN} and ref($hash->{CL}) eq 'HASH' );
-   
     Log3 $name, 4, "GardenaSmartBridge ($name) - Request: $data";
    
     my $decode_json = eval { decode_json($data) };
