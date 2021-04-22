@@ -2,7 +2,7 @@
 #
 # Developed with Kate
 #
-#  (c) 2017-2019 Copyright: Marko Oldenburg (leongaultier at gmail dot com)
+#  (c) 2017-2021 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
 #  All rights reserved
 #
 #   Special thanks goes to comitters:
@@ -687,7 +687,7 @@ sub WriteReadings {
 
     readingsEndUpdate( $hash, 1 );
 
-    Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written}";
+    Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written";
 
     return;
 }

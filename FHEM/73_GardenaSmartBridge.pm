@@ -2,7 +2,7 @@
 #
 # Developed with Kate
 #
-#  (c) 2017-2019 Copyright: Marko Oldenburg (leongaultier at gmail dot com)
+#  (c) 2017-2011 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
 #  All rights reserved
 #
 #   Special thanks goes to comitters:
