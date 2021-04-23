@@ -604,7 +604,7 @@ sub WriteReadings {
         #Log3 $name, 1, " - KEIN ARRAY" if ( ref( $decode_json->{settings}[$settings]{value} ) ne "ARRAY");
         #Log3 $name, 1, " - IST ARRAY" if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY");
 
-        if ( exists($decode_json->{settings}[$settings]{name}
+        if ( defined($decode_json->{settings}[$settings]{name}
              && ( $decode_json->{settings}[$settings]{name} eq 'schedules_paused_until' 
                || $decode_json->{settings}[$settings]{name} eq 'eco_mode' )
             )
