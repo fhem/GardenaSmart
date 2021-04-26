@@ -605,6 +605,7 @@ sub WriteReadings {
         #Log3 $name, 1, " - IST ARRAY" if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY");
 
         if ( defined($settings)
+             && exists($decode_json->{settings})
              && ( $decode_json->{settings}[$settings]{name} eq 'schedules_paused_until' 
                || $decode_json->{settings}[$settings]{name} eq 'eco_mode' )
             )
@@ -616,6 +617,7 @@ sub WriteReadings {
                   $decode_json->{settings}[$settings]{id};
             }
         }
+        
         if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY"
             && $decode_json->{settings}[$settings]{name} eq 'starting_points' )
         {
