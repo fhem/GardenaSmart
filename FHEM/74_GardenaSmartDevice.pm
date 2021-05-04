@@ -649,7 +649,9 @@ sub WriteReadings {
     } while ( $settings >= 0 );
 
     readingsBulkUpdate( $hash, 'state',
-        ReadingsVal( $name, 'mower-status', 'readingsValError' ) )
+        ReadingsVal($name , 'device_info-connection_status', 'unknown') eq 'online' ?
+          ReadingsVal( $name, 'mower-status', 'readingsValError') : 'offline'
+        )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
     readingsBulkUpdate(
         $hash, 'state',
@@ -661,16 +663,24 @@ sub WriteReadings {
         )
     ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
-    readingsBulkUpdate(
-        $hash, 'state',
-        'T: '
+
+    if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' ) {
+      my $online_state = ReadingsVal($name , 'device_info-connection_status', 'unknown');
+      my $state_string = 'T: '
           . ReadingsVal( $name, 'ambient_temperature-temperature',
             'readingsValError' )
           . '°C, H: '
           . ReadingsVal( $name, 'humidity-humidity', 'readingsValError' )
           . '%, L: '
-          . ReadingsVal( $name, 'light-light', 'readingsValError' ) . 'lux'
-    ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
+          . ReadingsVal( $name, 'light-light', 'readingsValError' ) . 'lux';
+      
+      if ( $online_state eq 'offline') {
+        readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' );
+        readingsBulkUpdate( $hash, 'humidity-humidity', '-1' );
+        readingsBulkUpdate( $hash, 'light-light', '-1' );
+      }
+      readingsBulkUpdate($hash, 'state', ReadingsVal($name , 'device_info-connection_status', 'unknown') eq 'online' ? $state_string : 'offline' )
+    }
 
     readingsBulkUpdate(
         $hash, 'state',
