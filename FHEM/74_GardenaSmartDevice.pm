@@ -419,7 +419,12 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         $list .= 'refresh:temperature,light,humidity'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' 
+            && ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
+
+        $list .= 'refresh:humidity'
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' 
+            && ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor2' );
 
         $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,60'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
@@ -666,18 +671,14 @@ sub WriteReadings {
 
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' ) {
       my $online_state = ReadingsVal($name , 'device_info-connection_status', 'unknown');
-      my $state_string = 'T: '
-          . ReadingsVal( $name, 'ambient_temperature-temperature',
-            'readingsValError' )
-          . '°C, H: '
-          . ReadingsVal( $name, 'humidity-humidity', 'readingsValError' )
-          . '%, L: '
-          . ReadingsVal( $name, 'light-light', 'readingsValError' ) . 'lux';
+      my $state_string = 'T: ' . ReadingsVal( $name, 'ambient_temperature-temperature', 'readingsValError' ). '°C,' if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
+      $state_string .=  'H: '. ReadingsVal( $name, 'humidity-humidity', 'readingsValError' ). '%';
+      $state_string .= ', L: ' . ReadingsVal( $name, 'light-light', 'readingsValError' ) . 'lux' if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
       
       if ( $online_state eq 'offline') {
-        readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' );
         readingsBulkUpdate( $hash, 'humidity-humidity', '-1' );
-        readingsBulkUpdate( $hash, 'light-light', '-1' );
+        readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
+        readingsBulkUpdate( $hash, 'light-light', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
       }
       readingsBulkUpdate($hash, 'state', ReadingsVal($name , 'device_info-connection_status', 'unknown') eq 'online' ? $state_string : 'offline' )
     }
