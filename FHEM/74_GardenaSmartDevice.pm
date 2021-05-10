@@ -388,9 +388,13 @@ sub Set {
 
         my $sensname = $aArg->[0];
         if ( lc $sensname eq 'temperature' ) {
-            $payload   = '"name":"measure_ambient_temperature"';
-            $abilities = 'ambient_temperature';
-
+            if ( ReadingsVal( $name, 'device_info-category', 'sensor' ) eq 'sensor') {
+              $payload   = '"name":"measure_ambient_temperature"';
+              $abilities = 'ambient_temperature';
+            } else {
+              $payload   = '"name":"measure_soil_temperature"';
+              $abilities = 'soil_temperature';
+            }
         }
         elsif ( lc $sensname eq 'light' ) {
             $payload   = '"name":"measure_light"';
@@ -401,6 +405,7 @@ sub Set {
             $payload   = '"name":"measure_soil_humidity"';
             $abilities = 'humidity';
         }
+        
 
     }
     else {
@@ -418,13 +423,12 @@ sub Set {
 'manualDurationValve1:slider,1,1,59 manualDurationValve2:slider,1,1,59 manualDurationValve3:slider,1,1,59 manualDurationValve4:slider,1,1,59 manualDurationValve5:slider,1,1,59 manualDurationValve6:slider,1,1,59 cancelOverrideValve1:noArg cancelOverrideValve2:noArg cancelOverrideValve3:noArg cancelOverrideValve4:noArg cancelOverrideValve5:noArg cancelOverrideValve6:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
-        $list .= 'refresh:temperature,light,humidity'
+        $list .= 'refresh:temperature,humidity'
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
+        # add light for old sensors
+        $list .= 'light'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' 
-            && ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
-
-        $list .= 'refresh:humidity'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' 
-            && ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor2' );
+            && ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor' );
 
         $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,60'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
