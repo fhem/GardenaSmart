@@ -677,8 +677,7 @@ sub WriteReadings {
 
 
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' ) {
-      my $state_string = '';
-      $state_string = 'T: ' . ReadingsVal( $name, 'ambient_temperature-temperature', 'readingsValError' ). '°C,' if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
+      my $state_string = 'T: ' . ( ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor') ?  ReadingsVal( $name, 'ambient_temperature-temperature', 'readingsValError' ) : ReadingsVal( $name, 'soil_temperature-temperature', 'readingsValError' ) . '°C,' ;
       $state_string .=  'H: '. ReadingsVal( $name, 'humidity-humidity', 'readingsValError' ). '%';
       $state_string .= ', L: ' . ReadingsVal( $name, 'light-light', 'readingsValError' ) . 'lux' if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
       
