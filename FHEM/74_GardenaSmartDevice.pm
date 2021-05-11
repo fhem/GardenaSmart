@@ -686,7 +686,7 @@ sub WriteReadings {
       #   readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
       #   readingsBulkUpdate( $hash, 'light-light', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
       # }
-      readingsBulkUpdate($hash, 'state', $online_state eq 'offline' ? $state_string : 'offline' )
+      readingsBulkUpdate($hash, 'state', $online_state eq 'online' ? $state_string : 'offline' )
     }
 
     readingsBulkUpdate(
