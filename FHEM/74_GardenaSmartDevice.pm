@@ -677,7 +677,7 @@ sub WriteReadings {
 
 
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' ) {
-      my $state_string = 'T: ' . ( ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor') ?  ReadingsVal( $name, 'ambient_temperature-temperature', 'readingsValError' ) : ReadingsVal( $name, 'soil_temperature-temperature', 'readingsValError' ) . '°C,' ;
+      my $state_string = ( ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor') ?  'T: ' .ReadingsVal( $name, 'ambient_temperature-temperature', 'readingsValError' ) . '°C, ' :  'T: ' .ReadingsVal( $name, 'soil_temperature-temperature', 'readingsValError' ) . '°C, ' ;
       $state_string .=  'H: '. ReadingsVal( $name, 'humidity-humidity', 'readingsValError' ). '%';
       $state_string .= ', L: ' . ReadingsVal( $name, 'light-light', 'readingsValError' ) . 'lux' if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
       
@@ -686,7 +686,7 @@ sub WriteReadings {
       #   readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
       #   readingsBulkUpdate( $hash, 'light-light', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
       # }
-      readingsBulkUpdate($hash, 'state', $online_state eq 'online' ? $state_string : 'offline' )
+      readingsBulkUpdate($hash, 'state', $online_state eq 'offline' ? $state_string : 'offline' )
     }
 
     readingsBulkUpdate(
