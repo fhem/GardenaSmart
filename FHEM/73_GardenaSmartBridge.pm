@@ -147,7 +147,6 @@ if ($@) {
 ## Import der FHEM Funktionen
 #-- Run before package compilation
 BEGIN {
-
     # Import from main context
     GP_Import(
         qw(readingsSingleUpdate
