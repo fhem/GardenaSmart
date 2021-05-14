@@ -1442,7 +1442,7 @@ sub DeletePassword {
   <ul>
     <li>debugJSON - JSON Fehlermeldungen</li>
     <li>disable - Schaltet die Datenübertragung der Bridge ab</li>
-    <li>interval - Abfrageinterval in Sekunden (default: 300)</li>
+    <li>interval - Abfrageinterval in Sekunden (default: 60)</li>
     <li>gardenaAccountEmail - Email Adresse, die auch in der GardenaApp verwendet wurde</li>
   </ul>
 </ul>
