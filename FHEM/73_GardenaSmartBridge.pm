@@ -1219,7 +1219,7 @@ sub createHttpValueStrings {
     $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
 
     if ( defined( $hash->{helper}{locations_id} ) ) {
-        if ( defined($abilities) && $abilities eq 'mower_settings' ) {
+        if ( defined($abilities) && $abilities =~ /.*_settings/ ) {
 
             $method = 'PUT';
             my $dhash = $modules{GardenaSmartDevice}{defptr}{$deviceId};
@@ -1231,7 +1231,7 @@ sub createHttpValueStrings {
               . $service_id
               if ( defined($abilities)
                 && defined($payload)
-                && $abilities eq 'mower_settings' );
+                && $abilities =~ /.*_settings/ );
 
         } # park until next schedules or override
         elsif (defined($abilities)
