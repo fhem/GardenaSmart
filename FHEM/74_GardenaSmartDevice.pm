@@ -217,7 +217,6 @@ sub Define {
     $hash->{helper}{schedules_paused_until_5_id}  = '';
     $hash->{helper}{schedules_paused_until_6_id}  = '';
 
-
     CommandAttr( undef,
         "$name IODev $modules{GardenaSmartBridge}{defptr}{BRIDGE}->{NAME}" )
       if ( AttrVal( $name, 'IODev', 'none' ) eq 'none' );
