@@ -57,7 +57,6 @@
 package FHEM::GardenaSmartBridge;
 use GPUtils qw(GP_Import GP_Export);
 
-#use Data::Dumper;    #only for Debugging
 
 use strict;
 use warnings;

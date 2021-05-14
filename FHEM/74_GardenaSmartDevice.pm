@@ -64,8 +64,6 @@ use POSIX;
 use FHEM::Meta;
 use Time::Local;
 
-#use Data::Dumper;    # only for debugging
-
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
 eval {
