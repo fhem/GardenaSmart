@@ -70,7 +70,7 @@ my $missingModul = '';
 eval "use Encode qw(encode encode_utf8 decode_utf8);1"
   or $missingModul .= "Encode ";
 
-# eval "use JSON;1"            || $missingModul .= 'JSON ';
+# eval "use JSON;1" || $missingModul .= 'JSON ';
 eval "use IO::Socket::SSL;1" or $missingModul .= 'IO::Socket::SSL ';
 
 # try to use JSON::MaybeXS wrapper
