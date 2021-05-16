@@ -404,16 +404,16 @@ sub Set {
       $payload = '"name":"close_all_valves","parameters":{}';
     }
     elsif ( $cmd =~ /.*ScheduleValve/ ){
-      my $valve_id = $1;
+      my $valve_id = $aArg->[0];
       $abilities = 'irrigation_settings';
       $service_id = $hash->{helper}->{'schedules_paused_until_'.$valve_id.'_id'};
       $payload = '"settings":{"name":"schedules_paused_until_'
-                  .$valve_id.
-                  '", "value":"'
-                  . ($cmd eq 'resumeScheduleValve') ? '' : '2040-12-31T22:00:00.000Z'
-                  .'","device":"'
-                  .$hash->{DEVICEID}
-                  .'"}';
+                  . $valve_id
+                  . '", "value":"'
+                  . ($cmd eq 'resumeScheduleValve' ? '' : '2040-12-31T22:00:00.000Z')
+                  . '","device":"'
+                  . $hash->{DEVICEID}
+                  . '"}';
     }
     ### Sensors
     elsif ( lc $cmd eq 'refresh' ) {
