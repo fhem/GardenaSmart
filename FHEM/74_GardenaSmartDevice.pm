@@ -403,7 +403,7 @@ sub Set {
     elsif ( $cmd eq 'closeAllValves' ){
       $payload = '"name":"close_all_valves","parameters":{}';
     }
-    elsif ( $cmd =~ '/.*ScheduleValve/' ){
+    elsif ( $cmd =~ /.*ScheduleValve/ ){
       my $valve_id = $1;
       $abilities = 'irrigation_settings';
       $service_id = $hash->{helper}->{'schedules_paused_until_'.$valve_id.'_id'};
@@ -1296,7 +1296,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.3.0",
+  "version": "v2.3.1",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
