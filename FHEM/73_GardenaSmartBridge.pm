@@ -1262,8 +1262,7 @@ sub createHttpValueStrings {
               . $deviceId
               . '/abilities/'
               . $abilities
-              . '/properties/watering_timer_'
-              . $valve_id;
+              . ( defined($valve_id) ? '/properties/watering_timer_'. $valve_id : '/command')
 
         }
         elsif (defined($abilities)
