@@ -445,14 +445,14 @@ sub Set {
         my $list = '';
 
         $list .=
-'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,1,60 startpoint'
+'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,1,240 startpoint'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
 
         $list .= 'manualOverride:slider,1,1,59 cancelOverride:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
         $list .=
-'closeAllValves:noArg stopScheduleValve:selectnumbers,1,1,6,0,lin  resumeScheduleValve:selectnumbers,1,1,6,0,lin manualDurationValve1:slider,1,1,59 manualDurationValve2:slider,1,1,59 manualDurationValve3:slider,1,1,59 manualDurationValve4:slider,1,1,59 manualDurationValve5:slider,1,1,59 manualDurationValve6:slider,1,1,59 cancelOverrideValve1:noArg cancelOverrideValve2:noArg cancelOverrideValve3:noArg cancelOverrideValve4:noArg cancelOverrideValve5:noArg cancelOverrideValve6:noArg'
+'closeAllValves:noArg stopScheduleValve:selectnumbers,1,1,6,0,lin  resumeScheduleValve:selectnumbers,1,1,6,0,lin manualDurationValve1:slider,1,1,120 manualDurationValve2:slider,1,1,120 manualDurationValve3:slider,1,1,120 manualDurationValve4:slider,1,1,120 manualDurationValve5:slider,1,1,120 manualDurationValve6:slider,1,1,120cancelOverrideValve1:noArg cancelOverrideValve2:noArg cancelOverrideValve3:noArg cancelOverrideValve4:noArg cancelOverrideValve5:noArg cancelOverrideValve6:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         $list .= 'refresh:temperature,humidity'

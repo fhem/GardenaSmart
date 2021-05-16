@@ -1252,9 +1252,9 @@ sub createHttpValueStrings {
             && $abilities eq 'watering' )
         {
             my $valve_id;
-            $method = 'PUT';
 
             if ( $payload =~ m#watering_timer_(\d)# ) {
+                $method = 'PUT';
                 $valve_id = $1;
             }
             $uri .=
