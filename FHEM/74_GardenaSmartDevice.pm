@@ -1136,7 +1136,7 @@ sub SetPredefinedStartPoints {
         </ul>
 
         <li>resumeScheduleValve - start schedule irrigation on valve n</li>
-        <li>stopScheduleValve - stop schedule irrigation on valve n  (Default: 2040-12-31T22) | optional params hours (now + hours)</li>
+        <li>stopScheduleValve - stop schedule irrigation on valve n  (Default: 2040-12-31T22:00:00.000Z) | optional params hours (now + hours)</li>
         <li>closeAllValves - close all valves</li>
     </ul>
 </ul>
@@ -1283,7 +1283,7 @@ sub SetPredefinedStartPoints {
             <li>set NAME startpoint disable 3 enable 1</li>
         </ul>
         <li>resumeScheduleValve - Startet Bew&aauml;sserung am Ventil n nach Zeitplan</li>
-        <li>stopScheduleValve - Setzt Bew&aauml;sserung am Ventil n aus (Default: 2040-12-31T22) | Optionaler Parameter Stunden (Jetzt + Stunden)</li>
+        <li>stopScheduleValve - Setzt Bew&aauml;sserung am Ventil n aus (Default: 2040-12-31T22:00:00.000Z) | Optionaler Parameter Stunden (Jetzt + Stunden)</li>
         <li>closeAllValves - Stopt Bew&aauml;sserung an allen Ventilen </li> 
     </ul>
 </ul>
