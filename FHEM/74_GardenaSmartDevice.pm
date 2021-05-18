@@ -63,6 +63,8 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 use Time::Local;
+use Time::Piece;
+use Time::Seconds;
 
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
@@ -405,12 +407,14 @@ sub Set {
     }
     elsif ( $cmd =~ /.*ScheduleValve/ ){
       my $valve_id = $aArg->[0];
+      my $duration = (( defined($aArg->[1]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[1]))->datetime ).'.000Z' : '2040-12-31T22:00:00.000Z'));
+
       $abilities = 'irrigation_settings';
       $service_id = $hash->{helper}->{'schedules_paused_until_'.$valve_id.'_id'};
       $payload = '"settings":{"name":"schedules_paused_until_'
                   . $valve_id
                   . '", "value":"'
-                  . ($cmd eq 'resumeScheduleValve' ? '' : '2040-12-31T22:00:00.000Z')
+                  . ($cmd eq 'resumeScheduleValve' ? '' : $duration )
                   . '","device":"'
                   . $hash->{DEVICEID}
                   . '"}';
@@ -1130,6 +1134,10 @@ sub SetPredefinedStartPoints {
             <li>set NAME startpoint enable 1</li>
             <li>set NAME startpoint disable 3 enable 1</li>
         </ul>
+
+        <li>resumeScheduleValve - start schedule irrigation on valve n</li>
+        <li>stopScheduleValve - stop schedule irrigation on valve n  (Default: 2040-12-31T22) | optional params hours (now + hours)</li>
+        <li>closeAllValves - close all valves</li>
     </ul>
 </ul>
 
@@ -1274,6 +1282,9 @@ sub SetPredefinedStartPoints {
             <li>set NAME startpoint enable 1</li>
             <li>set NAME startpoint disable 3 enable 1</li>
         </ul>
+        <li>resumeScheduleValve - Startet Bew&aauml;sserung am Ventil n nach Zeitplan</li>
+        <li>stopScheduleValve - Setzt Bew&aauml;sserung am Ventil n aus (Default: 2040-12-31T22) | Optionaler Parameter Stunden (Jetzt + Stunden)</li>
+        <li>closeAllValves - Stopt Bew&aauml;sserung an allen Ventilen </li> 
     </ul>
 </ul>
 
