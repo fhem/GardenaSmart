@@ -407,7 +407,7 @@ sub Set {
     }
     elsif ( $cmd =~ /.*ScheduleValve/ ){
       my $valve_id = $aArg->[0];
-      my $duration = (( defined($aArg->[1]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[1]))->datetime ).'.000Z' : '2040-12-31T22:00:00.000Z'));
+      my $duration = (( defined($aArg->[1]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[1]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2040-12-31T22:00:00.000Z'));
 
       $abilities = 'irrigation_settings';
       $service_id = $hash->{helper}->{'schedules_paused_until_'.$valve_id.'_id'};
@@ -1307,7 +1307,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.3.1",
+  "version": "v2.3.2",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
