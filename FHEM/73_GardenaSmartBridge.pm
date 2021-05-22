@@ -2,7 +2,7 @@
 #
 # Developed with Kate
 #
-#  (c) 2017-2011 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
+#  (c) 2017-2021 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
 #  All rights reserved
 #
 #   Special thanks goes to comitters:
@@ -181,7 +181,7 @@ BEGIN {
 #-- Export to main context with different name
 GP_Export(
     qw(
-      Initialize
+        Initialize
       )
 );
 
@@ -1463,7 +1463,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.2.3",
+  "version": "v2.4.0",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],

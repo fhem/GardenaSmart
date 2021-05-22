@@ -164,7 +164,7 @@ BEGIN {
 #-- Export to main context with different name
 GP_Export(
     qw(
-      Initialize
+        Initialize
       )
 );
 
@@ -1307,7 +1307,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.3.2",
+  "version": "v2.4.0",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
