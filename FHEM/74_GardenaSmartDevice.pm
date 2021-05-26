@@ -377,6 +377,18 @@ sub Set {
           . ',"valve_id":'
           . $valve_id . '}}';
     }
+    elsif ( $cmd =~ /.*Schedule/ ){
+      my $duration = (( defined($aArg->[0]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[0]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2040-12-31T22:00:00.000Z'));
+    
+      $abilities = 'wateringcomputer_settings';
+      $service_id = $hash->{helper}->{'schedules_paused_until_id'};
+      $payload = '"settings":{"name":"schedules_paused_until"'
+                  . ', "value":"'
+                  . ($cmd eq 'resumeSchedule' ? '' : $duration )
+                  . '","device":"'
+                  . $hash->{DEVICEID}
+                  . '"}';
+    }
     elsif ( lc $cmd eq 'on' || lc $cmd eq 'off' || lc $cmd eq 'on-for-timer' ) {
         my $val = (
             defined($aArg) && ref($aArg) eq 'ARRAY'
@@ -408,7 +420,7 @@ sub Set {
     elsif ( $cmd =~ /.*ScheduleValve/ ){
       my $valve_id = $aArg->[0];
       my $duration = (( defined($aArg->[1]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[1]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2040-12-31T22:00:00.000Z'));
-
+    
       $abilities = 'irrigation_settings';
       $service_id = $hash->{helper}->{'schedules_paused_until_'.$valve_id.'_id'};
       $payload = '"settings":{"name":"schedules_paused_until_'
@@ -452,7 +464,7 @@ sub Set {
 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,1,240 startpoint'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
 
-        $list .= 'manualOverride:slider,1,1,59 cancelOverride:noArg'
+        $list .= 'manualOverride:slider,1,1,59 cancelOverride:noArg resumeSchedule:noArg stopSchedule'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
         $list .=
