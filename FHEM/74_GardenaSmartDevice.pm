@@ -209,6 +209,10 @@ sub Define {
     $hash->{helper}{STARTINGPOINTID}            = '';
     $hash->{helper}{schedules_paused_until_id}  = '';
     $hash->{helper}{eco_mode_id}                = '';
+    $hash->{helper}{button_config_time_id}      = '';
+    $hash->{helper}{winter_mode_id}             = '';
+    
+    $hash->{helper}{_id}             = '';
     # IrrigationControl valve control max 6
     $hash->{helper}{schedules_paused_until_1_id}  = '';
     $hash->{helper}{schedules_paused_until_2_id}  = '';
@@ -465,8 +469,16 @@ sub Set {
             $payload   = '"name":"measure_soil_humidity"';
             $abilities = 'humidity';
         }
-        
-
+    }
+    ## winter sleep
+    elsif ( lc $cmd eq 'winter_mode') {
+        $payload = '"settings":{"name":"winter_mode","value":"'
+        . $aArg->[0]
+        .'","device":"'
+        . $hash->{DEVICEID}
+        .'"}';
+        $abilities = 'winter_settings';
+        $service_id = $hash->{helper}->{'winter_mode_id'};
     }
     else {
 
@@ -492,7 +504,8 @@ sub Set {
 
         $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,60'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
-
+        # all devices has abilitie to fall a sleep
+        $list .= ' winter_mode:awake,hibernate';
         return "Unknown argument $cmd, choose one of $list";
     }
 
@@ -686,7 +699,8 @@ sub WriteReadings {
         if (   exists($decode_json->{settings}[$settings]{name})
           && ( 
             $decode_json->{settings}[$settings]{name} =~ /schedules_paused_until_?\d?$/
-            || $decode_json->{settings}[$settings]{name} eq 'eco_mode' )
+            || $decode_json->{settings}[$settings]{name} eq 'eco_mode' 
+            || $decode_json->{settings}[$settings]{name} eq 'winter_mode' )
            )
         {  
             if ( $hash->{helper}{$decode_json->{settings}[$settings]{name}.'_id'} ne
@@ -695,6 +709,12 @@ sub WriteReadings {
                 $hash->{helper}{$decode_json->{settings}[$settings]{name}.'_id'} =
                   $decode_json->{settings}[$settings]{id};
             }
+            # save winter mode as reading
+            readingsBulkUpdateIfChanged(
+                    $hash,
+                    'winter_mode',
+                    $decode_json->{settings}[$settings]{value}
+                ) if ($decode_json->{settings}[$settings]{name} eq 'winter_mode');
         }
         
         if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY"
@@ -1170,6 +1190,9 @@ sub SetPredefinedStartPoints {
     <a name="GardenaSmartDeviceset"></a>
     <b>set</b>
     <ul>
+      <li>winter_mode - awake | hibernate</li>
+    </ul>
+    <ul>
         <h3>mower</h3>
         <li>parkUntilFurtherNotice</li>
         <li>parkUntilNextTimer</li>
@@ -1323,6 +1346,9 @@ sub SetPredefinedStartPoints {
     <a name="GardenaSmartDeviceset"></a>
     <b>set</b>
     <ul>
+      <li>winter_mode - aufw&auml;cken (awake)| winterschlaf (hibernate)</li>
+    </ul>
+    <ul>
         <h3>m&auml;her</h3>
         <li>parkUntilFurtherNotice - Parken des M&auml;hers unter Umgehung des Zeitplans</li>
         <li>parkUntilNextTimer - Parken bis zum n&auml;chsten Zeitplan</li>
@@ -1363,7 +1389,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.1",
+  "version": "v2.4.2",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
