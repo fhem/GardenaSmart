@@ -1186,7 +1186,7 @@ sub SetPredefinedStartPoints {
         <li>closeAllValves - close all valves</li>
         <h3>water control</h3>
         <li>manualButtonTime - set manual time for button press (in minutes) 0 disable button</li>
-        <li>stopSchedule - stop schedule</li>
+        <li>stopSchedule - stop schedule for now + n hours (Default: 2040-12-31T22:00:00.000Z)</li>
         <li>resumeSchedule - resume schedule</li>
     </ul>
 </ul>
@@ -1339,7 +1339,7 @@ sub SetPredefinedStartPoints {
         <li>closeAllValves - Stopt Bew&aauml;sserung an allen Ventilen </li> 
         <h3>water control</h3>
         <li>manualButtonTime - setzt die Dauer f&uuml;r den manuellen Knopf (in Minuten) 0 Schaltet den Knopf aus</li>
-        <li>stopSchedule - Halte Zeitplan an</li>
+        <li>stopSchedule - Halte Zeitplan an für x Stunden - (Default: 2040-12-31T22:00:00.000Z)</li>
         <li>resumeSchedule - Weiterf&uuml;hrung des Zeitplans</li>
     </ul>
 </ul>
