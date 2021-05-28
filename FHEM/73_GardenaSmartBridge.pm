@@ -731,6 +731,18 @@ sub ErrorHandling {
           $output .= "value: $dev_settings->{value} \n";
         }
       }
+      $output .= '\n=== Abilities \n';
+      my $i = 0;
+      for my $dev_settings ( @ { $devJson->{abilities} } ) {
+        $output .= "[".$i++."]id: $dev_settings->{id} \n";
+        $output .= "name: $dev_settings->{name} ";
+        if (ref ($dev_settings->{value}) eq 'ARRAY' 
+          || ref ($dev_settings->{value}) eq 'HASH'){
+          $output .= 'N/A \n';
+        } else {
+          $output .= "value: $dev_settings->{value} \n";
+        }
+      }
       $hash->{helper}{debug_device_output} = $output;
       asyncOutput($param->{cl},  $hash->{helper}{debug_device_output});
       return;
@@ -1215,7 +1227,6 @@ sub createHttpValueStrings {
 
     $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( exists ($hash->{helper}{debug_device}));
     $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
-
     if ( defined( $hash->{helper}{locations_id} ) ) {
         if ( defined($abilities) && $abilities =~ /.*_settings/ ) {
 
@@ -1278,6 +1289,19 @@ sub createHttpValueStrings {
               . '/abilities/'
               . $abilities
               . '/properties/manual_watering_timer';
+
+        }
+        elsif (defined($abilities)
+            && defined($payload)
+            && $abilities eq 'watering_button_config' )
+        {
+            $method = 'PUT';
+
+            $uri .=
+                '/devices/'
+              . $deviceId
+              . '/abilities/watering'
+              . '/properties/button_config_time';
 
         }
         elsif (defined($abilities)
