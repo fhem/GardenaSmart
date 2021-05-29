@@ -732,7 +732,7 @@ sub ErrorHandling {
         }
       }
       $output .= '\n=== Abilities \n';
-      my $i = 0;
+      $i = 0;
       for my $dev_settings ( @ { $devJson->{abilities} } ) {
         $output .= "[".$i++."]id: $dev_settings->{id} \n";
         $output .= "name: $dev_settings->{name} ";
