@@ -63,6 +63,8 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
+use Data::Dumper;
+
 use HttpUtils;
 
 my $missingModul = '';
@@ -349,9 +351,10 @@ sub Notify {
             && (
                 grep /^INITIALIZED$/,
                 @{$events} or grep /^REREADCFG$/,
-                @{$events} or grep /^DEFINED.$name$/,
-                @{$events} or grep /^MODIFIED.$name$/,
-                @{$events} or grep /^ATTR.$name.gardenaAccountEmail.+/,
+                @{$events} or grep /^DEFINED.$name.*$/,
+                @{$events} or grep /^MODIFIED.$name.*$/,
+                @{$events} or grep /^ATTR.$name.*gardenaAccountEmail.+/,
+                @{$events} or grep /^DELETEATTR.$name.*disable$/,
                 @{$events}
             )
         )
@@ -369,10 +372,9 @@ sub Notify {
       if (
         $devtype eq 'Global'
         && (
-            grep /^DELETEATTR.$name.disable$/,
-            @{$events} or grep /^ATTR.$name.disable.0$/,
-            @{$events} or grep /^DELETEATTR.$name.interval$/,
-            @{$events} or grep /^ATTR.$name.interval.[0-9]+/,
+            grep /^ATTR.$name.*disable.0$/,
+            @{$events} or grep /^DELETEATTR.$name.*interval$/,
+            @{$events} or grep /^ATTR.$name.$name.interval.[0-9]+/,
             @{$events}
         )
         && $init_done
@@ -1219,7 +1221,6 @@ sub createHttpValueStrings {
             && !defined( $hash->{helper}{locations_id} ) );
         readingsSingleUpdate( $hash, 'state', 'fetch locationId', 1 )
           if ( !defined( $hash->{helper}{locations_id} ) );
-        $uri .= '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
         $uri .= '/devices'
           if (!defined($abilities)
             && defined( $hash->{helper}{locations_id} ) );
