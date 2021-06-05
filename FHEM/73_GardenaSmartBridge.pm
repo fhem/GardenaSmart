@@ -351,10 +351,10 @@ sub Notify {
             && (
                 grep /^INITIALIZED$/,
                 @{$events} or grep /^REREADCFG$/,
-                @{$events} or grep /^DEFINED.$name.*$/,
-                @{$events} or grep /^MODIFIED.$name.*$/,
-                @{$events} or grep /^ATTR.$name.*gardenaAccountEmail.+/,
-                @{$events} or grep /^DELETEATTR.$name.*disable$/,
+                @{$events} or grep /^DEFINED.$name.$/,
+                @{$events} or grep /^MODIFIED.$name.$/,
+                @{$events} or grep /^ATTR.$name.gardenaAccountEmail.+/,
+                @{$events} or grep /^DELETEATTR.$name.disable$/,
                 @{$events}
             )
         )
@@ -372,8 +372,8 @@ sub Notify {
       if (
         $devtype eq 'Global'
         && (
-            grep /^ATTR.$name.*disable.0$/,
-            @{$events} or grep /^DELETEATTR.$name.*interval$/,
+            grep /^ATTR.$name.disable.0$/,
+            @{$events} or grep /^DELETEATTR.$name.interval$/,
             @{$events} or grep /^ATTR.$name.$name.interval.[0-9]+/,
             @{$events}
         )
