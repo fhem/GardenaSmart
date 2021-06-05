@@ -63,7 +63,7 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
-use Data::Dumper;
+#use Data::Dumper;
 
 use HttpUtils;
 
