@@ -209,6 +209,10 @@ sub Define {
     $hash->{helper}{STARTINGPOINTID}            = '';
     $hash->{helper}{schedules_paused_until_id}  = '';
     $hash->{helper}{eco_mode_id}                = '';
+    $hash->{helper}{button_config_time_id}      = '';
+    $hash->{helper}{winter_mode_id}             = '';
+    
+    $hash->{helper}{_id}             = '';
     # IrrigationControl valve control max 6
     $hash->{helper}{schedules_paused_until_1_id}  = '';
     $hash->{helper}{schedules_paused_until_2_id}  = '';
@@ -306,7 +310,7 @@ sub Set {
     if ( lc $cmd eq 'parkuntilfurthernotice' ) {
         $payload = '"name":"park_until_further_notice"';
         if ( $mainboard_version > 10.30 ) {
-          $payload = ' "settings":{"name":"schedules_paused_until","value":"2040-12-31T22:00:00.000Z","device":"'.$hash->{DEVICEID}.'"}';
+          $payload = ' "settings":{"name":"schedules_paused_until","value":"2038-01-18T00:00:00.000Z","device":"'.$hash->{DEVICEID}.'"}';
           $abilities = 'mower_settings'  ;
           $service_id = $hash->{helper}{schedules_paused_until_id};
         }
@@ -390,7 +394,7 @@ sub Set {
           . $valve_id . '}}';
     }
     elsif ( $cmd =~ /.*Schedule/ ){
-      my $duration = (( defined($aArg->[0]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[0]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2040-12-31T22:00:00.000Z'));
+      my $duration = (( defined($aArg->[0]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[0]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2038-01-18T00:00:00.000Z'));
     
       $abilities = 'wateringcomputer_settings';
       $service_id = $hash->{helper}->{'schedules_paused_until_id'};
@@ -431,7 +435,7 @@ sub Set {
     }
     elsif ( $cmd =~ /.*ScheduleValve/ ){
       my $valve_id = $aArg->[0];
-      my $duration = (( defined($aArg->[1]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[1]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2040-12-31T22:00:00.000Z'));
+      my $duration = (( defined($aArg->[1]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[1]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2038-01-18T00:00:00.000Z'));
     
       $abilities = 'irrigation_settings';
       $service_id = $hash->{helper}->{'schedules_paused_until_'.$valve_id.'_id'};
@@ -465,8 +469,16 @@ sub Set {
             $payload   = '"name":"measure_soil_humidity"';
             $abilities = 'humidity';
         }
-        
-
+    }
+    ## winter sleep
+    elsif ( lc $cmd eq 'winter_mode') {
+        $payload = '"settings":{"name":"winter_mode","value":"'
+        . $aArg->[0]
+        .'","device":"'
+        . $hash->{DEVICEID}
+        .'"}';
+        $abilities = 'winter_settings';
+        $service_id = $hash->{helper}->{'winter_mode_id'};
     }
     else {
 
@@ -492,7 +504,8 @@ sub Set {
 
         $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,60'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
-
+        # all devices has abilitie to fall a sleep
+        $list .= ' winter_mode:awake,hibernate';
         return "Unknown argument $cmd, choose one of $list";
     }
 
@@ -686,7 +699,8 @@ sub WriteReadings {
         if (   exists($decode_json->{settings}[$settings]{name})
           && ( 
             $decode_json->{settings}[$settings]{name} =~ /schedules_paused_until_?\d?$/
-            || $decode_json->{settings}[$settings]{name} eq 'eco_mode' )
+            || $decode_json->{settings}[$settings]{name} eq 'eco_mode' 
+            || $decode_json->{settings}[$settings]{name} eq 'winter_mode' )
            )
         {  
             if ( $hash->{helper}{$decode_json->{settings}[$settings]{name}.'_id'} ne
@@ -695,6 +709,12 @@ sub WriteReadings {
                 $hash->{helper}{$decode_json->{settings}[$settings]{name}.'_id'} =
                   $decode_json->{settings}[$settings]{id};
             }
+            # save winter mode as reading
+            readingsBulkUpdateIfChanged(
+                    $hash,
+                    'winter_mode',
+                    $decode_json->{settings}[$settings]{value}
+                ) if ($decode_json->{settings}[$settings]{name} eq 'winter_mode');
         }
         
         if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY"
@@ -1170,6 +1190,9 @@ sub SetPredefinedStartPoints {
     <a name="GardenaSmartDeviceset"></a>
     <b>set</b>
     <ul>
+      <li>winter_mode - awake | hibernate</li>
+    </ul>
+    <ul>
         <h3>mower</h3>
         <li>parkUntilFurtherNotice</li>
         <li>parkUntilNextTimer</li>
@@ -1182,11 +1205,11 @@ sub SetPredefinedStartPoints {
         </ul>
         <h3>irrigation control</h3>
         <li>resumeScheduleValve - start schedule irrigation on valve n</li>
-        <li>stopScheduleValve - stop schedule irrigation on valve n  (Default: 2040-12-31T22:00:00.000Z) | optional params hours (now + hours)</li>
+        <li>stopScheduleValve - stop schedule irrigation on valve n  (Default: 2038-01-18T00:00:00.000Z) | optional params hours (now + hours)</li>
         <li>closeAllValves - close all valves</li>
         <h3>water control</h3>
         <li>manualButtonTime - set manual time for button press (in minutes) 0 disable button</li>
-        <li>stopSchedule - stop schedule for now + n hours (Default: 2040-12-31T22:00:00.000Z)</li>
+        <li>stopSchedule - stop schedule for now + n hours (Default: 2038-01-18T00:00:00.000Z)</li>
         <li>resumeSchedule - resume schedule</li>
     </ul>
 </ul>
@@ -1323,6 +1346,9 @@ sub SetPredefinedStartPoints {
     <a name="GardenaSmartDeviceset"></a>
     <b>set</b>
     <ul>
+      <li>winter_mode - aufw&auml;cken (awake)| winterschlaf (hibernate)</li>
+    </ul>
+    <ul>
         <h3>m&auml;her</h3>
         <li>parkUntilFurtherNotice - Parken des M&auml;hers unter Umgehung des Zeitplans</li>
         <li>parkUntilNextTimer - Parken bis zum n&auml;chsten Zeitplan</li>
@@ -1335,11 +1361,11 @@ sub SetPredefinedStartPoints {
         </ul>
         <h3>irrigation control</h3>
         <li>resumeScheduleValve - Startet Bew&aauml;sserung am Ventil n nach Zeitplan</li>
-        <li>stopScheduleValve - Setzt Bew&aauml;sserung am Ventil n aus (Default: 2040-12-31T22:00:00.000Z) | Optionaler Parameter Stunden (Jetzt + Stunden)</li>
+        <li>stopScheduleValve - Setzt Bew&aauml;sserung am Ventil n aus (Default: 2038-01-18T00:00:00.000Z) | Optionaler Parameter Stunden (Jetzt + Stunden)</li>
         <li>closeAllValves - Stopt Bew&aauml;sserung an allen Ventilen </li> 
         <h3>water control</h3>
         <li>manualButtonTime - setzt die Dauer f&uuml;r den manuellen Knopf (in Minuten) 0 Schaltet den Knopf aus</li>
-        <li>stopSchedule - Halte Zeitplan an für x Stunden - (Default: 2040-12-31T22:00:00.000Z)</li>
+        <li>stopSchedule - Halte Zeitplan an für x Stunden - (Default: 2038-01-18T00:00:00.000Z)</li>
         <li>resumeSchedule - Weiterf&uuml;hrung des Zeitplans</li>
     </ul>
 </ul>
@@ -1363,7 +1389,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.1",
+  "version": "v2.4.2",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
