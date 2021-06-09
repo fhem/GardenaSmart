@@ -63,6 +63,8 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
+#use Data::Dumper;
+
 use HttpUtils;
 
 my $missingModul = '';
@@ -352,6 +354,7 @@ sub Notify {
                 @{$events} or grep /^DEFINED.$name$/,
                 @{$events} or grep /^MODIFIED.$name$/,
                 @{$events} or grep /^ATTR.$name.gardenaAccountEmail.+/,
+                @{$events} or grep /^DELETEATTR.$name.disable$/,
                 @{$events}
             )
         )
@@ -369,8 +372,7 @@ sub Notify {
       if (
         $devtype eq 'Global'
         && (
-            grep /^DELETEATTR.$name.disable$/,
-            @{$events} or grep /^ATTR.$name.disable.0$/,
+            grep /^ATTR.$name.disable.0$/,
             @{$events} or grep /^DELETEATTR.$name.interval$/,
             @{$events} or grep /^ATTR.$name.interval.[0-9]+/,
             @{$events}
@@ -722,6 +724,18 @@ sub ErrorHandling {
       $output .= '\n=== Settings \n';
       my $i = 0;
       for my $dev_settings ( @ { $devJson->{settings} } ) {
+        $output .= "[".$i++."]id: $dev_settings->{id} \n";
+        $output .= "name: $dev_settings->{name} ";
+        if (ref ($dev_settings->{value}) eq 'ARRAY' 
+          || ref ($dev_settings->{value}) eq 'HASH'){
+          $output .= 'N/A \n';
+        } else {
+          $output .= "value: $dev_settings->{value} \n";
+        }
+      }
+      $output .= '\n=== Abilities \n';
+      $i = 0;
+      for my $dev_settings ( @ { $devJson->{abilities} } ) {
         $output .= "[".$i++."]id: $dev_settings->{id} \n";
         $output .= "name: $dev_settings->{name} ";
         if (ref ($dev_settings->{value}) eq 'ARRAY' 
@@ -1207,7 +1221,6 @@ sub createHttpValueStrings {
             && !defined( $hash->{helper}{locations_id} ) );
         readingsSingleUpdate( $hash, 'state', 'fetch locationId', 1 )
           if ( !defined( $hash->{helper}{locations_id} ) );
-        $uri .= '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
         $uri .= '/devices'
           if (!defined($abilities)
             && defined( $hash->{helper}{locations_id} ) );
@@ -1215,7 +1228,6 @@ sub createHttpValueStrings {
 
     $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( exists ($hash->{helper}{debug_device}));
     $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
-
     if ( defined( $hash->{helper}{locations_id} ) ) {
         if ( defined($abilities) && $abilities =~ /.*_settings/ ) {
 
@@ -1278,6 +1290,19 @@ sub createHttpValueStrings {
               . '/abilities/'
               . $abilities
               . '/properties/manual_watering_timer';
+
+        }
+        elsif (defined($abilities)
+            && defined($payload)
+            && $abilities eq 'watering_button_config' )
+        {
+            $method = 'PUT';
+
+            $uri .=
+                '/devices/'
+              . $deviceId
+              . '/abilities/watering'
+              . '/properties/button_config_time';
 
         }
         elsif (defined($abilities)
@@ -1463,7 +1488,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.0",
+  "version": "v2.4.2",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
