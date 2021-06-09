@@ -375,6 +375,7 @@ sub Notify {
             grep /^ATTR.$name.disable.0$/,
             @{$events} or grep /^DELETEATTR.$name.interval$/,
             @{$events} or grep /^ATTR.$name.interval.[0-9]+/,
+            @{$events} or grep /^DELETEATTR.$name.disable$/,
             @{$events}
         )
         && $init_done
@@ -385,7 +386,7 @@ sub Notify {
         && (
             grep /^state:.Connected$/,
             @{$events} or grep /^lastRequestState:.request_error$/,
-            @{$events}
+            @{$events} 
         )
       )
     {
@@ -519,8 +520,8 @@ sub ErrorHandling {
     my $dname = $dhash->{NAME};
     
     Log3 $name, 4, "GardenaSmartBridge ($name) - Request: $data";
-   
-    my $decode_json = eval { decode_json($data) };
+
+    my $decode_json = eval { decode_json($data) } if ( lc $param->{'method'} ne 'put' );
     if ($@) {
         Log3 $name, 3, "GardenaSmartBridge ($name) - JSON error while request";
     }
@@ -981,8 +982,8 @@ sub getDevices {
     my $hash = shift;
 
     my $name = $hash->{NAME};
-
-    RemoveInternalTimer($hash);
+    
+    RemoveInternalTimer($hash);  
 
     if ( not IsDisabled($name) ) {
 
@@ -992,12 +993,17 @@ sub getDevices {
         for my $gardenaDev (@list){
           push( @{ $hash->{helper}{deviceList} }, $gardenaDev );
         }
-        Write( $hash, undef, undef, undef );
+        if ( AttrVal( $name, 'gardenaAccountEmail', 'none' ) ne 'none' 
+          && (
+            defined( ReadPassword( $hash, $name ) ) 
+          )) 
+        {
+          Write( $hash, undef, undef, undef );
         Log3 $name, 4,
           "GardenaSmartBridge ($name) - fetch device list and device states";
+        } # fi gardenaAccountEmail
     }
     else {
-
         readingsSingleUpdate( $hash, 'state', 'disabled', 1 );
         Log3 $name, 3, "GardenaSmartBridge ($name) - device is disabled";
     }
@@ -1488,7 +1494,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.2",
+  "version": "v2.4.3",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
