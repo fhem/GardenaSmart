@@ -343,7 +343,7 @@ sub Notify {
     my $devtype = $dev->{TYPE};
     my $events  = deviceEvents( $dev, 1 );
     return if ( !$events );
-
+Log3 $name, 1 , "AWAW: $devtype";
     getToken($hash)
       if (
         (
@@ -521,7 +521,7 @@ sub ErrorHandling {
     
     Log3 $name, 4, "GardenaSmartBridge ($name) - Request: $data";
 
-    my $decode_json = eval { decode_json($data) } if ( lc $param->{'method'} ne 'put' );
+    my $decode_json = eval { decode_json($data) } if ( length($data) > 0 );
     if ($@) {
         Log3 $name, 3, "GardenaSmartBridge ($name) - JSON error while request";
     }
