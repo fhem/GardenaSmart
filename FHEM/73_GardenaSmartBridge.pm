@@ -63,7 +63,7 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
-use Data::Dumper;
+#use Data::Dumper;
 
 use HttpUtils;
 
@@ -997,11 +997,9 @@ sub getDevices {
             defined( ReadPassword( $hash, $name ) ) 
           )) 
         {
-          Log3 $name, 2, "Dumpe BeFORE".Dumper($hash);
           Write( $hash, undef, undef, undef );
-          Log3 $name, 2,  "Dumpe daNACH".Dumper($hash);
-        Log3 $name, 4,
-          "GardenaSmartBridge ($name) - fetch device list and device states";
+          Log3 $name, 4,
+            "GardenaSmartBridge ($name) - fetch device list and device states";
         } # fi gardenaAccountEmail
     }
     else {
