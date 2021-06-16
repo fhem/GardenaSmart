@@ -63,7 +63,7 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
-#use Data::Dumper;
+use Data::Dumper;
 
 use HttpUtils;
 
@@ -343,7 +343,7 @@ sub Notify {
     my $devtype = $dev->{TYPE};
     my $events  = deviceEvents( $dev, 1 );
     return if ( !$events );
-Log3 $name, 1 , "AWAW: $devtype";
+    
     getToken($hash)
       if (
         (
@@ -375,7 +375,6 @@ Log3 $name, 1 , "AWAW: $devtype";
             grep /^ATTR.$name.disable.0$/,
             @{$events} or grep /^DELETEATTR.$name.interval$/,
             @{$events} or grep /^ATTR.$name.interval.[0-9]+/,
-            @{$events} or grep /^DELETEATTR.$name.disable$/,
             @{$events}
         )
         && $init_done
@@ -499,8 +498,8 @@ sub Write {
 "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method"
     );
 
-    #  Log3($name, 3,
-    #      "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
+      Log3($name, 3,
+          "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
 
     return;
 }
@@ -998,7 +997,9 @@ sub getDevices {
             defined( ReadPassword( $hash, $name ) ) 
           )) 
         {
+          Log3 $name, 2, "Dumpe BeFORE".Dumper($hash);
           Write( $hash, undef, undef, undef );
+          Log3 $name, 2,  "Dumpe daNACH".Dumper($hash);
         Log3 $name, 4,
           "GardenaSmartBridge ($name) - fetch device list and device states";
         } # fi gardenaAccountEmail
@@ -1033,16 +1034,6 @@ sub getToken {
       if ( defined( $hash->{helper}{locations_id} )
         && $hash->{helper}{locations_id} );
 
-    # Write(
-    #     $hash,
-    #     '"sessions": {"email": "'
-    #       . AttrVal( $name, 'gardenaAccountEmail', 'none' )
-    #       . '","password": "'
-    #       . ReadPassword( $hash, $name ) . '"}',
-    #     undef,
-    #     undef
-    # );
-    
     Write(
          $hash,
          '"data": {"type":"token", "attributes":{"username": "' 
@@ -1053,8 +1044,9 @@ sub getToken {
          undef
      );
 
-Log3 $name, 4, '"data": {"type":"token", "attributes":{"username": "'      . AttrVal( $name, 'gardenaAccountEmail', 'none' )      . '","password": "'
-          . ReadPassword( $hash, $name ) . '", "client_id":"smartgarden-jwt-client"}}';
+    Log3 $name, 4, '"data": {"type":"token", "attributes":{"username": "'     
+               .AttrVal( $name, 'gardenaAccountEmail', 'none' ) . '","password": "'
+               .ReadPassword( $hash, $name ) . '", "client_id":"smartgarden-jwt-client"}}';
     Log3 $name, 3,
 "GardenaSmartBridge ($name) - send credentials to fetch Token and locationId";
 
@@ -1226,7 +1218,8 @@ sub createHttpValueStrings {
           if ( exists( $hash->{helper}{user_id} )
             && !defined( $hash->{helper}{locations_id} ) );
         readingsSingleUpdate( $hash, 'state', 'fetch locationId', 1 )
-          if ( !defined( $hash->{helper}{locations_id} ) );
+          if ( exists( $hash->{helper}{user_id} )
+            && !defined( $hash->{helper}{locations_id} ) );
         $uri .= '/devices'
           if (!defined($abilities)
             && defined( $hash->{helper}{locations_id} ) );
