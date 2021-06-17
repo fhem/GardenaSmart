@@ -366,6 +366,7 @@ sub Notify {
                 @{$events}
             )
         )
+      && $init_done
       );
 
     getDevices($hash)
