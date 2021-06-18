@@ -1486,7 +1486,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.3",
+  "version": "v2.4.4",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
