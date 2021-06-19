@@ -63,7 +63,7 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
-#use Data::Dumper;
+use Data::Dumper;
 
 use HttpUtils;
 
@@ -343,6 +343,8 @@ sub Notify {
     my $devtype = $dev->{TYPE};
     my $events  = deviceEvents( $dev, 1 );
     return if ( !$events );
+
+    Log3 $name, 1, "[DEBUG - Teufelchen] : ".Dumper($hash). " -> ".Dumper($dev). " $devname , $devtype , event: ".Dumper($events);
     
     getToken($hash)
       if (
