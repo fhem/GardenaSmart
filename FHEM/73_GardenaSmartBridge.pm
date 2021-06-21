@@ -344,7 +344,7 @@ sub Notify {
     my $events  = deviceEvents( $dev, 1 );
     return if ( !$events );
 
-    Log3 $name, 1, "[DEBUG - Teufelchen] : ".Dumper($hash). " -> ".Dumper($dev). " $devname , $devtype , event: ".Dumper($events);
+    # Log3 $name, 1, "[DEBUG - Teufelchen] : ".Dumper($hash). " -> ".Dumper($dev). " $devname , $devtype , event: ".Dumper($events);
     
     getToken($hash)
       if (
@@ -1021,6 +1021,7 @@ sub getToken {
 
     my $name = $hash->{NAME};
 
+    Log3 $name, 1, "[DEBUG] - Teufelchen 4: done ($init_done)";
     return readingsSingleUpdate( $hash, 'state',
         'please set Attribut gardenaAccountEmail first', 1 )
       if ( AttrVal( $name, 'gardenaAccountEmail', 'none' ) eq 'none' );
