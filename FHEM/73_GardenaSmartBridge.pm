@@ -485,7 +485,8 @@ sub Write {
     HttpUtils_NonblockingGet(
         {
             url       => $hash->{URL} . $uri,
-            timeout   => 15,
+            timeout   => 45,
+            incrementalTimeout => 1,
             hash      => $hash,
             device_id => $deviceId,
             data      => $payload,
@@ -501,8 +502,8 @@ sub Write {
 "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method"
     );
 
-    #  Log3($name, 3,
-    #      "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
+      Log3($name, 3,
+          "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
 
     return;
 }
@@ -534,6 +535,8 @@ sub ErrorHandling {
             readingsBeginUpdate($dhash);
             readingsBulkUpdate( $dhash, "state", "$err" )
               if ( ReadingsVal( $dname, "state", 1 ) ne "initialized" );
+
+Log3 $name, 1, "[DEBUG] - Teufelchen 2: ".$decode_json;
 
             readingsBulkUpdate( $dhash, "lastRequestState", "request_error",
                 1 );
