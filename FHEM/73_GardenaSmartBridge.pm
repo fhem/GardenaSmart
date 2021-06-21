@@ -235,11 +235,10 @@ sub Define {
 
     my $name = shift @$aArg;
     $hash->{BRIDGE} = 1;
-    $hash->{URL} = 'https://bff-api.sg.dss.husqvarnagroup.net/api/v1';
-    # $hash->{URL} =
-    #   AttrVal( $name, 'gardenaBaseURL',
-    #     'https://smart.gardena.com' )
-    #   . '/v1';
+    $hash->{URL} =
+      AttrVal( $name, 'gardenaBaseURL',
+        'https://smart.gardena.com' )
+      . '/v1';
     $hash->{VERSION}   = version->parse($VERSION)->normal;
     $hash->{INTERVAL}  = 60;
     $hash->{NOTIFYDEV} = "global,$name";
@@ -384,21 +383,21 @@ sub Notify {
         && $init_done
       );
 
-#     if (
-#         $devtype eq 'GardenaSmartBridge'
-#         && (
-#             grep /^state:.Connected$/,
-#             @{$events} or grep /^lastRequestState:.request_error$/,
-#             @{$events} 
-#         )
-#       )
-#     {
+    if (
+        $devtype eq 'GardenaSmartBridge'
+        && (
+            grep /^state:.Connected$/,
+            @{$events} or grep /^lastRequestState:.request_error$/,
+            @{$events} 
+        )
+      )
+    {
 
-#         InternalTimer( gettimeofday() + $hash->{INTERVAL},
-#             "FHEM::GardenaSmartBridge::getDevices", $hash );
-#         Log3 $name, 4,
-# "GardenaSmartBridge ($name) - set internal timer function for recall getDevices sub";
-#     }
+        InternalTimer( gettimeofday() + $hash->{INTERVAL},
+            "FHEM::GardenaSmartBridge::getDevices", $hash );
+        Log3 $name, 4,
+"GardenaSmartBridge ($name) - set internal timer function for recall getDevices sub";
+    }
 
     return;
 }
@@ -1219,7 +1218,7 @@ sub createHttpValueStrings {
 my $name = $hash->{NAME};
 Log3 $name, 1, "[DEBUG] Teufelnchen 3: ".$payload;
     if ( $payload eq '{}' ) {
-        $method = 'GET';
+        $method = 'GET' if (defined( $hash->{helper}{session_id} ) );
         $payload = '';
         $uri .= '/locations?locatioId=null&user_id=' . $hash->{helper}{user_id}
           if ( exists( $hash->{helper}{user_id} )
@@ -1233,10 +1232,8 @@ Log3 $name, 1, "[DEBUG] Teufelnchen 3: ".$payload;
     }
 
     $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( exists ($hash->{helper}{debug_device}));
-    if ( !defined( $hash->{helper}{session_id} ) ){
-      $uri = '/auth/token';
-      $method = 'POST';
-    };
+    $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
+
     if ( defined( $hash->{helper}{locations_id} ) ) {
         if ( defined($abilities) && $abilities =~ /.*_settings/ ) {
 
