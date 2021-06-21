@@ -1215,6 +1215,7 @@ sub createHttpValueStrings {
     $payload = '{' . $payload . '}' if ( defined($payload) );
     $payload = '{}' if ( !defined($payload) );
 
+Log3 $name, 1, "[DEBUG] Teufelnchen 3: ".$payload;
     if ( $payload eq '{}' ) {
         $method = 'GET';
         $payload = '';
