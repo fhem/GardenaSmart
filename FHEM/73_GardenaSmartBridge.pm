@@ -1233,7 +1233,10 @@ Log3 $name, 1, "[DEBUG] Teufelnchen 3: ".$payload;
     }
 
     $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( exists ($hash->{helper}{debug_device}));
-    $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
+    if ( !defined( $hash->{helper}{session_id} ) ){
+      $uri = '/auth/token';
+      $method = 'POST';
+    };
     if ( defined( $hash->{helper}{locations_id} ) ) {
         if ( defined($abilities) && $abilities =~ /.*_settings/ ) {
 
