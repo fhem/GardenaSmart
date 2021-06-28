@@ -515,7 +515,7 @@ sub ErrorHandling {
     my $name  = $hash->{NAME};
     my $dhash = $hash;
 
-    $dhash = $modules{GardenaSmartDevice}{defptr}{ $param->{'device_id'} };
+    $dhash = $modules{GardenaSmartDevice}{defptr}{ $param->{'device_id'} }
       if ( defined( $param->{'device_id'} ) );
 
     my $dname = $dhash->{NAME};
@@ -533,8 +533,6 @@ sub ErrorHandling {
             readingsBeginUpdate($dhash);
             readingsBulkUpdate( $dhash, "state", "$err" )
               if ( ReadingsVal( $dname, "state", 1 ) ne "initialized" );
-
-Log3 $name, 1, "[DEBUG] - Teufelchen 2: ".$decode_json;
 
             readingsBulkUpdate( $dhash, "lastRequestState", "request_error",
                 1 );
@@ -985,8 +983,7 @@ sub getDevices {
     my $hash = shift;
 
     my $name = $hash->{NAME};
-    
-    RemoveInternalTimer($hash);  
+    RemoveInternalTimer($hash);
 
     if ( not IsDisabled($name) ) {
 
