@@ -515,7 +515,7 @@ sub ErrorHandling {
     my $name  = $hash->{NAME};
     my $dhash = $hash;
 
-    $dhash = $modules{GardenaSmartDevice}{defptr}{ $param->{'device_id'} } if ( length($data) > 0 );
+    $dhash = $modules{GardenaSmartDevice}{defptr}{ $param->{'device_id'} };
       if ( defined( $param->{'device_id'} ) );
 
     my $dname = $dhash->{NAME};
