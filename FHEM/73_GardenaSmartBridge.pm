@@ -63,7 +63,7 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
-use Data::Dumper;
+#use Data::Dumper;
 
 use HttpUtils;
 
@@ -344,8 +344,6 @@ sub Notify {
     my $events  = deviceEvents( $dev, 1 );
     return if ( !$events );
 
-    # Log3 $name, 1, "[DEBUG - Teufelchen] : ".Dumper($hash). " -> ".Dumper($dev). " $devname , $devtype , event: ".Dumper($events);
-    
     getToken($hash)
       if (
         (
@@ -485,7 +483,7 @@ sub Write {
     HttpUtils_NonblockingGet(
         {
             url       => $hash->{URL} . $uri,
-            timeout   => 45,
+            timeout   => 15,
             incrementalTimeout => 1,
             hash      => $hash,
             device_id => $deviceId,
@@ -502,8 +500,8 @@ sub Write {
 "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method"
     );
 
-      Log3($name, 3,
-          "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
+    #  Log3($name, 3,
+    #      "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
 
     return;
 }
@@ -517,7 +515,7 @@ sub ErrorHandling {
     my $name  = $hash->{NAME};
     my $dhash = $hash;
 
-    $dhash = $modules{GardenaSmartDevice}{defptr}{ $param->{'device_id'} }
+    $dhash = $modules{GardenaSmartDevice}{defptr}{ $param->{'device_id'} } if ( length($data) > 0 );
       if ( defined( $param->{'device_id'} ) );
 
     my $dname = $dhash->{NAME};
@@ -1021,7 +1019,6 @@ sub getToken {
 
     my $name = $hash->{NAME};
 
-    Log3 $name, 1, "[DEBUG] - Teufelchen 4: done ($init_done)";
     return readingsSingleUpdate( $hash, 'state',
         'please set Attribut gardenaAccountEmail first', 1 )
       if ( AttrVal( $name, 'gardenaAccountEmail', 'none' ) eq 'none' );
@@ -1216,8 +1213,6 @@ sub createHttpValueStrings {
     $payload = '{' . $payload . '}' if ( defined($payload) );
     $payload = '{}' if ( !defined($payload) );
 
-my $name = $hash->{NAME};
-Log3 $name, 1, "[DEBUG] Teufelnchen 3: ".$payload;
     if ( $payload eq '{}' ) {
         $method = 'GET' if (defined( $hash->{helper}{session_id} ) );
         $payload = '';
