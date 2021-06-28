@@ -666,6 +666,7 @@ sub WriteReadings {
                     && (  $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'mower_timer-mower_timer'
                   )
+                );
 
 
                 readingsBulkUpdateIfChanged(
