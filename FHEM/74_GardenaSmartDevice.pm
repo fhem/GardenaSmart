@@ -412,7 +412,7 @@ sub Set {
             : lc $cmd
         );
 
-        $payload = '"properties":{"value":"' . $val . '"}';
+        $payload = '"properties":{"name":"power_timer", "value":"' . $val . '"}';
     }
     ### Watering ic24
     elsif ( $cmd =~ m{\AmanualDurationValve\d\z}xms ) {
