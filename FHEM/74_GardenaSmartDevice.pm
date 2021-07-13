@@ -407,7 +407,7 @@ sub Set {
     }
     elsif ( lc $cmd eq 'on' || lc $cmd eq 'off' || lc $cmd eq 'on-for-timer' ) {
         my $val = (
-            defined($aArg) && ref($aArg) eq 'ARRAY'
+            scalar(!@$aArg == 0) && ref($aArg) eq 'ARRAY'
             ? $aArg->[0] * 60
             : lc $cmd
         );
