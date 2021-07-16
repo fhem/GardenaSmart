@@ -653,6 +653,21 @@ sub WriteReadings {
                         || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'light-light' )
                   );
+                  
+                readingsBulkUpdateIfChanged(
+                    $hash,
+                    $decode_json->{abilities}[$abilities]{name} . '-'
+                      . $propertie->{name} 
+                      . '_timestamp',
+                      Time::Piece->strptime(RigReadingsValue( $hash, $propertie->{timestamp} ), "%Y-%m-%d %H:%M:%S")->strftime('%s')
+                      
+                  )
+                  if (
+                    defined( $propertie->{value} ) 
+                    && (  $decode_json->{abilities}[$abilities]{name} . '-'
+                        . $propertie->{name} eq 'mower_timer-mower_timer'
+                  )
+                );
 
                 readingsBulkUpdateIfChanged(
                     $hash,
