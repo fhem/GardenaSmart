@@ -502,7 +502,7 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' 
             && ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor' );
 
-        $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,60'
+        $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,720'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
         # all devices has abilitie to fall a sleep
         $list .= ' winter_mode:awake,hibernate';
