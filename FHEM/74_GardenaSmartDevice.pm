@@ -407,12 +407,12 @@ sub Set {
     }
     elsif ( lc $cmd eq 'on' || lc $cmd eq 'off' || lc $cmd eq 'on-for-timer' ) {
         my $val = (
-            defined($aArg) && ref($aArg) eq 'ARRAY'
+            scalar(!@$aArg == 0) && ref($aArg) eq 'ARRAY'
             ? $aArg->[0] * 60
             : lc $cmd
         );
 
-        $payload = '"properties":{"value":"' . $val . '"}';
+        $payload = '"properties":{"name":"power_timer", "value":"' . $val . '"}';
     }
     ### Watering ic24
     elsif ( $cmd =~ m{\AmanualDurationValve\d\z}xms ) {
@@ -502,7 +502,7 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' 
             && ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor' );
 
-        $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,60'
+        $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,720'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
         # all devices has abilitie to fall a sleep
         $list .= ' winter_mode:awake,hibernate';
@@ -653,6 +653,21 @@ sub WriteReadings {
                         || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'light-light' )
                   );
+                  
+                readingsBulkUpdateIfChanged(
+                    $hash,
+                    $decode_json->{abilities}[$abilities]{name} . '-'
+                      . $propertie->{name} 
+                      . '_timestamp',
+                      Time::Piece->strptime(RigReadingsValue( $hash, $propertie->{timestamp} ), "%Y-%m-%d %H:%M:%S")->strftime('%s')
+                      
+                  )
+                  if (
+                    defined( $propertie->{value} ) 
+                    && (  $decode_json->{abilities}[$abilities]{name} . '-'
+                        . $propertie->{name} eq 'mower_timer-mower_timer'
+                  )
+                );
 
                 readingsBulkUpdateIfChanged(
                     $hash,

@@ -366,6 +366,7 @@ sub Notify {
                 @{$events}
             )
         )
+      && $init_done
       );
 
     getDevices($hash)
@@ -385,7 +386,7 @@ sub Notify {
         && (
             grep /^state:.Connected$/,
             @{$events} or grep /^lastRequestState:.request_error$/,
-            @{$events}
+            @{$events} 
         )
       )
     {
@@ -483,6 +484,7 @@ sub Write {
         {
             url       => $hash->{URL} . $uri,
             timeout   => 15,
+            incrementalTimeout => 1,
             hash      => $hash,
             device_id => $deviceId,
             data      => $payload,
@@ -519,8 +521,8 @@ sub ErrorHandling {
     my $dname = $dhash->{NAME};
     
     Log3 $name, 4, "GardenaSmartBridge ($name) - Request: $data";
-   
-    my $decode_json = eval { decode_json($data) };
+
+    my $decode_json = eval { decode_json($data) } if ( length($data) > 0 );
     if ($@) {
         Log3 $name, 3, "GardenaSmartBridge ($name) - JSON error while request";
     }
@@ -981,7 +983,6 @@ sub getDevices {
     my $hash = shift;
 
     my $name = $hash->{NAME};
-
     RemoveInternalTimer($hash);
 
     if ( not IsDisabled($name) ) {
@@ -992,12 +993,17 @@ sub getDevices {
         for my $gardenaDev (@list){
           push( @{ $hash->{helper}{deviceList} }, $gardenaDev );
         }
-        Write( $hash, undef, undef, undef );
-        Log3 $name, 4,
-          "GardenaSmartBridge ($name) - fetch device list and device states";
+        if ( AttrVal( $name, 'gardenaAccountEmail', 'none' ) ne 'none' 
+          && (
+            defined( ReadPassword( $hash, $name ) ) 
+          )) 
+        {
+          Write( $hash, undef, undef, undef );
+          Log3 $name, 4,
+            "GardenaSmartBridge ($name) - fetch device list and device states";
+        } # fi gardenaAccountEmail
     }
     else {
-
         readingsSingleUpdate( $hash, 'state', 'disabled', 1 );
         Log3 $name, 3, "GardenaSmartBridge ($name) - device is disabled";
     }
@@ -1027,16 +1033,6 @@ sub getToken {
       if ( defined( $hash->{helper}{locations_id} )
         && $hash->{helper}{locations_id} );
 
-    # Write(
-    #     $hash,
-    #     '"sessions": {"email": "'
-    #       . AttrVal( $name, 'gardenaAccountEmail', 'none' )
-    #       . '","password": "'
-    #       . ReadPassword( $hash, $name ) . '"}',
-    #     undef,
-    #     undef
-    # );
-    
     Write(
          $hash,
          '"data": {"type":"token", "attributes":{"username": "' 
@@ -1047,8 +1043,9 @@ sub getToken {
          undef
      );
 
-Log3 $name, 4, '"data": {"type":"token", "attributes":{"username": "'      . AttrVal( $name, 'gardenaAccountEmail', 'none' )      . '","password": "'
-          . ReadPassword( $hash, $name ) . '", "client_id":"smartgarden-jwt-client"}}';
+    Log3 $name, 4, '"data": {"type":"token", "attributes":{"username": "'     
+               .AttrVal( $name, 'gardenaAccountEmail', 'none' ) . '","password": "'
+               .ReadPassword( $hash, $name ) . '", "client_id":"smartgarden-jwt-client"}}';
     Log3 $name, 3,
 "GardenaSmartBridge ($name) - send credentials to fetch Token and locationId";
 
@@ -1214,13 +1211,14 @@ sub createHttpValueStrings {
     $payload = '{}' if ( !defined($payload) );
 
     if ( $payload eq '{}' ) {
-        $method = 'GET';
+        $method = 'GET' if (defined( $hash->{helper}{session_id} ) );
         $payload = '';
         $uri .= '/locations?locatioId=null&user_id=' . $hash->{helper}{user_id}
           if ( exists( $hash->{helper}{user_id} )
             && !defined( $hash->{helper}{locations_id} ) );
         readingsSingleUpdate( $hash, 'state', 'fetch locationId', 1 )
-          if ( !defined( $hash->{helper}{locations_id} ) );
+          if ( exists( $hash->{helper}{user_id} )
+            && !defined( $hash->{helper}{locations_id} ) );
         $uri .= '/devices'
           if (!defined($abilities)
             && defined( $hash->{helper}{locations_id} ) );
@@ -1228,6 +1226,7 @@ sub createHttpValueStrings {
 
     $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( exists ($hash->{helper}{debug_device}));
     $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
+
     if ( defined( $hash->{helper}{locations_id} ) ) {
         if ( defined($abilities) && $abilities =~ /.*_settings/ ) {
 
@@ -1488,7 +1487,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.2",
+  "version": "v2.4.4",
   "author": [
     "Marko Oldenburg <leongaultier@gmail.com>"
   ],
