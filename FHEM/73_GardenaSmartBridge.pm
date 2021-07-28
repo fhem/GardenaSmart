@@ -242,6 +242,7 @@ sub Define {
     $hash->{VERSION}   = version->parse($VERSION)->normal;
     $hash->{INTERVAL}  = 60;
     $hash->{NOTIFYDEV} = "global,$name";
+    $hash->{helper}{debug_device}	= 'none';
 
     CommandAttr( undef, $name . ' room GardenaSmart' )
       if ( AttrVal( $name, 'room', 'none' ) eq 'none' );
@@ -714,8 +715,11 @@ sub ErrorHandling {
 
         return;
     }
- if (defined($hash->{helper}{debug_device})){
-      Log3 $name, 5, "GardenaSmartBridge DEBUG Device";
+  if (defined($hash->{helper}{debug_device})
+    	&& $hash->{helper}{debug_device} ne 'none'
+    	){
+      Log3 $name, 4, "GardenaSmartBridge DEBUG Device";
+      $hash->{helper}{debug_device} = 'none';
       my @device_spec = ("name", "id", "category");
       my $devJson=$decode_json->{devices};
       my $output = '.:{ DEBUG OUTPUT for '.$devJson->{name}.' }:. \n';
@@ -1224,7 +1228,7 @@ sub createHttpValueStrings {
             && defined( $hash->{helper}{locations_id} ) );
     }
 
-    $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( exists ($hash->{helper}{debug_device}));
+    $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( ($hash->{helper}{debug_device}) ne 'none' );
     $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
 
     if ( defined( $hash->{helper}{locations_id} ) ) {
