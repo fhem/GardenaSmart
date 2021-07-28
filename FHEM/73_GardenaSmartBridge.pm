@@ -1228,7 +1228,8 @@ sub createHttpValueStrings {
             && defined( $hash->{helper}{locations_id} ) );
     }
 
-    $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( ($hash->{helper}{debug_device}) ne 'none' );
+    $uri = '/devices/'.InternalVal($hash->{helper}{debug_device}, 'DEVICEID', 0 ) if ( ($hash->{helper}{debug_device}) ne 'none' 
+                                                                                       && defined( $hash->{helper}{locations_id} ) );
     $uri = '/auth/token' if ( !defined( $hash->{helper}{session_id} ) );
 
     if ( defined( $hash->{helper}{locations_id} ) ) {
