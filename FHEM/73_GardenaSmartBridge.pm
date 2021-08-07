@@ -391,7 +391,6 @@ sub Notify {
         )
       )
     {
-
         InternalTimer( gettimeofday() + $hash->{INTERVAL},
             "FHEM::GardenaSmartBridge::getDevices", $hash );
         Log3 $name, 4,
