@@ -62,16 +62,15 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
-use Data::Dumper;
-
 use HttpUtils;
 
 my $missingModul = '';
-eval "use Encode qw(encode encode_utf8 decode_utf8);1"
+eval { use Encode qw /encode_utf8 decode_utf8/; 1 }
   or $missingModul .= "Encode ";
 
 # eval "use JSON;1" || $missingModul .= 'JSON ';
-eval "use IO::Socket::SSL;1" or $missingModul .= 'IO::Socket::SSL ';
+eval { use IO::Socket::SSL; 1 }
+  or $missingModul .= 'IO::Socket::SSL ';
 
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
@@ -79,15 +78,11 @@ eval {
     require JSON::MaybeXS;
     import JSON::MaybeXS qw( decode_json encode_json );
     1;
-};
-
-if ($@) {
-    $@ = undef;
+} or do {
 
     # try to use JSON wrapper
     #   for chance of better performance
     eval {
-
         # JSON preference order
         local $ENV{PERL_JSON_BACKEND} =
           'Cpanel::JSON::XS,JSON::XS,JSON::PP,JSON::backportPP'
@@ -96,10 +91,7 @@ if ($@) {
         require JSON;
         import JSON qw( decode_json encode_json );
         1;
-    };
-
-    if ($@) {
-        $@ = undef;
+    } or do {
 
         # In rare cases, Cpanel::JSON::XS may
         #   be installed but JSON|JSON::MaybeXS not ...
@@ -107,10 +99,7 @@ if ($@) {
             require Cpanel::JSON::XS;
             import Cpanel::JSON::XS qw(decode_json encode_json);
             1;
-        };
-
-        if ($@) {
-            $@ = undef;
+        } or do {
 
             # In rare cases, JSON::XS may
             #   be installed but JSON not ...
@@ -118,10 +107,7 @@ if ($@) {
                 require JSON::XS;
                 import JSON::XS qw(decode_json encode_json);
                 1;
-            };
-
-            if ($@) {
-                $@ = undef;
+            } or do {
 
                 # Fallback to built-in JSON which SHOULD
                 #   be available since 5.014 ...
@@ -129,20 +115,17 @@ if ($@) {
                     require JSON::PP;
                     import JSON::PP qw(decode_json encode_json);
                     1;
-                };
-
-                if ($@) {
-                    $@ = undef;
+                } or do {
 
                     # Fallback to JSON::backportPP in really rare cases
                     require JSON::backportPP;
                     import JSON::backportPP qw(decode_json encode_json);
                     1;
-                }
-            }
-        }
-    }
-}
+                };
+            };
+        };
+    };
+};
 
 ## Import der FHEM Funktionen
 #-- Run before package compilation
@@ -808,8 +791,6 @@ sub ResponseProcessing {
         }
     }
 
-    # print Dumper $decode_json;
-
     if (   defined( $decode_json->{data} )
         && $decode_json->{data}
         && ref( $decode_json->{data} ) eq 'HASH'
@@ -892,6 +873,42 @@ qq{GardenaSmartBridge ($name) - execute parse json asynchronously (PID="$pid")}
     return;
 }
 
+sub ResponseProcessingFinalFromSubProcessing {
+    my $hash     = shift;
+    my $response = shift;
+
+    my $name = $hash->{NAME};
+
+    my @response = split '\|,', $response;
+
+    Log3( $name, 4,
+        qq{GardenaSmartBridge ($name) - got result from asynchronous parsing} );
+
+    my $decode_json;
+
+    Log3( $name, 4, qq{GardenaSmartBridge ($name) - asynchronous finished.} );
+
+    if ( scalar(@response) > 0 ) {
+        for my $json (@response) {
+
+            #################
+            $decode_json = eval { decode_json($json) };
+            if ($@) {
+                Log3 $name, 5,
+                  "GardenaSmartBridge ($name) - JSON error while request: $@";
+            }
+
+            Dispatch( $hash, $json, undef )
+              if ( $decode_json->{category} ne 'gateway' );
+            WriteReadings( $hash, $decode_json )
+              if ( defined( $decode_json->{category} )
+                && $decode_json->{category} eq 'gateway' );
+        }
+    }
+
+    return;
+}
+
 sub PollChild {
     my $hash = shift;
 
@@ -899,57 +916,24 @@ sub PollChild {
 
     if ( defined( $hash->{".fhem"}{subprocess} ) ) {
         my $subprocess = $hash->{".fhem"}{subprocess};
-        my @response   = $subprocess->readFromChild();
+        my $response   = $subprocess->readFromChild();
 
-        Log3 $name, 3,
-          "GardenaSmartBridge ($name) - Response ist: " . Dumper @response;
-
-        if ( scalar(@response) == 0 ) {
-            Log3( $name, 5,
-qq{GardenaSmartBridge ($name) - still waiting ($subprocess->{lasterror}).}
-            );
-
-            InternalTimer( gettimeofday() + 1,
-                "FHEM::GardenaSmartBridge::PollChild", $hash );
-            return;
-        }
-        else {
-            Log3( $name, 4,
-qq{GardenaSmartBridge ($name) - got result from asynchronous parsing}
-            );
-
-            my $decode_json;
-
+        if ( defined($response) ) {
+            ResponseProcessingFinalFromSubProcessing( $hash, $response );
             $subprocess->wait();
-            Log3( $name, 4,
-                qq{GardenaSmartBridge ($name) - asynchronous finished.} );
-
             CleanSubprocess($hash);
-
-            if ( scalar(@response) > 0 ) {
-                for my $json (@response) {
-
-                    #################
-                    $decode_json = eval { decode_json($json) };
-                    if ($@) {
-                        Log3 $name, 5,
-"GardenaSmartBridge ($name) - JSON error while request: $@";
-                    }
-
-                    Dispatch( $hash, $json, undef )
-                      if ( $decode_json->{category} ne 'gateway' );
-                    WriteReadings( $hash, $decode_json )
-                      if ( defined( $decode_json->{category} )
-                        && $decode_json->{category} eq 'gateway' );
-                }
-            }
-
-            Log3 $name, 3,
-"GardenaSmartBridge ($name) - It looks like so is no Array reference at response";
-            Log3 $name, 3,
-              "GardenaSmartBridge ($name) - Response ist: " . Dumper @response;
         }
+
+        Log3( $name, 5,
+qq{GardenaSmartBridge ($name) - still waiting ($subprocess->{lasterror}).}
+        );
+
+        InternalTimer( gettimeofday() + 1,
+            "FHEM::GardenaSmartBridge::PollChild", $hash );
+        return;
     }
+
+    return;
 }
 
 # ResponseSubprocessin muss in eine async ausgelagert werden
@@ -966,17 +950,12 @@ sub ResponseSubprocessing {
     while ($json) {
         if ( defined($tail) and $tail ) {
             push @response, $json;
-            Log3 'Gardena Subprocess', 2,
-              "GardenaSmartBridge (Gardena) - JSON ist: $json";
         }
 
         ( $json, $tail ) = ParseJSON($tail);
     }
 
-    Log3 'Gardena Subprocess', 2,
-      "GardenaSmartBridge (Gardena) - Response ist: " . Dumper @response;
-
-    $subprocess->writeToParent(@response);
+    $subprocess->writeToParent( join '|', @response );
 
     return;
 }
@@ -1035,8 +1014,6 @@ sub CleanSubprocess {
 sub WriteReadings {
     my $hash        = shift;
     my $decode_json = shift;
-
-    #     print Dumper $decode_json;
 
     my $name = $hash->{NAME};
 
