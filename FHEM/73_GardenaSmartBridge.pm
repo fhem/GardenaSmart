@@ -62,7 +62,7 @@ use warnings;
 use POSIX;
 use FHEM::Meta;
 
-#use Data::Dumper;
+use Data::Dumper;
 
 use HttpUtils;
 
@@ -923,21 +923,28 @@ qq{GardenaSmartBridge ($name) - got result from asynchronous parsing}
 
             CleanSubprocess($hash);
 
-            for my $json ( @{$response} ) {
+            if ( ref( @{$response} ) eq 'ARRAY' ) {
+                for my $json ( @{$response} ) {
 
-                #################
-                $decode_json = eval { decode_json($json) };
-                if ($@) {
-                    Log3 $name, 5,
+                    #################
+                    $decode_json = eval { decode_json($json) };
+                    if ($@) {
+                        Log3 $name, 5,
 "GardenaSmartBridge ($name) - JSON error while request: $@";
-                }
+                    }
 
-                Dispatch( $hash, $json, undef )
-                  if ( $decode_json->{category} ne 'gateway' );
-                WriteReadings( $hash, $decode_json )
-                  if ( defined( $decode_json->{category} )
-                    && $decode_json->{category} eq 'gateway' );
+                    Dispatch( $hash, $json, undef )
+                      if ( $decode_json->{category} ne 'gateway' );
+                    WriteReadings( $hash, $decode_json )
+                      if ( defined( $decode_json->{category} )
+                        && $decode_json->{category} eq 'gateway' );
+                }
             }
+
+            Log3 $name, 3,
+"GardenaSmartBridge ($name) - It looks like so is no Array reference at response";
+            Log3 $name, 3,
+              "GardenaSmartBridge ($name) - Response ist: " . Dumper $response;
         }
     }
 }
@@ -949,19 +956,19 @@ qq{GardenaSmartBridge ($name) - got result from asynchronous parsing}
 sub ResponseSubprocessing {
     my $subprocess = shift;
     my $buffer     = $subprocess->{buffer};
-    my $response   = [];
+    my @response   = ();
 
     my ( $json, $tail ) = ParseJSON($buffer);
 
     while ($json) {
         if ( defined($tail) and $tail ) {
-            push @{$response}, $json;
+            push @response, $json;
         }
 
         ( $json, $tail ) = ParseJSON($tail);
     }
 
-    $subprocess->writeToParent($response);
+    $subprocess->writeToParent( \@response );
 
     return;
 }
