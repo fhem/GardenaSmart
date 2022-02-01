@@ -1008,6 +1008,15 @@ sub ParseJSON {
 # End Childprozess
 ######################################
 
+sub CleanSubprocess {
+    my $hash = shift;
+
+    my $name = $hash->{NAME};
+
+    delete( $hash->{".fhem"}{subprocess} );
+    Log3( $name, 4, qq{GardenaSmartBridge ($name) - clean Subprocess} );
+}
+
 sub WriteReadings {
     my $hash        = shift;
     my $decode_json = shift;
