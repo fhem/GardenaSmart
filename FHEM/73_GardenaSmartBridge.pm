@@ -866,6 +866,8 @@ qq{GardenaSmartBridge ($name) - execute parse json asynchronously (PID="$pid")}
 
         InternalTimer( gettimeofday() + 1,
             "FHEM::GardenaSmartBridge::PollChild", $hash );
+
+        return;
     }
 
     Log3 $name, 3, "GardenaSmartBridge ($name) - no Match for processing data";
@@ -924,7 +926,7 @@ sub PollChild {
             CleanSubprocess($hash);
         }
 
-        Log3( $name, 5,
+        Log3( $name, 4,
 qq{GardenaSmartBridge ($name) - still waiting ($subprocess->{lasterror}).}
         );
 

@@ -1459,7 +1459,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.2",
+  "version": "v2.4.3",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
