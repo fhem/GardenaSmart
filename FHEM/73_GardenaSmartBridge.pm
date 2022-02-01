@@ -902,7 +902,7 @@ sub PollChild {
         my @response   = $subprocess->readFromChild();
 
         Log3 $name, 3,
-          "GardenaSmartBridge ($name) - Response ist: " . Dumper $response;
+          "GardenaSmartBridge ($name) - Response ist: " . Dumper @response;
 
         if ( scalar(@response) == 0 ) {
             Log3( $name, 5,
@@ -947,7 +947,7 @@ qq{GardenaSmartBridge ($name) - got result from asynchronous parsing}
             Log3 $name, 3,
 "GardenaSmartBridge ($name) - It looks like so is no Array reference at response";
             Log3 $name, 3,
-              "GardenaSmartBridge ($name) - Response ist: " . Dumper $response;
+              "GardenaSmartBridge ($name) - Response ist: " . Dumper @response;
         }
     }
 }
