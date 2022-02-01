@@ -923,7 +923,7 @@ qq{GardenaSmartBridge ($name) - got result from asynchronous parsing}
 
             CleanSubprocess($hash);
 
-            if ( ref( @{$response} ) eq 'ARRAY' ) {
+            if ( ref($response) eq 'ARRAY' ) {
                 for my $json ( @{$response} ) {
 
                     #################
