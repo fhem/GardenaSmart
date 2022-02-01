@@ -966,10 +966,15 @@ sub ResponseSubprocessing {
     while ($json) {
         if ( defined($tail) and $tail ) {
             push @response, $json;
+            Log3 'Gardena Subprocess', 2,
+              "GardenaSmartBridge (Gardena) - JSON ist: $json";
         }
 
         ( $json, $tail ) = ParseJSON($tail);
     }
+
+    Log3 'Gardena Subprocess', 2,
+      "GardenaSmartBridge (Gardena) - Response ist: " . Dumper @response;
 
     $subprocess->writeToParent(@response);
 
