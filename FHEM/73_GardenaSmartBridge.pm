@@ -901,7 +901,10 @@ sub PollChild {
         my $subprocess = $hash->{".fhem"}{subprocess};
         my @response   = $subprocess->readFromChild();
 
-        if ( !defined(@response) ) {
+        Log3 $name, 3,
+          "GardenaSmartBridge ($name) - Response ist: " . Dumper $response;
+
+        if ( scalar(@response) == 0 ) {
             Log3( $name, 5,
 qq{GardenaSmartBridge ($name) - still waiting ($subprocess->{lasterror}).}
             );
