@@ -899,9 +899,9 @@ sub PollChild {
 
     if ( defined( $hash->{".fhem"}{subprocess} ) ) {
         my $subprocess = $hash->{".fhem"}{subprocess};
-        my $response   = $subprocess->readFromChild();
+        my @response   = $subprocess->readFromChild();
 
-        if ( !defined($response) ) {
+        if ( !defined(@response) ) {
             Log3( $name, 5,
 qq{GardenaSmartBridge ($name) - still waiting ($subprocess->{lasterror}).}
             );
@@ -923,8 +923,8 @@ qq{GardenaSmartBridge ($name) - got result from asynchronous parsing}
 
             CleanSubprocess($hash);
 
-            if ( ref($response) eq 'ARRAY' ) {
-                for my $json ( @{$response} ) {
+            if ( scalar(@response) > 0 ) {
+                for my $json (@response) {
 
                     #################
                     $decode_json = eval { decode_json($json) };
@@ -968,7 +968,7 @@ sub ResponseSubprocessing {
         ( $json, $tail ) = ParseJSON($tail);
     }
 
-    $subprocess->writeToParent( \@response );
+    $subprocess->writeToParent(@response);
 
     return;
 }
