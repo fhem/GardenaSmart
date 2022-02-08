@@ -744,6 +744,8 @@ sub WriteReadings {
         $abilities--;
     } while ( $abilities >= 0 );
 
+    my $winter_mode;
+
     do {
 #Log3 $name, 1, "Settings pro Device : ".$decode_json->{settings}[$settings]{name};
 #Log3 $name, 1, " - KEIN ARRAY" if ( ref( $decode_json->{settings}[$settings]{value} ) ne "ARRAY");
@@ -770,6 +772,8 @@ sub WriteReadings {
             readingsBulkUpdateIfChanged( $hash, 'winter_mode',
                 $decode_json->{settings}[$settings]{value} )
               if ( $decode_json->{settings}[$settings]{name} eq 'winter_mode' );
+
+            # $winter_mode =
         }
 
         if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY"
@@ -802,6 +806,25 @@ sub WriteReadings {
 
         $settings--;
     } while ( $settings >= 0 );
+
+    if ( ReadingsVal( $name, 'winter_mode', 'awake' ) ne 'hibernate' ) {
+        setState();
+    }
+    else {
+        readingsBulkUpdate( $hash, 'state',
+            RigReadingsValue( $hash, 'hibernate' ) );
+    }
+
+    readingsEndUpdate( $hash, 1 );
+
+    Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written";
+
+    return;
+}
+
+sub setState {
+    my $hash = shift;
+    my $name = $hash->{NAME};
 
     my $online_state =
       ReadingsVal( $name, 'device_info-connection_status', 'unknown' );
@@ -863,10 +886,6 @@ sub WriteReadings {
     readingsBulkUpdate( $hash, 'state',
         ReadingsVal( $name, 'power-power_timer', 'no info from power-timer' ) )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
-
-    readingsEndUpdate( $hash, 1 );
-
-    Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written";
 
     return;
 }
@@ -977,7 +996,8 @@ sub ReadingLangGerman {
         'closed'                      => 'geschlossen',
         'included'                    => 'inbegriffen',
         'active'                      => 'aktiv',
-        'inactive'                    => 'nicht aktiv'
+        'inactive'                    => 'nicht aktiv',
+        'hibernate'                   => 'Winterschlaf',
     );
 
     if (
