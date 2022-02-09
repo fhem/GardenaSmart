@@ -810,7 +810,7 @@ sub WriteReadings {
     } while ( $settings >= 0 );
 
     if ( $winter_mode ne 'hibernate' ) {
-        setState();
+        setState($hash);
     }
     else {
         readingsBulkUpdate( $hash, 'state',
