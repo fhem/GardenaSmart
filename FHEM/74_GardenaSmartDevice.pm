@@ -769,11 +769,13 @@ sub WriteReadings {
             }
 
             # save winter mode as reading
-            readingsBulkUpdateIfChanged( $hash, 'winter_mode',
-                $decode_json->{settings}[$settings]{value} )
-              if ( $decode_json->{settings}[$settings]{name} eq 'winter_mode' );
 
-            # $winter_mode =
+            if ( $decode_json->{settings}[$settings]{name} eq 'winter_mode' ) {
+                readingsBulkUpdateIfChanged( $hash, 'winter_mode',
+                    $decode_json->{settings}[$settings]{value} );
+
+                $winter_mode = $decode_json->{settings}[$settings]{value};
+            }
         }
 
         if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY"
@@ -807,7 +809,7 @@ sub WriteReadings {
         $settings--;
     } while ( $settings >= 0 );
 
-    if ( ReadingsVal( $name, 'winter_mode', 'awake' ) ne 'hibernate' ) {
+    if ( $winter_mode ne 'hibernate' ) {
         setState();
     }
     else {
