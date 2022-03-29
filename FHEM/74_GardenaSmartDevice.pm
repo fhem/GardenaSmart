@@ -390,7 +390,7 @@ sub Set {
           . ',"valve_id":'
           . $valve_id . '}}';
     }
-    elsif ( $cmd =~ /.*Schedule/ ) {
+    elsif ( $cmd =~ /.*Schedule$/ ) {
         my $duration = (
             (
                 defined( $aArg->[0] )
@@ -444,7 +444,7 @@ sub Set {
     elsif ( $cmd eq 'closeAllValves' ) {
         $payload = '"name":"close_all_valves","parameters":{}';
     }
-    elsif ( $cmd =~ /.*ScheduleValve/ ) {
+    elsif ( $cmd =~ /.*ScheduleValve$/ ) {
         my $valve_id = $aArg->[0];
         my $duration = (
             (
