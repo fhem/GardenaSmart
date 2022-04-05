@@ -767,6 +767,11 @@ sub WriteReadings {
                   { $decode_json->{settings}[$settings]{name} . '_id' } =
                   $decode_json->{settings}[$settings]{id};
             }
+            # check watering controler single schedules pause until
+            if ( $decode_json->{settings}[$settings]{name} eq 'schedules_paused_until' ) {
+              readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_paused_until',
+                    $decode_json->{settings}[$settings]{value} );
+            }
 
             # save winter mode as reading
 
@@ -831,20 +836,39 @@ sub setState {
     my $online_state =
       ReadingsVal( $name, 'device_info-connection_status', 'unknown' );
 
+    #online state mower
     readingsBulkUpdate( $hash, 'state',
         $online_state eq 'online'
         ? ReadingsVal( $name, 'mower-status', 'readingsValError' )
         : 'offline' )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
-    readingsBulkUpdate(
-        $hash, 'state',
-        (
-            ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
+
+    #online state water control
+    # zeit bewaesseung
+    # online | offline
+    # open | closed
+    # zeitplan   -> dauert pausiert wenn 2038-01-18
+    if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
+      #should: open | online | no timer
+      #open/closed?
+      my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
               m{\A[1-9]([0-9]+)?\z}xms
-            ? RigReadingsValue( $hash, 'open' )
-            : RigReadingsValue( $hash, 'closed' )
-        )
-    ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
+            ? RigReadingsValue( $hash, 'open' );   
+            : ( ReadingsVal( $name, 'scheduling-schedules_paused_until', '') ne '' ? 
+                    'scheduled watering next start: '
+                      . (
+                        ReadingsVal(
+                          $name, 'scheduling-schedules_paused_until',
+                          'no timer'
+                        )
+                      ) : 'closed' );
+      
+      # state offline | override
+      $state_string =  'offline' if ($online_state eq 'offline');
+ 
+      readingsBulkUpdate(
+        $hash, 'state', $state_string );
+    }
 
     if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ ) {
         my $state_string =
@@ -870,6 +894,7 @@ sub setState {
 #   readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
 #   readingsBulkUpdate( $hash, 'light-light', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
 # }
+        #online state sensor I II
         readingsBulkUpdate( $hash, 'state',
             $online_state eq 'online' ? $state_string : 'offline' );
     }
