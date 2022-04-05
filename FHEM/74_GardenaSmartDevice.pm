@@ -525,7 +525,7 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         $list .= 'refresh:temperature,humidity'
-          if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor./ );
+          if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ );
 
         # add light for old sensors
         $list .= ',light'
