@@ -846,7 +846,7 @@ sub setState {
         )
     ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
-    if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' ) {
+    if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ ) {
         my $state_string =
           ( ReadingsVal( $name, 'device_info-category', 'unknown' ) eq
               'sensor' )
