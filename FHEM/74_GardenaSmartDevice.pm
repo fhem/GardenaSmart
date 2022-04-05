@@ -851,10 +851,9 @@ sub setState {
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
       #should: open | online | no timer
       #open/closed?
-      my $state_string = '';
-      $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
+      my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
               m{\A[1-9]([0-9]+)?\z}xms
-            ? RigReadingsValue( $hash, 'open' );   
+            ? RigReadingsValue( $hash, 'open' )   
             : ( ReadingsVal( $name, 'scheduling-schedules_paused_until', '') ne '' ? 
                     'scheduled watering next start: '
                       . (
