@@ -165,7 +165,7 @@ sub Initialize {
     $hash->{AttrFn} = \&Attr;
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
-      . "model:watering_computer,sensor,mower,ic24,power,electronic_pressure_pump "
+      . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
       . "IODev "
       . $readingFnAttributes;
     $hash->{parseParams} = 1;
@@ -525,7 +525,7 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         $list .= 'refresh:temperature,humidity'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
+          if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor./ );
 
         # add light for old sensors
         $list .= ',light'
