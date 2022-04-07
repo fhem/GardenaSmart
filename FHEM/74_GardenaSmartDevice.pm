@@ -280,7 +280,11 @@ sub Set {
     my $service_id;
     my $mainboard_version =
       ReadingsVal( $name, 'mower_type-mainboard_version', 0.0 );
-    my $timezone_offset = ( Time::Piece->new )->tzoffset;
+    
+    my ($Sekunden, $Minuten, $Stunden, $Monatstag, $Monat,
+        $Jahr, $Wochentag, $Jahrestag, $Sommerzeit) = localtime(time);
+
+    my $timezone_offset = $Sommerzeit ? 0 : ( Time::Piece->new )->tzoffset;
 
     #set default abilitie ... overwrite in cmd to change
     $abilities = 'mower'
@@ -881,12 +885,12 @@ sub setState {
             ? 
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # leer ( zeitplan aktiv ... ) 
-              ? sprintf( (RigReadingsValue($hash, 'watering. %s minutes remaining.').' '.RigReadingsValue($hash, 'next timer: %s')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %s minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
               # zeitplan pausiert
               : 
                 ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
                 # pause bis  dauerhaft
-                ? sprintf( (RigReadingsValue($hash, 'watering. %s minutes remaining.').' '.RigReadingsValue($hash , 'permanently paused')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ))
+                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %s minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ))
                 # naechter termin
                 : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
 
@@ -895,7 +899,7 @@ sub setState {
             :
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # zeitplan aktiv
-              ? sprintf( RigReadingsValue($hash, 'next timer: %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
+              ? sprintf( RigReadingsValue($hash, 'next watering: %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
 
               # zeitplan pausiert
               : RigReadingsValue($hash, 'closed')
@@ -1072,13 +1076,10 @@ sub ReadingLangGerman {
         'inactive'                       => 'nicht aktiv',
         'hibernate'                      => 'Winterschlaf',
         'awake'                          => 'Aufgewacht',
-
-        'permanently paused'             => 'Dauerhaft pausiert',
+        'schedule permanently paused'    => 'Zeitplan dauerhaft pausiert',
         'paused until %s'                => 'pausiert bis %s',        
-        'watering. %s minutes remaining.'=> 'Wird bewässert. %d Minuten verbleibend.',
-        'next timer: %s'                 => 'Nächste Bewässerung: %s',
-
-
+        'will be irrigated %s minutes remaining.'=> 'Wird bewässert. %d Minuten verbleibend.',
+        'next watering: %s'              => 'Nächste Bewässerung: %s',
     );
 
     if (
