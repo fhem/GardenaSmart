@@ -916,7 +916,7 @@ sub setState {
       $state_string = 'offline' if ($online_state eq 'offline');
  
       readingsBulkUpdate(
-        $hash, 'state', $state_string );
+        $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
     }
 
     if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ ) {
@@ -945,7 +945,7 @@ sub setState {
 # }
         #online state sensor I II
         readingsBulkUpdate( $hash, 'state',
-            $online_state eq 'online' ? $state_string : 'offline' );
+            $online_state eq 'online' ? RigReadingsValue( $hash, $state_string) : RigReadingsValue( $hash, 'offline') );
     }
 
     readingsBulkUpdate(
