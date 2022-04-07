@@ -280,6 +280,7 @@ sub Set {
     my $service_id;
     my $mainboard_version =
       ReadingsVal( $name, 'mower_type-mainboard_version', 0.0 );
+    my $timezone_offset = ( Time::Piece->new )->tzoffset;
 
     #set default abilitie ... overwrite in cmd to change
     $abilities = 'mower'
@@ -398,7 +399,7 @@ sub Set {
                     (
                         ( Time::Piece->new ) +
                           ( ONE_HOUR * $aArg->[0] ) -
-                          ( Time::Piece->new )->tzoffset
+                          $timezone_offset
                     )->datetime
                   )
                   . '.000Z'
@@ -453,7 +454,7 @@ sub Set {
                     (
                         ( Time::Piece->new ) +
                           ( ONE_HOUR * $aArg->[1] ) -
-                          ( Time::Piece->new )->tzoffset
+                          $timezone_offset
                     )->datetime
                   )
                   . '.000Z'
@@ -894,7 +895,7 @@ sub setState {
             :
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # zeitplan aktiv
-              ? sprintf( RigReadingsValue($hash, 'next timer %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') )-(Time::Piece->new )->tzoffset )
+              ? sprintf( RigReadingsValue($hash, 'next timer %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
 
               # zeitplan pausiert
               : RigReadingsValue($hash, 'closed')
