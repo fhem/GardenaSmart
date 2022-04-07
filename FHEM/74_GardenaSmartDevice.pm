@@ -881,7 +881,7 @@ sub setState {
             ? 
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # leer ( zeitplan aktiv ... ) 
-              ? sprintf( (RigReadingsValue($hash, 'watering. %s minutes remaining').' '.RigReadingsValue($hash, 'next timer %s')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+              ? sprintf( (RigReadingsValue($hash, 'watering. %s minutes remaining.').' '.RigReadingsValue($hash, 'next timer: %s')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
               # zeitplan pausiert
               : 
                 ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
@@ -895,7 +895,7 @@ sub setState {
             :
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # zeitplan aktiv
-              ? sprintf( RigReadingsValue($hash, 'next timer %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
+              ? sprintf( RigReadingsValue($hash, 'next timer: %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
 
               # zeitplan pausiert
               : RigReadingsValue($hash, 'closed')
