@@ -1071,12 +1071,12 @@ sub ReadingLangGerman {
         'active'                         => 'aktiv',
         'inactive'                       => 'nicht aktiv',
         'hibernate'                      => 'Winterschlaf',
+        'awake'                          => 'Aufgewacht',
 
-        'permanently paused' => 'Dauerhaft pausiert',
-        'paused until %s' => 'pausiert bis %s',
-        
-        'watering. %s minutes remaining.' => 'Wird bewässert. %d Minuten verbleibend.',
-        'next timer: %s' => 'Nächste Bewässerung: %s',
+        'permanently paused'             => 'Dauerhaft pausiert',
+        'paused until %s'                => 'pausiert bis %s',        
+        'watering. %s minutes remaining.'=> 'Wird bewässert. %d Minuten verbleibend.',
+        'next timer: %s'                 => 'Nächste Bewässerung: %s',
 
 
     );
