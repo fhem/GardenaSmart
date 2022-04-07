@@ -886,7 +886,7 @@ sub setState {
               : 
                 ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
                 # pause bis  dauerhaft
-                ? RigReadingsValue($hash , 'permanently paused')
+                ? sprintf( (RigReadingsValue($hash, 'watering. %s minutes remaining.').' '.RigReadingsValue($hash , 'permanently paused')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ))
                 # naechter termin
                 : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
 
