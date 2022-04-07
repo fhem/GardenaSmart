@@ -873,17 +873,6 @@ sub setState {
     #   - STATE=open & watering-watering_timer_1_duration != 0 && watering-watering_timer_1_state=idle (?) &  scheduling-schedules_paused_unti != ''
 #RigReadingsValue
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
-        #  Ventil Offen
-        if ( ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) {
-
-        } else {
-        # Ventil zu
-
-        }
-
-
-
-
 
          my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
               m{\A[1-9]([0-9]+)?\z}xms
@@ -1086,7 +1075,7 @@ sub ReadingLangGerman {
         'paused until %s' => 'pausiert bis %s',
         
         'watering. %s minutes remaining' => 'Wird bewässert. %d Minuten verbleibend',
-        'next timer %s' => 'Nächste Bewässerung: %s',
+        'next timer: %s' => 'Nächste Bewässerung: %s',
 
 
     );
