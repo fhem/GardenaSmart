@@ -847,24 +847,83 @@ sub setState {
     # zeit bewaesseung
     # online | offline
     # open | closed
-    # zeitplan   -> dauert pausiert wenn 2038-01-18
+    # zeitplan   -> dauert pausiert wenn 2038-01-18T00:00:00.000Z
+
+    # watering-watering_timer_1_state idle | scheduled | manual
+    # watering-watering_timer_1_duration  0    in sec
+    # scheduling-scheduled_watering_next_start  XXX 
+    # scheduling-scheduled_watering_end   | end  < NOW && duration = 0 => abbruch manuell
+    # scheduling-schedules_paused_until
+
+   
+    # 1. Ventil geschlossen, Zeitplan pausiert.
+    #   App zeigt: nichts (wenn vorher ein Zeitplan abgebrochen wurde, steht da "Unterbrochen   xx:yy - zz:aa")
+    #    - STATE=closed & watering-watering_timer_1_state=idle  && scheduling-schedules_paused_unti != ''  && watering-watering_timer_1_duration = 0 
+
+    # 2. Ventil geschlossen, Zeitplan aktiv.
+    #   App zeigt: "Nächste Bewässerung heute um xx:yy Uhr" (wenn vorher ein Zeitplan abgebrochen wurde, steht da vorher auch "Unterbrochen   xx:yy - zz:aa")
+    #   - STATE=closed & watering-watering_timer_1_duration = 0 && watering-watering_timer_1_state=scheduled (?) &  scheduling-schedules_paused_until = ''
+
+    # 3. Ventil manuell geöffnet, späterer Zeitplan aktiv.
+    #   Wird bewässert   xx Minuten verbleibend" und "Nächste Bewässerung   heute um xx:yy Uhr"
+    #   - STATE=    watering-watering_timer_1_duration != 0 &&  scheduling-schedules_paused_until = ''  && watering-watering_timer_1_state=manual
+
+    # 4. Ventil manuell geöffnet, Zeitpläne deaktiviert.
+    #   App zeigt: "Wird bewässert   xx Minuten verbleibend"
+    #   - STATE=open & watering-watering_timer_1_duration != 0 && watering-watering_timer_1_state=idle (?) &  scheduling-schedules_paused_unti != ''
+#RigReadingsValue
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
-      #should: open | online | no timer
-      #open/closed?
-      my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
+        #  Ventil Offen
+        if ( ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) {
+
+        } else {
+        # Ventil zu
+
+        }
+
+
+
+
+
+         my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
               m{\A[1-9]([0-9]+)?\z}xms
-            ? RigReadingsValue( $hash, 'open' )   
-            : ( ReadingsVal( $name, 'scheduling-schedules_paused_until', '') ne '' ? 
-                    'scheduled watering next start: '
-                      . (
-                        ReadingsVal(
-                          $name, 'scheduling-schedules_paused_until',
-                          'no timer'
-                        )
-                      ) : 'closed' );
+            # offen
+            ? 
+              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+              # leer ( zeitplan aktiv ... ) 
+              ? sprintf( (RigReadingsValue($hash, 'watering. %s minutes remaining').' '.RigReadingsValue($hash, 'next timer %s')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+              # zeitplan pausiert
+              : 
+                ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
+                # pause bis  dauerhaft
+                ? RigReadingsValue($hash , 'permanently paused')
+                # naechter termin
+                : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
+
+            #RigReadingsValue( $hash, 'open' )   
+            # zu
+            :
+              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+              # zeitplan aktiv
+              ? sprintf( RigReadingsValue($hash, 'next timer %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
+
+              # zeitplan pausiert
+              : RigReadingsValue($hash, 'closed')
+            
+            
+            ;
+
+            #  ( ReadingsVal( $name, 'scheduling-schedules_paused_until', '') eq '' ? # leer wenn zeitplan aktiv
+            #         'scheduled watering next start: '
+            #           . (
+            #             ReadingsVal(
+            #               $name, 'scheduling-schedules_paused_until',
+            #               'no timer'
+            #             )
+            #           ) : 'closed' );
       
       # state offline | override
-      $state_string =  'offline' if ($online_state eq 'offline');
+      $state_string = 'offline' if ($online_state eq 'offline');
  
       readingsBulkUpdate(
         $hash, 'state', $state_string );
@@ -927,22 +986,21 @@ sub ReadingLangGerman {
 
     my $name           = $hash->{NAME};
     my %langGermanMapp = (
-        'ok_cutting'           => 'mähen',
-        'paused'               => 'pausiert',
-        'ok_searching'         => 'suche Ladestation',
-        'ok_charging'          => 'lädt',
-        'ok_leaving'           => 'unterwegs zum Startpunkt',
-        'wait_updating'        => 'wird aktualisiert ...',
-        'wait_power_up'        => 'wird eingeschaltet ...',
-        'parked_timer'         => 'geparkt nach Zeitplan',
-        'parked_park_selected' => 'geparkt',
-        'off_disabled'         => 'der Mäher ist ausgeschaltet',
-        'off_hatch_open' =>
-          'deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich',
-        'unknown'           => 'unbekannter Status',
-        'error'             => 'Fehler',
-        'error_at_power_up' => 'Neustart ...',
-        'off_hatch_closed'  => 'Deaktiviert. Manueller Start erforderlich',
+        'ok_cutting'                     => 'mähen',
+        'paused'                         => 'pausiert',
+        'ok_searching'                   => 'suche Ladestation',
+        'ok_charging'                    => 'lädt',
+        'ok_leaving'                     => 'unterwegs zum Startpunkt',
+        'wait_updating'                  => 'wird aktualisiert ...',
+        'wait_power_up'                  => 'wird eingeschaltet ...',
+        'parked_timer'                   => 'geparkt nach Zeitplan',
+        'parked_park_selected'           => 'geparkt',
+        'off_disabled'                   => 'der Mäher ist ausgeschaltet',
+        'off_hatch_open'                 => 'deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich',
+        'unknown'                        => 'unbekannter Status',
+        'error'                          => 'Fehler',
+        'error_at_power_up'              => 'Neustart ...',
+        'off_hatch_closed'               => 'Deaktiviert. Manueller Start erforderlich',
         'ok_cutting_timer_overridden'    => 'manuelles mähen',
         'parked_autotimer'               => 'geparkt durch SensorControl',
         'parked_daily_limit_reached'     => 'abgeschlossen',
@@ -980,51 +1038,57 @@ sub ReadingLangGerman {
         'guide_2_not_found'              => 'SK 2 nicht gefunden',
         'guide_3_not_found'              => 'SK 3 nicht gefunden',
         'difficult_finding_home'         => 'Problem die Ladestation zu finden',
-        'guide_calibration_accomplished' =>
-          'Kalibrierung des Suchkabels beendet',
-        'guide_calibration_failed' =>
-          'Kalibrierung des Suchkabels fehlgeschlagen',
-        'temporary_battery_problem' => 'kurzzeitiges Batterieproblem',
-        'battery_problem'           => 'Batterieproblem',
-        'alarm_mower_switched_off'  => 'Alarm! Mäher ausgeschalten',
-        'alarm_mower_stopped'       => 'Alarm! Mäher gestoppt',
-        'alarm_mower_lifted'        => 'Alarm! Mäher angehoben',
-        'alarm_mower_tilted'        => 'Alarm! Mäher gekippt',
-        'connection_changed'        => 'Verbindung geändert',
-        'connection_not_changed'    => 'Verbindung nicht geändert',
-        'com_board_not_available'   => 'COM Board nicht verfügbar',
-        'slipped'                   => 'rutscht',
-        'out_of_operation'          => 'ausser Betrieb',
-        'replace_now'    => 'kritischer Batteriestand, wechseln Sie jetzt',
-        'low'            => 'niedrig',
-        'ok'             => 'ok',
-        'no_source'      => 'ok',
-        'mower_charging' => 'Mäher wurde geladen',
-        'completed_cutting_autotimer' => 'Sensor Control erreicht',
-        'week_timer'                  => 'Wochentimer erreicht',
-        'countdown_timer'             => 'Stoppuhr Timer',
-        'undefined'                   => 'unklar',
-        'unknown'                     => 'unklar',
-        'status_device_unreachable'   => 'Gerät ist nicht in Reichweite',
-        'status_device_alive'         => 'Gerät ist in Reichweite',
-        'bad'                         => 'schlecht',
-        'poor'                        => 'schwach',
-        'good'                        => 'gut',
-        'undefined'                   => 'unklar',
-        'idle'                        => 'nichts zu tun',
-        'firmware_cancel'             => 'Firmwareupload unterbrochen',
-        'firmware_upload'             => 'Firmwareupload',
-        'unsupported'                 => 'nicht unterstützt',
-        'up_to_date'                  => 'auf dem neusten Stand',
-        'mower'                       => 'Mäher',
-        'watering_computer'           => 'Bewässerungscomputer',
-        'no_frost'                    => 'kein Frost',
-        'open'                        => 'offen',
-        'closed'                      => 'geschlossen',
-        'included'                    => 'inbegriffen',
-        'active'                      => 'aktiv',
-        'inactive'                    => 'nicht aktiv',
-        'hibernate'                   => 'Winterschlaf',
+        'guide_calibration_accomplished' => 'Kalibrierung des Suchkabels beendet',
+        'guide_calibration_failed'       => 'Kalibrierung des Suchkabels fehlgeschlagen',
+        'temporary_battery_problem'      => 'kurzzeitiges Batterieproblem',
+        'battery_problem'                => 'Batterieproblem',
+        'alarm_mower_switched_off'       => 'Alarm! Mäher ausgeschalten',
+        'alarm_mower_stopped'            => 'Alarm! Mäher gestoppt',
+        'alarm_mower_lifted'             => 'Alarm! Mäher angehoben',
+        'alarm_mower_tilted'             => 'Alarm! Mäher gekippt',
+        'connection_changed'             => 'Verbindung geändert',
+        'connection_not_changed'         => 'Verbindung nicht geändert',
+        'com_board_not_available'        => 'COM Board nicht verfügbar',
+        'slipped'                        => 'rutscht',
+        'out_of_operation'               => 'ausser Betrieb',
+        'replace_now'                    => 'kritischer Batteriestand, wechseln Sie jetzt',
+        'low'                            => 'niedrig',
+        'ok'                             => 'ok',
+        'no_source'                      => 'ok',
+        'mower_charging'                 => 'Mäher wurde geladen',
+        'completed_cutting_autotimer'    => 'Sensor Control erreicht',
+        'week_timer'                     => 'Wochentimer erreicht',
+        'countdown_timer'                => 'Stoppuhr Timer',
+        'undefined'                      => 'unklar',
+        'unknown'                        => 'unklar',
+        'status_device_unreachable'      => 'Gerät ist nicht in Reichweite',
+        'status_device_alive'            => 'Gerät ist in Reichweite',
+        'bad'                            => 'schlecht',
+        'poor'                           => 'schwach',
+        'good'                           => 'gut',
+        'undefined'                      => 'unklar',
+        'idle'                           => 'nichts zu tun',
+        'firmware_cancel'                => 'Firmwareupload unterbrochen',
+        'firmware_upload'                => 'Firmwareupload',
+        'unsupported'                    => 'nicht unterstützt',
+        'up_to_date'                     => 'auf dem neusten Stand',
+        'mower'                          => 'Mäher',
+        'watering_computer'              => 'Bewässerungscomputer',
+        'no_frost'                       => 'kein Frost',
+        'open'                           => 'offen',
+        'closed'                         => 'geschlossen',
+        'included'                       => 'inbegriffen',
+        'active'                         => 'aktiv',
+        'inactive'                       => 'nicht aktiv',
+        'hibernate'                      => 'Winterschlaf',
+
+        'permanently paused' => 'Dauerhaft pausiert',
+        'paused until %s' => 'pausiert bis %s',
+        
+        'watering. %s minutes remaining' => 'Wird bewässert. %d Minuten verbleibend',
+        'next timer %s' => 'Nächste Bewässerung: %s',
+
+
     );
 
     if (
