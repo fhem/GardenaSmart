@@ -894,7 +894,7 @@ sub setState {
             :
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # zeitplan aktiv
-              ? sprintf( RigReadingsValue($hash, 'next timer %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
+              ? sprintf( RigReadingsValue($hash, 'next timer %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') )-(Time::Piece->new )->tzoffset )
 
               # zeitplan pausiert
               : RigReadingsValue($hash, 'closed')
@@ -1074,7 +1074,7 @@ sub ReadingLangGerman {
         'permanently paused' => 'Dauerhaft pausiert',
         'paused until %s' => 'pausiert bis %s',
         
-        'watering. %s minutes remaining' => 'Wird bewässert. %d Minuten verbleibend',
+        'watering. %s minutes remaining.' => 'Wird bewässert. %d Minuten verbleibend.',
         'next timer: %s' => 'Nächste Bewässerung: %s',
 
 
