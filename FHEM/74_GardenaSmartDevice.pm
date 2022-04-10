@@ -849,9 +849,6 @@ sub setState {
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
 
     #online state water control
-    # zeit bewaesseung
-    # online | offline
-    # open | closed
     # zeitplan   -> dauert pausiert wenn 2038-01-18T00:00:00.000Z
 
     # watering-watering_timer_1_state idle | scheduled | manual
@@ -863,20 +860,12 @@ sub setState {
    
     # 1. Ventil geschlossen, Zeitplan pausiert.
     #   App zeigt: nichts (wenn vorher ein Zeitplan abgebrochen wurde, steht da "Unterbrochen   xx:yy - zz:aa")
-    #    - STATE=closed & watering-watering_timer_1_state=idle  && scheduling-schedules_paused_unti != ''  && watering-watering_timer_1_duration = 0 
-
     # 2. Ventil geschlossen, Zeitplan aktiv.
     #   App zeigt: "Nächste Bewässerung heute um xx:yy Uhr" (wenn vorher ein Zeitplan abgebrochen wurde, steht da vorher auch "Unterbrochen   xx:yy - zz:aa")
-    #   - STATE=closed & watering-watering_timer_1_duration = 0 && watering-watering_timer_1_state=scheduled (?) &  scheduling-schedules_paused_until = ''
-
-    # 3. Ventil manuell geöffnet, späterer Zeitplan aktiv.
+    # 3. Ventil manuell geoeffnet, späterer Zeitplan aktiv.
     #   Wird bewässert   xx Minuten verbleibend" und "Nächste Bewässerung   heute um xx:yy Uhr"
-    #   - STATE=    watering-watering_timer_1_duration != 0 &&  scheduling-schedules_paused_until = ''  && watering-watering_timer_1_state=manual
-
-    # 4. Ventil manuell geöffnet, Zeitpläne deaktiviert.
+    # 4. Ventil manuell geoeffnet, Zeitpläne deaktiviert.
     #   App zeigt: "Wird bewässert   xx Minuten verbleibend"
-    #   - STATE=open & watering-watering_timer_1_duration != 0 && watering-watering_timer_1_state=idle (?) &  scheduling-schedules_paused_unti != ''
-#RigReadingsValue
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
 
          my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
@@ -893,29 +882,14 @@ sub setState {
                 ? sprintf( (RigReadingsValue($hash, 'will be irrigated %s minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ))
                 # naechter termin
                 : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
-
-            #RigReadingsValue( $hash, 'open' )   
             # zu
             :
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # zeitplan aktiv
-              ? sprintf( RigReadingsValue($hash, 'next watering: %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
-
+              ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
               # zeitplan pausiert
               : RigReadingsValue($hash, 'closed')
-            
-            
             ;
-
-            #  ( ReadingsVal( $name, 'scheduling-schedules_paused_until', '') eq '' ? # leer wenn zeitplan aktiv
-            #         'scheduled watering next start: '
-            #           . (
-            #             ReadingsVal(
-            #               $name, 'scheduling-schedules_paused_until',
-            #               'no timer'
-            #             )
-            #           ) : 'closed' );
-      
       # state offline | override
       $state_string = 'offline' if ($online_state eq 'offline');
  
