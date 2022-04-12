@@ -874,12 +874,12 @@ sub setState {
             ? 
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # leer ( zeitplan aktiv ... ) 
-              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %s minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
               # zeitplan pausiert
               : 
                 ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
                 # pause bis  dauerhaft
-                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %s minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ))
+                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60) )
                 # naechter termin
                 : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
             # zu
@@ -1052,7 +1052,7 @@ sub ReadingLangGerman {
         'awake'                          => 'Aufgewacht',
         'schedule permanently paused'    => 'Zeitplan dauerhaft pausiert',
         'paused until %s'                => 'pausiert bis %s',        
-        'will be irrigated %s minutes remaining.'=> 'Wird bewässert. %d Minuten verbleibend.',
+        'will be irrigated %.f minutes remaining.'=> 'Wird bewässert. %.f Minuten verbleibend.',
         'next watering: %s'              => 'Nächste Bewässerung: %s',
     );
 
