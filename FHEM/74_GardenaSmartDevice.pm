@@ -1,8 +1,8 @@
 ###############################################################################
 #
-# Developed with Kate
+# Developed with VSCodium and richterger perl plugin.
 #
-#  (c) 2017-2021 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
+#  (c) 2017-2022 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
 #  All rights reserved
 #
 #   Special thanks goes to comitters:
@@ -72,15 +72,11 @@ eval {
     require JSON::MaybeXS;
     import JSON::MaybeXS qw( decode_json encode_json );
     1;
-};
-
-if ($@) {
-    $@ = undef;
+} or do {
 
     # try to use JSON wrapper
     #   for chance of better performance
     eval {
-
         # JSON preference order
         local $ENV{PERL_JSON_BACKEND} =
           'Cpanel::JSON::XS,JSON::XS,JSON::PP,JSON::backportPP'
@@ -89,10 +85,7 @@ if ($@) {
         require JSON;
         import JSON qw( decode_json encode_json );
         1;
-    };
-
-    if ($@) {
-        $@ = undef;
+    } or do {
 
         # In rare cases, Cpanel::JSON::XS may
         #   be installed but JSON|JSON::MaybeXS not ...
@@ -100,10 +93,7 @@ if ($@) {
             require Cpanel::JSON::XS;
             import Cpanel::JSON::XS qw(decode_json encode_json);
             1;
-        };
-
-        if ($@) {
-            $@ = undef;
+        } or do {
 
             # In rare cases, JSON::XS may
             #   be installed but JSON not ...
@@ -111,10 +101,7 @@ if ($@) {
                 require JSON::XS;
                 import JSON::XS qw(decode_json encode_json);
                 1;
-            };
-
-            if ($@) {
-                $@ = undef;
+            } or do {
 
                 # Fallback to built-in JSON which SHOULD
                 #   be available since 5.014 ...
@@ -122,20 +109,17 @@ if ($@) {
                     require JSON::PP;
                     import JSON::PP qw(decode_json encode_json);
                     1;
-                };
-
-                if ($@) {
-                    $@ = undef;
+                } or do {
 
                     # Fallback to JSON::backportPP in really rare cases
                     require JSON::backportPP;
                     import JSON::backportPP qw(decode_json encode_json);
                     1;
-                }
-            }
-        }
-    }
-}
+                };
+            };
+        };
+    };
+};
 
 ## Import der FHEM Funktionen
 #-- Run before package compilation
@@ -164,7 +148,7 @@ BEGIN {
 #-- Export to main context with different name
 GP_Export(
     qw(
-        Initialize
+      Initialize
       )
 );
 
@@ -181,7 +165,7 @@ sub Initialize {
     $hash->{AttrFn} = \&Attr;
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
-      . "model:watering_computer,sensor,mower,ic24,power,electronic_pressure_pump "
+      . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
       . "IODev "
       . $readingFnAttributes;
     $hash->{parseParams} = 1;
@@ -204,22 +188,23 @@ sub Define {
     my $deviceId = $aArg->[2];
     my $category = $aArg->[3];
 
-    $hash->{DEVICEID}                           = $deviceId;
-    $hash->{VERSION}                            = version->parse($VERSION)->normal;
-    $hash->{helper}{STARTINGPOINTID}            = '';
-    $hash->{helper}{schedules_paused_until_id}  = '';
-    $hash->{helper}{eco_mode_id}                = '';
-    $hash->{helper}{button_config_time_id}      = '';
-    $hash->{helper}{winter_mode_id}             = '';
-    
-    $hash->{helper}{_id}             = '';
+    $hash->{DEVICEID}                = $deviceId;
+    $hash->{VERSION}                 = version->parse($VERSION)->normal;
+    $hash->{helper}{STARTINGPOINTID} = '';
+    $hash->{helper}{schedules_paused_until_id} = '';
+    $hash->{helper}{eco_mode_id}               = '';
+    $hash->{helper}{button_config_time_id}     = '';
+    $hash->{helper}{winter_mode_id}            = '';
+
+    $hash->{helper}{_id} = '';
+
     # IrrigationControl valve control max 6
-    $hash->{helper}{schedules_paused_until_1_id}  = '';
-    $hash->{helper}{schedules_paused_until_2_id}  = '';
-    $hash->{helper}{schedules_paused_until_3_id}  = '';
-    $hash->{helper}{schedules_paused_until_4_id}  = '';
-    $hash->{helper}{schedules_paused_until_5_id}  = '';
-    $hash->{helper}{schedules_paused_until_6_id}  = '';
+    $hash->{helper}{schedules_paused_until_1_id} = '';
+    $hash->{helper}{schedules_paused_until_2_id} = '';
+    $hash->{helper}{schedules_paused_until_3_id} = '';
+    $hash->{helper}{schedules_paused_until_4_id} = '';
+    $hash->{helper}{schedules_paused_until_5_id} = '';
+    $hash->{helper}{schedules_paused_until_6_id} = '';
 
     CommandAttr( undef,
         "$name IODev $modules{GardenaSmartBridge}{defptr}{BRIDGE}->{NAME}" )
@@ -283,16 +268,23 @@ sub Attr {
 }
 
 sub Set {
-    my $hash                = shift // return;
-    my $aArg                = shift // return;
+    my $hash = shift // return;
+    my $aArg = shift // return;
 
-    my $name                = shift @$aArg;
-    my $cmd                 = shift @$aArg // return qq{"set $name" needs at least one argument};
+    my $name = shift @$aArg;
+    my $cmd  = shift @$aArg
+      // return qq{"set $name" needs at least one argument};
 
     my $payload;
     my $abilities;
     my $service_id;
-    my $mainboard_version   = ReadingsVal( $name, 'mower_type-mainboard_version', 0.0 );
+    my $mainboard_version =
+      ReadingsVal( $name, 'mower_type-mainboard_version', 0.0 );
+    
+    my ($Sekunden, $Minuten, $Stunden, $Monatstag, $Monat,
+        $Jahr, $Wochentag, $Jahrestag, $Sommerzeit) = localtime(time);
+
+    my $timezone_offset = $Sommerzeit ? 0 : ( Time::Piece->new )->tzoffset;
 
     #set default abilitie ... overwrite in cmd to change
     $abilities = 'mower'
@@ -305,51 +297,62 @@ sub Set {
     $abilities = 'manual_watering'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
 
-    ### mower  
+    ### mower
     # service_id (eco, parkuntilfurhternotice, startpoints)
     if ( lc $cmd eq 'parkuntilfurthernotice' ) {
         $payload = '"name":"park_until_further_notice"';
         if ( $mainboard_version > 10.30 ) {
-          $payload = ' "settings":{"name":"schedules_paused_until","value":"2038-01-18T00:00:00.000Z","device":"'.$hash->{DEVICEID}.'"}';
-          $abilities = 'mower_settings'  ;
-          $service_id = $hash->{helper}{schedules_paused_until_id};
+            $payload =
+' "settings":{"name":"schedules_paused_until","value":"2038-01-18T00:00:00.000Z","device":"'
+              . $hash->{DEVICEID} . '"}';
+            $abilities  = 'mower_settings';
+            $service_id = $hash->{helper}{schedules_paused_until_id};
         }
     }
-    elsif ( lc $cmd eq 'parkuntilnexttimer' ) { 
+    elsif ( lc $cmd eq 'parkuntilnexttimer' ) {
         $payload = '"name":"park_until_next_timer"';
-        if ( $mainboard_version > 10.30 ){
-          $payload = '"properties":{"name":"mower_timer","value":0}' ;
-          $abilities = 'mower_timer'; 
+        if ( $mainboard_version > 10.30 ) {
+            $payload   = '"properties":{"name":"mower_timer","value":0}';
+            $abilities = 'mower_timer';
         }
     }
     elsif ( lc $cmd eq 'startresumeschedule' ) {
         $payload = '"name":"start_resume_schedule"';
         if ( $mainboard_version > 10.30 ) {
-          $payload = ' "settings":{"name":"schedules_paused_until","value":"","device":"'.$hash->{DEVICEID}.'"}';
-          $abilities = 'mower_settings'  ;
-          $service_id = $hash->{helper}{schedules_paused_until_id};
+            $payload =
+' "settings":{"name":"schedules_paused_until","value":"","device":"'
+              . $hash->{DEVICEID} . '"}';
+            $abilities  = 'mower_settings';
+            $service_id = $hash->{helper}{schedules_paused_until_id};
         }
     }
     elsif ( lc $cmd eq 'startoverridetimer' ) {
         $payload = '"name":"start_override_timer","parameters":{"duration":'
           . $aArg->[0] * 60 . '}';
-        if ( $mainboard_version > 10.30 ){
-          $payload = '"properties":{"name":"mower_timer","value":'.$aArg->[0] * 60 .'}';
-          $abilities = 'mower_timer'; 
+        if ( $mainboard_version > 10.30 ) {
+            $payload = '"properties":{"name":"mower_timer","value":'
+              . $aArg->[0] * 60 . '}';
+            $abilities = 'mower_timer';
         }
 
     }
     elsif ( lc $cmd eq 'startpoint' ) {
         my $err;
-        ( $err, $payload, $abilities ) = SetPredefinedStartPoints( $hash, $aArg );
+        ( $err, $payload, $abilities ) =
+          SetPredefinedStartPoints( $hash, $aArg );
         $service_id = $hash->{helper}{STARTINGPOINTID};
         return $err if ( defined($err) );
     }
     elsif ( lc $cmd eq 'eco' ) {
-        $payload = '"settings": {"name": "eco_mode", "value": '.$aArg->[0].', "device": "'.$hash->{DEVICEID}.'"}';
-        $abilities = 'mower_settings'  if ( $mainboard_version > 10.30 );
+        $payload =
+            '"settings": {"name": "eco_mode", "value": '
+          . $aArg->[0]
+          . ', "device": "'
+          . $hash->{DEVICEID} . '"}';
+        $abilities  = 'mower_settings' if ( $mainboard_version > 10.30 );
         $service_id = $hash->{helper}{eco_mode_id};
-        #$abilities['service_id'] = $hash->{helper}{SCHEDULESID}  if ( $mainboard_version > 10.30 );
+
+#$abilities['service_id'] = $hash->{helper}{SCHEDULESID}  if ( $mainboard_version > 10.30 );
     }
     ### electronic_pressure_pump
     elsif ( lc $cmd eq 'pumptimer' ) {
@@ -365,16 +368,15 @@ sub Set {
           . $aArg->[0] * 60
           . ',"valve_id":1}}';
     }
-    elsif ( lc $cmd eq 'manualbuttontime'){
-      $service_id = $hash->{helper}{button_config_time_id};
-      $payload=
-        '"properties":{"name":"button_config_time",'
-        .'"value":'
-        .  $aArg->[0] * 60
-        . ',"timestamp":"2021-05-26T19:06:23.680Z"'
-        . ',"at_bound":null,"unit":"seconds","ability":"'
-        . $service_id
-        .'"}';
+    elsif ( lc $cmd eq 'manualbuttontime' ) {
+        $service_id = $hash->{helper}{button_config_time_id};
+        $payload =
+            '"properties":{"name":"button_config_time",'
+          . '"value":'
+          . $aArg->[0] * 60
+          . ',"timestamp":"2021-05-26T19:06:23.680Z"'
+          . ',"at_bound":null,"unit":"seconds","ability":"'
+          . $service_id . '"}';
         $abilities = 'watering_button_config';
     }
     elsif ( $cmd =~ m{\AcancelOverride}xms ) {
@@ -393,26 +395,40 @@ sub Set {
           . ',"valve_id":'
           . $valve_id . '}}';
     }
-    elsif ( $cmd =~ /.*Schedule/ ){
-      my $duration = (( defined($aArg->[0]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[0]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2038-01-18T00:00:00.000Z'));
-    
-      $abilities = 'wateringcomputer_settings';
-      $service_id = $hash->{helper}->{'schedules_paused_until_id'};
-      $payload = '"settings":{"name":"schedules_paused_until"'
-                  . ', "value":"'
-                  . ($cmd eq 'resumeSchedule' ? '' : $duration )
-                  . '","device":"'
-                  . $hash->{DEVICEID}
-                  . '"}';
+    elsif ( $cmd =~ /.*Schedule$/ ) {
+        my $duration = (
+            (
+                defined( $aArg->[0] )
+                ? (
+                    (
+                        ( Time::Piece->new ) +
+                          ( ONE_HOUR * $aArg->[0] ) -
+                          $timezone_offset
+                    )->datetime
+                  )
+                  . '.000Z'
+                : '2038-01-18T00:00:00.000Z'
+            )
+        );
+
+        $abilities  = 'wateringcomputer_settings';
+        $service_id = $hash->{helper}->{'schedules_paused_until_id'};
+        $payload =
+            '"settings":{"name":"schedules_paused_until"'
+          . ', "value":"'
+          . ( $cmd eq 'resumeSchedule' ? '' : $duration )
+          . '","device":"'
+          . $hash->{DEVICEID} . '"}';
     }
     elsif ( lc $cmd eq 'on' || lc $cmd eq 'off' || lc $cmd eq 'on-for-timer' ) {
         my $val = (
-            scalar(!@$aArg == 0) && ref($aArg) eq 'ARRAY'
+            scalar( !@$aArg == 0 ) && ref($aArg) eq 'ARRAY'
             ? $aArg->[0] * 60
             : lc $cmd
         );
 
-        $payload = '"properties":{"name":"power_timer", "value":"' . $val . '"}';
+        $payload =
+          '"properties":{"name":"power_timer", "value":"' . $val . '"}';
     }
     ### Watering ic24
     elsif ( $cmd =~ m{\AmanualDurationValve\d\z}xms ) {
@@ -430,34 +446,51 @@ sub Set {
           . ',"valve_id":'
           . $valve_id . '}}';
     }
-    elsif ( $cmd eq 'closeAllValves' ){
-      $payload = '"name":"close_all_valves","parameters":{}';
+    elsif ( $cmd eq 'closeAllValves' ) {
+        $payload = '"name":"close_all_valves","parameters":{}';
     }
-    elsif ( $cmd =~ /.*ScheduleValve/ ){
-      my $valve_id = $aArg->[0];
-      my $duration = (( defined($aArg->[1]) ? ( ((Time::Piece->new)+(ONE_HOUR *  $aArg->[1]) - (Time::Piece->new)->tzoffset )->datetime ).'.000Z' : '2038-01-18T00:00:00.000Z'));
-    
-      $abilities = 'irrigation_settings';
-      $service_id = $hash->{helper}->{'schedules_paused_until_'.$valve_id.'_id'};
-      $payload = '"settings":{"name":"schedules_paused_until_'
-                  . $valve_id
-                  . '", "value":"'
-                  . ($cmd eq 'resumeScheduleValve' ? '' : $duration )
-                  . '","device":"'
-                  . $hash->{DEVICEID}
-                  . '"}';
+    elsif ( $cmd =~ /.*ScheduleValve$/ ) {
+        my $valve_id = $aArg->[0];
+        my $duration = (
+            (
+                defined( $aArg->[1] )
+                ? (
+                    (
+                        ( Time::Piece->new ) +
+                          ( ONE_HOUR * $aArg->[1] ) -
+                          $timezone_offset
+                    )->datetime
+                  )
+                  . '.000Z'
+                : '2038-01-18T00:00:00.000Z'
+            )
+        );
+
+        $abilities = 'irrigation_settings';
+        $service_id =
+          $hash->{helper}->{ 'schedules_paused_until_' . $valve_id . '_id' };
+        $payload =
+            '"settings":{"name":"schedules_paused_until_'
+          . $valve_id
+          . '", "value":"'
+          . ( $cmd eq 'resumeScheduleValve' ? '' : $duration )
+          . '","device":"'
+          . $hash->{DEVICEID} . '"}';
     }
     ### Sensors
     elsif ( lc $cmd eq 'refresh' ) {
 
         my $sensname = $aArg->[0];
         if ( lc $sensname eq 'temperature' ) {
-            if ( ReadingsVal( $name, 'device_info-category', 'sensor' ) eq 'sensor') {
-              $payload   = '"name":"measure_ambient_temperature"';
-              $abilities = 'ambient_temperature';
-            } else {
-              $payload   = '"name":"measure_soil_temperature"';
-              $abilities = 'soil_temperature';
+            if ( ReadingsVal( $name, 'device_info-category', 'sensor' ) eq
+                'sensor' )
+            {
+                $payload   = '"name":"measure_ambient_temperature"';
+                $abilities = 'ambient_temperature';
+            }
+            else {
+                $payload   = '"name":"measure_soil_temperature"';
+                $abilities = 'soil_temperature';
             }
         }
         elsif ( lc $sensname eq 'light' ) {
@@ -471,13 +504,13 @@ sub Set {
         }
     }
     ## winter sleep
-    elsif ( lc $cmd eq 'winter_mode') {
-        $payload = '"settings":{"name":"winter_mode","value":"'
-        . $aArg->[0]
-        .'","device":"'
-        . $hash->{DEVICEID}
-        .'"}';
-        $abilities = 'winter_settings';
+    elsif ( lc $cmd eq 'winter_mode' ) {
+        $payload =
+            '"settings":{"name":"winter_mode","value":"'
+          . $aArg->[0]
+          . '","device":"'
+          . $hash->{DEVICEID} . '"}';
+        $abilities  = 'winter_settings';
         $service_id = $hash->{helper}->{'winter_mode_id'};
     }
     else {
@@ -488,7 +521,8 @@ sub Set {
 'parkUntilFurtherNotice:noArg parkUntilNextTimer:noArg startResumeSchedule:noArg startOverrideTimer:slider,0,1,240 startpoint'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
 
-        $list .= 'manualOverride:slider,1,1,59 cancelOverride:noArg resumeSchedule:noArg stopSchedule manualButtonTime:slider,0,2,100'
+        $list .=
+'manualOverride:slider,1,1,59 cancelOverride:noArg resumeSchedule:noArg stopSchedule manualButtonTime:slider,0,2,100'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
         $list .=
@@ -496,14 +530,17 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         $list .= 'refresh:temperature,humidity'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' );
+          if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ );
+
         # add light for old sensors
         $list .= ',light'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' 
-            && ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor' );
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor'
+            && ReadingsVal( $name, 'device_info-category', 'unknown' ) eq
+            'sensor' );
 
         $list .= 'on:noArg off:noArg on-for-timer:slider,0,1,720'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
+
         # all devices has abilitie to fall a sleep
         $list .= ' winter_mode:awake,hibernate';
         return "Unknown argument $cmd, choose one of $list";
@@ -584,25 +621,30 @@ sub WriteReadings {
             for my $propertie (
                 @{ $decode_json->{abilities}[$abilities]{properties} } )
             {
-              if (   exists($decode_json->{abilities}[$abilities]{name})
-                  && ( 
-                      $decode_json->{abilities}[$abilities]{name} eq 'watering' )
-                ) {
-                  if ( $propertie->{name} eq 'button_config_time'  ) 
-                  { 
-                    if ( $hash->{helper}{$propertie->{name}.'_id'} ne
-                          $decode_json->{abilities}[$abilities]{id} ) 
-                          {
-                            $hash->{helper}{$propertie->{name}.'_id'} =
-                            $decode_json->{abilities}[$abilities]{id};
-                          }
-                          readingsBulkUpdateIfChanged(
-                              $hash,
-                              'manualButtonTime',
-                              (RigReadingsValue( $hash, $propertie->{value} / 60) )
-                          );
-                          next;
-                  }
+                if (
+                    exists( $decode_json->{abilities}[$abilities]{name} )
+                    && ( $decode_json->{abilities}[$abilities]{name} eq
+                        'watering' )
+                  )
+                {
+                    if ( $propertie->{name} eq 'button_config_time' ) {
+                        if ( $hash->{helper}{ $propertie->{name} . '_id' } ne
+                            $decode_json->{abilities}[$abilities]{id} )
+                        {
+                            $hash->{helper}{ $propertie->{name} . '_id' } =
+                              $decode_json->{abilities}[$abilities]{id};
+                        }
+                        readingsBulkUpdateIfChanged(
+                            $hash,
+                            'manualButtonTime',
+                            (
+                                RigReadingsValue(
+                                    $hash, $propertie->{value} / 60
+                                )
+                            )
+                        );
+                        next;
+                    }
                 }
 
                 readingsBulkUpdateIfChanged(
@@ -653,21 +695,22 @@ sub WriteReadings {
                         || $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} eq 'light-light' )
                   );
-                  
+
                 readingsBulkUpdateIfChanged(
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
-                      . $propertie->{name} 
+                      . $propertie->{name}
                       . '_timestamp',
-                      Time::Piece->strptime(RigReadingsValue( $hash, $propertie->{timestamp} ), "%Y-%m-%d %H:%M:%S")->strftime('%s')
-                      
+                    Time::Piece->strptime(
+                        RigReadingsValue( $hash, $propertie->{timestamp} ),
+                        "%Y-%m-%d %H:%M:%S" )->strftime('%s')
+
                   )
                   if (
-                    defined( $propertie->{value} ) 
+                    defined( $propertie->{value} )
                     && (  $decode_json->{abilities}[$abilities]{name} . '-'
-                        . $propertie->{name} eq 'mower_timer-mower_timer'
-                  )
-                );
+                        . $propertie->{name} eq 'mower_timer-mower_timer' )
+                  );
 
                 readingsBulkUpdateIfChanged(
                     $hash,
@@ -706,32 +749,45 @@ sub WriteReadings {
         $abilities--;
     } while ( $abilities >= 0 );
 
-    do {
-        #Log3 $name, 1, "Settings pro Device : ".$decode_json->{settings}[$settings]{name};
-        #Log3 $name, 1, " - KEIN ARRAY" if ( ref( $decode_json->{settings}[$settings]{value} ) ne "ARRAY");
-        #Log3 $name, 1, " - IST ARRAY" if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY");
+    my $winter_mode;
 
-        if (   exists($decode_json->{settings}[$settings]{name})
-          && ( 
-            $decode_json->{settings}[$settings]{name} =~ /schedules_paused_until_?\d?$/
-            || $decode_json->{settings}[$settings]{name} eq 'eco_mode' 
-            || $decode_json->{settings}[$settings]{name} eq 'winter_mode' )
-           )
-        {  
-            if ( $hash->{helper}{$decode_json->{settings}[$settings]{name}.'_id'} ne
+    do {
+#Log3 $name, 1, "Settings pro Device : ".$decode_json->{settings}[$settings]{name};
+#Log3 $name, 1, " - KEIN ARRAY" if ( ref( $decode_json->{settings}[$settings]{value} ) ne "ARRAY");
+#Log3 $name, 1, " - IST ARRAY" if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY");
+
+        if (
+            exists( $decode_json->{settings}[$settings]{name} )
+            && ( $decode_json->{settings}[$settings]{name} =~
+                   /schedules_paused_until_?\d?$/
+                || $decode_json->{settings}[$settings]{name} eq 'eco_mode'
+                || $decode_json->{settings}[$settings]{name} eq 'winter_mode' )
+          )
+        {
+            if ( $hash->{helper}
+                { $decode_json->{settings}[$settings]{name} . '_id' } ne
                 $decode_json->{settings}[$settings]{id} )
             {
-                $hash->{helper}{$decode_json->{settings}[$settings]{name}.'_id'} =
+                $hash->{helper}
+                  { $decode_json->{settings}[$settings]{name} . '_id' } =
                   $decode_json->{settings}[$settings]{id};
             }
+            # check watering controler single schedules pause until
+            if ( $decode_json->{settings}[$settings]{name} eq 'schedules_paused_until' ) {
+              readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_paused_until',
+                    $decode_json->{settings}[$settings]{value} );
+            }
+
             # save winter mode as reading
-            readingsBulkUpdateIfChanged(
-                    $hash,
-                    'winter_mode',
-                    $decode_json->{settings}[$settings]{value}
-                ) if ($decode_json->{settings}[$settings]{name} eq 'winter_mode');
+
+            if ( $decode_json->{settings}[$settings]{name} eq 'winter_mode' ) {
+                readingsBulkUpdateIfChanged( $hash, 'winter_mode',
+                    $decode_json->{settings}[$settings]{value} );
+
+                $winter_mode = $decode_json->{settings}[$settings]{value};
+            }
         }
-        
+
         if ( ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY"
             && $decode_json->{settings}[$settings]{name} eq 'starting_points' )
         {
@@ -763,36 +819,111 @@ sub WriteReadings {
         $settings--;
     } while ( $settings >= 0 );
 
-    
-    my $online_state = ReadingsVal($name , 'device_info-connection_status', 'unknown');
-      
+    if ( $winter_mode ne 'hibernate' ) {
+        setState($hash);
+    }
+    else {
+        readingsBulkUpdate( $hash, 'state',
+            RigReadingsValue( $hash, 'hibernate' ) );
+    }
+
+    readingsEndUpdate( $hash, 1 );
+
+    Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written";
+
+    return;
+}
+
+sub setState {
+    my $hash = shift;
+    my $name = $hash->{NAME};
+
+    my $online_state =
+      ReadingsVal( $name, 'device_info-connection_status', 'unknown' );
+
+    #online state mower
     readingsBulkUpdate( $hash, 'state',
-        $online_state eq 'online' ?
-          ReadingsVal( $name, 'mower-status', 'readingsValError') : 'offline'
-        )
+        $online_state eq 'online'
+        ? ReadingsVal( $name, 'mower-status', 'readingsValError' )
+        : 'offline' )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
-    readingsBulkUpdate(
-        $hash, 'state',
-        (
-                ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )
-                  =~ m{\A[1-9]([0-9]+)?\z}xms
-            ? RigReadingsValue( $hash, 'open' )
-            : RigReadingsValue( $hash, 'closed' )
-        )
-    ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
+    #online state water control
+    # zeitplan   -> dauert pausiert wenn 2038-01-18T00:00:00.000Z
 
-    if ( AttrVal( $name, 'model', 'unknown' ) eq 'sensor' ) {
-      my $state_string = ( ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor') ?  'T: ' .ReadingsVal( $name, 'ambient_temperature-temperature', 'readingsValError' ) . '°C, ' :  'T: ' .ReadingsVal( $name, 'soil_temperature-temperature', 'readingsValError' ) . '°C, ' ;
-      $state_string .=  'H: '. ReadingsVal( $name, 'humidity-humidity', 'readingsValError' ). '%';
-      $state_string .= ', L: ' . ReadingsVal( $name, 'light-light', 'readingsValError' ) . 'lux' if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
-      
-      # if ( $online_state eq 'offline') {
-      #   readingsBulkUpdate( $hash, 'humidity-humidity', '-1' );
-      #   readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
-      #   readingsBulkUpdate( $hash, 'light-light', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
-      # }
-      readingsBulkUpdate($hash, 'state', $online_state eq 'online' ? $state_string : 'offline' )
+    # watering-watering_timer_1_state idle | scheduled | manual
+    # watering-watering_timer_1_duration  0    in sec
+    # scheduling-scheduled_watering_next_start  XXX 
+    # scheduling-scheduled_watering_end   | end  < NOW && duration = 0 => abbruch manuell
+    # scheduling-schedules_paused_until
+
+   
+    # 1. Ventil geschlossen, Zeitplan pausiert.
+    #   App zeigt: nichts (wenn vorher ein Zeitplan abgebrochen wurde, steht da "Unterbrochen   xx:yy - zz:aa")
+    # 2. Ventil geschlossen, Zeitplan aktiv.
+    #   App zeigt: "Nächste Bewässerung heute um xx:yy Uhr" (wenn vorher ein Zeitplan abgebrochen wurde, steht da vorher auch "Unterbrochen   xx:yy - zz:aa")
+    # 3. Ventil manuell geoeffnet, späterer Zeitplan aktiv.
+    #   Wird bewässert   xx Minuten verbleibend" und "Nächste Bewässerung   heute um xx:yy Uhr"
+    # 4. Ventil manuell geoeffnet, Zeitpläne deaktiviert.
+    #   App zeigt: "Wird bewässert   xx Minuten verbleibend"
+    if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
+
+         my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
+              m{\A[1-9]([0-9]+)?\z}xms
+            # offen
+            ? 
+              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+              # leer ( zeitplan aktiv ... ) 
+              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+              # zeitplan pausiert
+              : 
+                ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
+                # pause bis  dauerhaft
+                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60) )
+                # naechter termin
+                : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
+            # zu
+            :
+              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+              # zeitplan aktiv
+              ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
+              # zeitplan pausiert
+              : RigReadingsValue($hash, 'closed')
+            ;
+      # state offline | override
+      $state_string = 'offline' if ($online_state eq 'offline');
+ 
+      readingsBulkUpdate(
+        $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
+    }
+
+    if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ ) {
+        my $state_string =
+          ( ReadingsVal( $name, 'device_info-category', 'unknown' ) eq
+              'sensor' )
+          ? 'T: '
+          . ReadingsVal( $name, 'ambient_temperature-temperature',
+            'readingsValError' )
+          . '°C, '
+          : 'T: '
+          . ReadingsVal( $name, 'soil_temperature-temperature',
+            'readingsValError' )
+          . '°C, ';
+        $state_string .= 'H: '
+          . ReadingsVal( $name, 'humidity-humidity', 'readingsValError' ) . '%';
+        $state_string .= ', L: '
+          . ReadingsVal( $name, 'light-light', 'readingsValError' ) . 'lux'
+          if ( ReadingsVal( $name, 'device_info-category', 'unknown' ) eq
+            'sensor' );
+
+# if ( $online_state eq 'offline') {
+#   readingsBulkUpdate( $hash, 'humidity-humidity', '-1' );
+#   readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
+#   readingsBulkUpdate( $hash, 'light-light', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
+# }
+        #online state sensor I II
+        readingsBulkUpdate( $hash, 'state',
+            $online_state eq 'online' ? RigReadingsValue( $hash, $state_string) : RigReadingsValue( $hash, 'offline') );
     }
 
     readingsBulkUpdate(
@@ -810,10 +941,6 @@ sub WriteReadings {
         ReadingsVal( $name, 'power-power_timer', 'no info from power-timer' ) )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
 
-    readingsEndUpdate( $hash, 1 );
-
-    Log3 $name, 4, "GardenaSmartDevice ($name) - readings was written";
-
     return;
 }
 
@@ -827,22 +954,21 @@ sub ReadingLangGerman {
 
     my $name           = $hash->{NAME};
     my %langGermanMapp = (
-        'ok_cutting'           => 'mähen',
-        'paused'               => 'pausiert',
-        'ok_searching'         => 'suche Ladestation',
-        'ok_charging'          => 'lädt',
-        'ok_leaving'           => 'unterwegs zum Startpunkt',
-        'wait_updating'        => 'wird aktualisiert ...',
-        'wait_power_up'        => 'wird eingeschaltet ...',
-        'parked_timer'         => 'geparkt nach Zeitplan',
-        'parked_park_selected' => 'geparkt',
-        'off_disabled'         => 'der Mäher ist ausgeschaltet',
-        'off_hatch_open' =>
-          'deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich',
-        'unknown'           => 'unbekannter Status',
-        'error'             => 'Fehler',
-        'error_at_power_up' => 'Neustart ...',
-        'off_hatch_closed'  => 'Deaktiviert. Manueller Start erforderlich',
+        'ok_cutting'                     => 'mähen',
+        'paused'                         => 'pausiert',
+        'ok_searching'                   => 'suche Ladestation',
+        'ok_charging'                    => 'lädt',
+        'ok_leaving'                     => 'unterwegs zum Startpunkt',
+        'wait_updating'                  => 'wird aktualisiert ...',
+        'wait_power_up'                  => 'wird eingeschaltet ...',
+        'parked_timer'                   => 'geparkt nach Zeitplan',
+        'parked_park_selected'           => 'geparkt',
+        'off_disabled'                   => 'der Mäher ist ausgeschaltet',
+        'off_hatch_open'                 => 'deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich',
+        'unknown'                        => 'unbekannter Status',
+        'error'                          => 'Fehler',
+        'error_at_power_up'              => 'Neustart ...',
+        'off_hatch_closed'               => 'Deaktiviert. Manueller Start erforderlich',
         'ok_cutting_timer_overridden'    => 'manuelles mähen',
         'parked_autotimer'               => 'geparkt durch SensorControl',
         'parked_daily_limit_reached'     => 'abgeschlossen',
@@ -880,50 +1006,54 @@ sub ReadingLangGerman {
         'guide_2_not_found'              => 'SK 2 nicht gefunden',
         'guide_3_not_found'              => 'SK 3 nicht gefunden',
         'difficult_finding_home'         => 'Problem die Ladestation zu finden',
-        'guide_calibration_accomplished' =>
-          'Kalibrierung des Suchkabels beendet',
-        'guide_calibration_failed' =>
-          'Kalibrierung des Suchkabels fehlgeschlagen',
-        'temporary_battery_problem' => 'kurzzeitiges Batterieproblem',
-        'battery_problem'           => 'Batterieproblem',
-        'alarm_mower_switched_off'  => 'Alarm! Mäher ausgeschalten',
-        'alarm_mower_stopped'       => 'Alarm! Mäher gestoppt',
-        'alarm_mower_lifted'        => 'Alarm! Mäher angehoben',
-        'alarm_mower_tilted'        => 'Alarm! Mäher gekippt',
-        'connection_changed'        => 'Verbindung geändert',
-        'connection_not_changed'    => 'Verbindung nicht geändert',
-        'com_board_not_available'   => 'COM Board nicht verfügbar',
-        'slipped'                   => 'rutscht',
-        'out_of_operation'          => 'ausser Betrieb',
-        'replace_now'    => 'kritischer Batteriestand, wechseln Sie jetzt',
-        'low'            => 'niedrig',
-        'ok'             => 'ok',
-        'no_source'      => 'ok',
-        'mower_charging' => 'Mäher wurde geladen',
-        'completed_cutting_autotimer' => 'Sensor Control erreicht',
-        'week_timer'                  => 'Wochentimer erreicht',
-        'countdown_timer'             => 'Stoppuhr Timer',
-        'undefined'                   => 'unklar',
-        'unknown'                     => 'unklar',
-        'status_device_unreachable'   => 'Gerät ist nicht in Reichweite',
-        'status_device_alive'         => 'Gerät ist in Reichweite',
-        'bad'                         => 'schlecht',
-        'poor'                        => 'schwach',
-        'good'                        => 'gut',
-        'undefined'                   => 'unklar',
-        'idle'                        => 'nichts zu tun',
-        'firmware_cancel'             => 'Firmwareupload unterbrochen',
-        'firmware_upload'             => 'Firmwareupload',
-        'unsupported'                 => 'nicht unterstützt',
-        'up_to_date'                  => 'auf dem neusten Stand',
-        'mower'                       => 'Mäher',
-        'watering_computer'           => 'Bewässerungscomputer',
-        'no_frost'                    => 'kein Frost',
-        'open'                        => 'offen',
-        'closed'                      => 'geschlossen',
-        'included'                    => 'inbegriffen',
-        'active'                      => 'aktiv',
-        'inactive'                    => 'nicht aktiv'
+        'guide_calibration_accomplished' => 'Kalibrierung des Suchkabels beendet',
+        'guide_calibration_failed'       => 'Kalibrierung des Suchkabels fehlgeschlagen',
+        'temporary_battery_problem'      => 'kurzzeitiges Batterieproblem',
+        'battery_problem'                => 'Batterieproblem',
+        'alarm_mower_switched_off'       => 'Alarm! Mäher ausgeschalten',
+        'alarm_mower_stopped'            => 'Alarm! Mäher gestoppt',
+        'alarm_mower_lifted'             => 'Alarm! Mäher angehoben',
+        'alarm_mower_tilted'             => 'Alarm! Mäher gekippt',
+        'connection_changed'             => 'Verbindung geändert',
+        'connection_not_changed'         => 'Verbindung nicht geändert',
+        'com_board_not_available'        => 'COM Board nicht verfügbar',
+        'slipped'                        => 'rutscht',
+        'out_of_operation'               => 'ausser Betrieb',
+        'replace_now'                    => 'kritischer Batteriestand, wechseln Sie jetzt',
+        'low'                            => 'niedrig',
+        'ok'                             => 'ok',
+        'no_source'                      => 'ok',
+        'mower_charging'                 => 'Mäher wurde geladen',
+        'completed_cutting_autotimer'    => 'Sensor Control erreicht',
+        'week_timer'                     => 'Wochentimer erreicht',
+        'countdown_timer'                => 'Stoppuhr Timer',
+        'undefined'                      => 'unklar',
+        'unknown'                        => 'unklar',
+        'status_device_unreachable'      => 'Gerät ist nicht in Reichweite',
+        'status_device_alive'            => 'Gerät ist in Reichweite',
+        'bad'                            => 'schlecht',
+        'poor'                           => 'schwach',
+        'good'                           => 'gut',
+        'undefined'                      => 'unklar',
+        'idle'                           => 'nichts zu tun',
+        'firmware_cancel'                => 'Firmwareupload unterbrochen',
+        'firmware_upload'                => 'Firmwareupload',
+        'unsupported'                    => 'nicht unterstützt',
+        'up_to_date'                     => 'auf dem neusten Stand',
+        'mower'                          => 'Mäher',
+        'watering_computer'              => 'Bewässerungscomputer',
+        'no_frost'                       => 'kein Frost',
+        'open'                           => 'offen',
+        'closed'                         => 'geschlossen',
+        'included'                       => 'inbegriffen',
+        'active'                         => 'aktiv',
+        'inactive'                       => 'nicht aktiv',
+        'hibernate'                      => 'Winterschlaf',
+        'awake'                          => 'Aufgewacht',
+        'schedule permanently paused'    => 'Zeitplan dauerhaft pausiert',
+        'paused until %s'                => 'pausiert bis %s',        
+        'will be irrigated %.f minutes remaining.'=> 'Wird bewässert. %.f Minuten verbleibend.',
+        'next watering: %s'              => 'Nächste Bewässerung: %s',
     );
 
     if (
@@ -977,7 +1107,7 @@ sub Zulu2LocalString {
         return (
             sprintf(
                 "%04d-%02d-%02d %02d:%02d:%s",
-                $lyear, $lmonth, $lday,
+                $lyear, $lmonth,  $lday,
                 $lhour, $datemin, substr( $rest, 0, 2 )
             )
         );
@@ -998,10 +1128,10 @@ sub Zulu2LocalString {
 }
 
 sub SetPredefinedStartPoints {
-    my $hash                                                = shift;
-    my $aArg                                                = shift;
+    my $hash = shift;
+    my $aArg = shift;
 
-    my ($startpoint_state,$startpoint_num,@morestartpoints) = @{$aArg};
+    my ( $startpoint_state, $startpoint_num, @morestartpoints ) = @{$aArg};
 
     my $name = $hash->{NAME};
     my $payload;
@@ -1049,6 +1179,7 @@ sub SetPredefinedStartPoints {
 
             $payload   = '"settings": ' . encode_json($decode_json_settings);
             $abilities = 'mower_settings';
+
             #$abilities['service_id'] = $hash->{helper}{STARTINGPOINTID};
         }
         else {
@@ -1404,9 +1535,9 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.2",
+  "version": "v2.4.3",
   "author": [
-    "Marko Oldenburg <leongaultier@gmail.com>"
+    "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
   "x_fhem_maintainer": [
     "CoolTux"
