@@ -777,9 +777,25 @@ sub WriteReadings {
               readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_paused_until',
                     $decode_json->{settings}[$settings]{value} );
             }
+            #####
+            #ic24 schedules pause until
+            if ($decode_json->{settings}[$settings]{name} =~ /schedules_paused_until_?\d?$/) {
+              #my $ventil = substr($decode_json->{settings}[$settings]{name}, -1); # => 1 - 6
+              readingsBulkUpdateIfChanged( $hash, 'scheduling-'.$decode_json->{settings}[$settings]{name},
+                                  $decode_json->{settings}[$settings]{value} );
+            }
+            if ($decode_json->{settings}[$settings]{name} eq 'valve_names'
+                && ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY" ) {
+              #_name_1  =  
+              my @valves = @{$decode_json->{settings}[$settings]{value}};
+              foreach my $valve( @valves ) {
+              readingsBulkUpdateIfChanged( $hash, 'valve-valve_name_'.$valve->{"id"},
+                                                  $valve->{"name"} );
+              }
+            }
 
+            ######
             # save winter mode as reading
-
             if ( $decode_json->{settings}[$settings]{name} eq 'winter_mode' ) {
                 readingsBulkUpdateIfChanged( $hash, 'winter_mode',
                     $decode_json->{settings}[$settings]{value} );
@@ -847,6 +863,18 @@ sub setState {
         ? ReadingsVal( $name, 'mower-status', 'readingsValError' )
         : 'offline' )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
+
+    # ic24
+    readingsBulkUpdate(
+        $hash, 'state',
+        'scheduled watering next start: '
+          . (
+            ReadingsVal(
+                $name, 'scheduling-scheduled_watering_next_start',
+                'no timer'
+            )
+          )
+    ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
     #online state water control
     # zeitplan   -> dauert pausiert wenn 2038-01-18T00:00:00.000Z
@@ -925,17 +953,6 @@ sub setState {
         readingsBulkUpdate( $hash, 'state',
             $online_state eq 'online' ? RigReadingsValue( $hash, $state_string) : RigReadingsValue( $hash, 'offline') );
     }
-
-    readingsBulkUpdate(
-        $hash, 'state',
-        'scheduled watering next start: '
-          . (
-            ReadingsVal(
-                $name, 'scheduling-scheduled_watering_next_start',
-                'no timer'
-            )
-          )
-    ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
     readingsBulkUpdate( $hash, 'state',
         ReadingsVal( $name, 'power-power_timer', 'no info from power-timer' ) )
