@@ -784,11 +784,17 @@ sub WriteReadings {
               readingsBulkUpdateIfChanged( $hash, 'scheduling-'.$decode_json->{settings}[$settings]{name},
                                   $decode_json->{settings}[$settings]{value} );
             }
+            if ($decode_json->{settings}[$settings]{name} eq 'valve_names') 
+              Log3, $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) - ".ref( $decode_json->{settings}[$settings]{value} ) ;
+
             if ($decode_json->{settings}[$settings]{name} eq 'valve_names'
-                && ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY" ) {
+                && ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY" ) { # or HASH ?
               #_name_1  =  
+              Log3, $name, 3,  "GardenaSmartDevice ($name) valve_names ";
               my @valves = @{$decode_json->{settings}[$settings]{value}};
               foreach my $valve( @valves ) {
+                Log3, $name, 3,  "GardenaSmartDevice ($name) valve_name $valve->{'name'}";
+
               readingsBulkUpdateIfChanged( $hash, 'valve-valve_name_'.$valve->{"id"},
                                                   $valve->{"name"} );
               }
@@ -1552,7 +1558,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.3",
+  "version": "v2.4.4",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
