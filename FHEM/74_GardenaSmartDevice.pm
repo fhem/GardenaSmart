@@ -883,7 +883,7 @@ sub setState {
     ) if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
 
-# . Bewässerung aktiv. Zeitpläne aktiv (oder hier immerhin: Nächster Zeitplan: ...)
+# ... Bewässerung aktiv. Zeitpläne aktiv (oder hier immerhin: Nächster Zeitplan: ...)
 # ... Bewässerung aktiv. Zeitpläne dauerhaft pausiert.
 # ... geschlossen. Zeitpläne aktiv (bzw. s.o.)
 # ... geschlossen. Zeitpläne dauerhaft pausiert.
