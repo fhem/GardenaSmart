@@ -784,8 +784,9 @@ sub WriteReadings {
               readingsBulkUpdateIfChanged( $hash, 'scheduling-'.$decode_json->{settings}[$settings]{name},
                                   $decode_json->{settings}[$settings]{value} );
             }
-            if ($decode_json->{settings}[$settings]{name} eq 'valve_names') 
-              Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) - ".ref( $decode_json->{settings}[$settings]{value} ) ;
+            if ($decode_json->{settings}[$settings]{name} eq 'valve_names') {
+              Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) - ".ref( $decode_json->{settings}[$settings]{value} );
+            }
 
             if ($decode_json->{settings}[$settings]{name} eq 'valve_names'
                 && ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY" ) { # or HASH ?
@@ -890,12 +891,12 @@ sub setState {
 # ... offline
     my $activ_watering = 0;
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ){
-      $activ_watering = 1 if ( ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms )
-      $activ_watering = 2 if ( ReadingsVal( $name, 'watering-watering_timer_2_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms )
-      $activ_watering = 3 if ( ReadingsVal( $name, 'watering-watering_timer_3_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms )
-      $activ_watering = 4 if ( ReadingsVal( $name, 'watering-watering_timer_4_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms )
-      $activ_watering = 5 if ( ReadingsVal( $name, 'watering-watering_timer_5_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms )
-      $activ_watering = 6 if ( ReadingsVal( $name, 'watering-watering_timer_6_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms )
+      $activ_watering = 1 if ( ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
+      $activ_watering = 2 if ( ReadingsVal( $name, 'watering-watering_timer_2_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
+      $activ_watering = 3 if ( ReadingsVal( $name, 'watering-watering_timer_3_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
+      $activ_watering = 4 if ( ReadingsVal( $name, 'watering-watering_timer_4_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
+      $activ_watering = 5 if ( ReadingsVal( $name, 'watering-watering_timer_5_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
+      $activ_watering = 6 if ( ReadingsVal( $name, 'watering-watering_timer_6_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
       
       my $state_string = $activ_watering > 0 
             # offen
