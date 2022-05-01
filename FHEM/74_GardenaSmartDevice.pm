@@ -360,7 +360,7 @@ sub Set {
           '"name":"pump_manual_watering_timer","parameters":{"duration":'
           . $aArg->[0] . '}';
     }
-    ### watering_computer
+    ### watering_computer & electronic pump
     elsif ( lc $cmd eq 'manualoverride' ) {
         $payload =
             '"properties":{"name":"watering_timer_1'
@@ -1535,7 +1535,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.3",
+  "version": "v2.5.1",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
