@@ -799,7 +799,7 @@ sub WriteReadings {
           && ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY" ) { # or HASH ?
             my @valves = @{$decode_json->{settings}[$settings]{value}};
             foreach my $valve( @valves ) {
-              Log3 $name, 4  "GardenaSmartDevice ($name) valve_name $valve->{'name'}";
+              Log3 $name, 4,  "GardenaSmartDevice ($name) valve_name $valve->{'name'}";
               readingsBulkUpdateIfChanged( $hash, 'valve-valve_name_'.$valve->{"id"},
                                            $valve->{"name"} );
             }
