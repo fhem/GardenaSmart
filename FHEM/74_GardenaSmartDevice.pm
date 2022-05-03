@@ -165,7 +165,7 @@ sub Initialize {
     $hash->{AttrFn} = \&Attr;
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
-      . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
+      . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump"
       . "IODev "
       . $readingFnAttributes;
     $hash->{parseParams} = 1;
@@ -294,7 +294,7 @@ sub Set {
         || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
     $abilities = 'power'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
-    $abilities = 'manual_watering'
+    $abilities = 'watering'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
 
     ### mower
@@ -355,11 +355,11 @@ sub Set {
 #$abilities['service_id'] = $hash->{helper}{SCHEDULESID}  if ( $mainboard_version > 10.30 );
     }
     ### electronic_pressure_pump
-    elsif ( lc $cmd eq 'pumptimer' ) {
-        $payload =
-          '"name":"pump_manual_watering_timer","parameters":{"duration":'
-          . $aArg->[0] . '}';
-    }
+    # elsif ( lc $cmd eq 'pumptimer' ) {
+    #     $payload =
+    #       '"name":"pump_manual_watering_timer","parameters":{"duration":'
+    #       . $aArg->[0] . '}';
+    # }
     ### watering_computer & electronic pump
     elsif ( lc $cmd eq 'manualoverride' ) {
         $payload =
@@ -477,7 +477,32 @@ sub Set {
           . '","device":"'
           . $hash->{DEVICEID} . '"}';
     }
-    ### Sensors
+    ### Watering_pressure_pump
+    elsif ( lc $cmd eq 'operatingmode') {
+      my $op_mode = $aArg->[0];
+      $payload = '"name":"operating_mode"'
+                 .'"value":"'.$op_mode.'"'
+                 .'"device":"'
+                 . $hash->{DEVICEID};
+      $abilities = 'watering_pressure_pump_settings';
+    }
+    elsif ( lc $cmd eq 'leakagedetection') {
+      my $leakdetection_mode = $aArg->[0];
+      $payload = '"name":"leakage_detection"'
+                 .'"value":"'.$leakdetection_mode.'"'
+                 .'"device":"'
+                 . $hash->{DEVICEID};
+      $abilities = 'watering_pressure_pump_settings';
+    }
+    elsif ( lc $cmd eq 'turnonpressure') {
+      my $turnonpressure = $aArg->[0];
+      $payload = '"name":"turn_on_pressure"'
+                 .'"value":"'.$turnonpressure.'"'
+                 .'"device":"'
+                 . $hash->{DEVICEID};
+      $abilities = 'watering_pressure_pump_settings';
+    }
+    ### Sensors 
     elsif ( lc $cmd eq 'refresh' ) {
 
         my $sensname = $aArg->[0];
@@ -528,6 +553,8 @@ sub Set {
         $list .=
 'closeAllValves:noArg stopScheduleValve:selectnumbers,1,1,6,0,lin resumeScheduleValve:selectnumbers,1,1,6,0,lin manualDurationValve1:slider,1,1,90 manualDurationValve2:slider,1,1,90 manualDurationValve3:slider,1,1,90 manualDurationValve4:slider,1,1,90 manualDurationValve5:slider,1,1,90 manualDurationValve6:slider,1,1,90 cancelOverrideValve1:noArg cancelOverrideValve2:noArg cancelOverrideValve3:noArg cancelOverrideValve4:noArg cancelOverrideValve5:noArg cancelOverrideValve6:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+
+        $list .= 'manualOverride:slider,1,1,59 cancelOverride:noArg operatingMode:automatic,scheduled leakageDetection:watering,washing_machine,domestic_water_supply,off turnOnpressure:slider,2,0.2,2.8,1'
 
         $list .= 'refresh:temperature,humidity'
           if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ );
