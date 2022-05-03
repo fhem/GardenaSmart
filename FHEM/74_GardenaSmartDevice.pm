@@ -555,6 +555,7 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         $list .= 'manualOverride:slider,1,1,59 cancelOverride:noArg operatingMode:automatic,scheduled leakageDetection:watering,washing_machine,domestic_water_supply,off turnOnpressure:slider,2,0.2,2.8,1'
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
 
         $list .= 'refresh:temperature,humidity'
           if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ );
