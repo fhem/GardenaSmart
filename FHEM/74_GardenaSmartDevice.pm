@@ -741,6 +741,8 @@ sub WriteReadings {
                               . $r,
                             RigReadingsValue( $hash, $v )
                         );
+                      Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) Ventil $propertie->{name} Duration: $v";     
+
                     }
                 }
             }
@@ -882,7 +884,7 @@ sub setState {
 # ... Bewässerung aktiv. Zeitpläne dauerhaft pausiert.
 # ... geschlossen. Zeitpläne aktiv (bzw. s.o.)
 # ... geschlossen. Zeitpläne dauerhaft pausiert.
-# ... offline
+# ... offlinen
     my $activ_watering = 0;
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ){
       my $opened_ventils = 0;
