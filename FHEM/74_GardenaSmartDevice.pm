@@ -888,9 +888,9 @@ sub setState {
       my $opened_ventils = 0;
       ## clac bit wise 1 - 6 dec => 1 - 63 dec ( 0011 1111 )   
       for (my $i = 1; $i < 7; $i++){
-        my $zahl = ( ReadingsVal( $name, "watering-watering_timer_'.$i.'_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? ($i -1) : 0;
+        my $zahl = ( ReadingsVal( $name, "watering-watering_timer_".$i."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? ($i -1) : 0;
 				$opened_ventils=$opened_ventils+(2**$zahl) if ( $zahl > 0 );
-        Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) - wasser timer($i) =-1 ( $zahl ) : $opened_ventils";
+        Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) / watering-watering_timer_".$i."_duration - wasser timer($i) =-1 ( $zahl ) : $opened_ventils";
       }
 
       # $activ_watering = 1 if ( ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
