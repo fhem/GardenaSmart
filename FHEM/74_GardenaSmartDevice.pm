@@ -741,7 +741,7 @@ sub WriteReadings {
                               . $r,
                             RigReadingsValue( $hash, $v )
                         );
-                      Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) Ventil $propertie->{name} Duration: $v";     
+                      Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) Ventil $propertie->{name} $r: $v";     
 
                     }
                 }
