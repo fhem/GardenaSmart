@@ -1021,7 +1021,7 @@ sub setState {
       $state_string = 'offline' if ($online_state eq 'offline');
       # check valv error, override state 
       my $error_type = ReadingsVal( $name, 'error-valve_error_1_type', 'ok' );
-      $state_string = ( $error_type neq 'ok' ) ? $error_type : $state_string;
+      $state_string = ( $error_type ne 'ok' ) ? $error_type : $state_string;
   
       readingsBulkUpdate(
         $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
