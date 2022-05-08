@@ -510,6 +510,12 @@ sub Set {
       $abilities = 'watering_pressure_pump_settings';
       $service_id = $hash->{helper}->{ 'turn_on_pressure_id' };
     }
+    elsif ( lc $cmd eq 'resetvalveerrors') {
+      $payload = '"name":"reset_valve_errors",'
+                 .' "parameters": {}';
+      $abilities = 'error';
+    }
+
     ### Sensors 
     elsif ( lc $cmd eq 'refresh' ) {
 
@@ -562,7 +568,7 @@ sub Set {
 'closeAllValves:noArg stopScheduleValve:selectnumbers,1,1,6,0,lin resumeScheduleValve:selectnumbers,1,1,6,0,lin manualDurationValve1:slider,1,1,90 manualDurationValve2:slider,1,1,90 manualDurationValve3:slider,1,1,90 manualDurationValve4:slider,1,1,90 manualDurationValve5:slider,1,1,90 manualDurationValve6:slider,1,1,90 cancelOverrideValve1:noArg cancelOverrideValve2:noArg cancelOverrideValve3:noArg cancelOverrideValve4:noArg cancelOverrideValve5:noArg cancelOverrideValve6:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
-        $list .= 'manualOverride:slider,1,1,90 cancelOverride:noArg operatingMode:automatic,scheduled leakageDetection:watering,washing_machine,domestic_water_supply,off turnOnpressure:slider,2,0.2,3.0,1'
+        $list .= 'manualOverride:slider,1,1,90 cancelOverride:noArg operatingMode:automatic,scheduled leakageDetection:watering,washing_machine,domestic_water_supply,off turnOnpressure:slider,2,0.2,3.0,1 resetValveErrors:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
 
         $list .= 'refresh:temperature,humidity'
@@ -914,7 +920,6 @@ sub setState {
     # 4. Ventil manuell geoeffnet, Zeitpläne deaktiviert.
     #   App zeigt: "Wird bewässert   xx Minuten verbleibend"
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
-
          my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
               m{\A[1-9]([0-9]+)?\z}xms
             # offen
@@ -988,6 +993,39 @@ sub setState {
         ReadingsVal( $name, 'power-power_timer', 'no info from power-timer' ) )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
 
+    #electronic water pump
+    if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' ) {  #        | ok | pump_not_filled (Pumpe nicht gefüllt)
+         my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
+              m{\A[1-9]([0-9]+)?\z}xms
+            # offen
+            ? 
+              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+              # leer ( zeitplan aktiv ... ) 
+              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+              # zeitplan pausiert
+              : 
+                ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
+                # pause bis  dauerhaft
+                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60) )
+                # naechter termin
+                : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
+            # zu
+            :
+              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+              # zeitplan aktiv
+              ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
+              # zeitplan pausiert
+              : RigReadingsValue($hash, 'closed')
+            ;
+      # state offline | override
+      $state_string = 'offline' if ($online_state eq 'offline');
+      # check valv error, override state 
+      my $error_type = ReadingsVal( $name, 'error-valve_error_1_type', 'ok' );
+      $state_string = ( $error_type neq 'ok' ) ? $error_type : $state_string;
+  
+      readingsBulkUpdate(
+        $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
+    }
     return;
 }
 
@@ -1101,6 +1139,7 @@ sub ReadingLangGerman {
         'paused until %s'                => 'pausiert bis %s',        
         'will be irrigated %.f minutes remaining.'=> 'Wird bewässert. %.f Minuten verbleibend.',
         'next watering: %s'              => 'Nächste Bewässerung: %s',
+        'pump_not_filled'                => 'Pumpe nicht gefüllt',
     );
 
     if (
