@@ -907,7 +907,7 @@ sub setState {
       # Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) - wasser timer: $activ_watering";
       # ### eventuell auf binare bits und shiften 
       
-       $state_string .=  
+       $state_string .= $activ_watering > 0 
               # offen
               ? 
                 ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$activ_watering, '' ) eq '' )
