@@ -441,7 +441,7 @@ sub Set {
       return "usage: $cmd" if ( scalar( @{$aArg} ) != 2 );
       my $new_helper = $aArg->[0];
       my $new_helper_value = $aArg->[1];
-      Log3( $name, 5, "GardenaSmartBridge ($name) - override helper $new_helper with $new_helper_value");
+      Log3( $name, 5, "[DEBUG] - GardenaSmartBridge ($name) - override helper $new_helper with $new_helper_value");
       $hash->{helper}{$new_helper} = $new_helper_value;
     }
     else {
@@ -526,7 +526,6 @@ sub ErrorHandling {
                 1 );
 
             if ( $err =~ /timed out/ ) {
-
                 Log3 $dname, 5,
 "GardenaSmartBridge ($dname) - RequestERROR: connect to gardena cloud is timed out. check network";
             }
@@ -613,6 +612,7 @@ sub ErrorHandling {
 
     if (
         $data =~ /Error/
+        && $data !~ /lastLonaErrorCode/
         || (   defined($decode_json)
             && ref($decode_json) eq 'HASH'
             && defined( $decode_json->{errors} ) )
