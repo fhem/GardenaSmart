@@ -165,7 +165,7 @@ sub Initialize {
     $hash->{AttrFn} = \&Attr;
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
-      . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump"
+      . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
       . "IODev "
       . $readingFnAttributes;
     $hash->{parseParams} = 1;
