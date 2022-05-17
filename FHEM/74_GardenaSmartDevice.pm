@@ -308,10 +308,10 @@ sub Set {
   $setList =~ s/\n/ /g;
 
   if(AttrVal($name,"useSetExtensions",undef)) {
-    my $a0 = $a[0]; $a0 =~ s/([.?*])/\\$1/g;
+    my $a0 = $aArg[0]; $a0 =~ s/([.?*])/\\$1/g;
     if($setList !~ m/\b$a0\b/) {
-      unshift @a, $name;
-      return SetExtensions($hash, $setList, @a) 
+      unshift @aArg, $name;
+      return SetExtensions($hash, $setList, @aArga) 
     }
     SetExtensionsCancel($hash);
   } 
