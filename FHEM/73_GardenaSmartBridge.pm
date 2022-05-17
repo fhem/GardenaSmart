@@ -414,7 +414,6 @@ sub Set {
 
     if ( lc $cmd eq 'getdevicesstate' ) {
         getDevices($hash);
-
     }
     elsif ( lc $cmd eq 'gettoken' ) {
         return "please set Attribut gardenaAccountEmail first"
@@ -437,6 +436,13 @@ sub Set {
         return "usage: $cmd" if ( scalar( @{$aArg} ) != 0 );
 
         DeletePassword($hash);
+    }
+    elsif ( lc $cmd eq 'debughelper') {
+      return "usage: $cmd" if ( scalar( @{$aArg} ) != 2 );
+      my $new_helper = $aArg->[0];
+      my $new_helper_value = $aArg->[1];
+      Log3( $name, 5, "GardenaSmartBridge ($name) - override helper $new_helper with $new_helper_value");
+      $hash->{helper}{$new_helper} = $new_helper_value;
     }
     else {
 
@@ -482,8 +488,8 @@ sub Write {
 "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method"
     );
 
-  Log3($name, 3,
-      "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
+  # Log3($name, 3,
+  #     "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
 
     return;
 }
