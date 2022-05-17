@@ -142,9 +142,7 @@ BEGIN {
           modules
           IOWrite
           defs
-          makeDeviceName
-          setList
-          useSetExtensions)
+          makeDeviceName)
     );
 }
 
@@ -169,7 +167,7 @@ sub Initialize {
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
       . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
-      . "IODev "
+      . "IODev setList useSetExtensions "
       . $readingFnAttributes;
     $hash->{parseParams} = 1;
 
