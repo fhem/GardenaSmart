@@ -65,6 +65,7 @@ use FHEM::Meta;
 use Time::Local;
 use Time::Piece;
 use Time::Seconds;
+use SetExtensions;
 
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
@@ -141,7 +142,9 @@ BEGIN {
           modules
           IOWrite
           defs
-          makeDeviceName)
+          makeDeviceName
+          setList
+          useSetExtensions)
     );
 }
 
