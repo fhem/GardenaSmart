@@ -303,9 +303,22 @@ sub Set {
     $abilities = 'watering'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
 
+
+  my $setList = AttrVal($name, "setList", " ");
+  $setList =~ s/\n/ /g;
+
+  if(AttrVal($name,"useSetExtensions",undef)) {
+    my $a0 = $a[0]; $a0 =~ s/([.?*])/\\$1/g;
+    if($setList !~ m/\b$a0\b/) {
+      unshift @a, $name;
+      return SetExtensions($hash, $setList, @a) 
+    }
+    SetExtensionsCancel($hash);
+  } 
     ### mower
     # service_id (eco, parkuntilfurhternotice, startpoints)
-    if ( lc $cmd eq 'parkuntilfurthernotice' ) {
+    
+    elsif ( lc $cmd eq 'parkuntilfurthernotice' ) {
         $payload = '"name":"park_until_further_notice"';
         if ( $mainboard_version > 10.30 ) {
             $payload =
