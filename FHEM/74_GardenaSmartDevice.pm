@@ -776,7 +776,7 @@ sub WriteReadings {
 
                 if ( ref( $propertie->{value} ) eq "HASH" ) {
                     while ( my ( $r, $v ) = each %{ $propertie->{value} } ) {
-^                        if ( ref( $v ) ne "HASH" ) {
+                      if ( ref( $v ) ne "HASH" ) {
                             readingsBulkUpdate(
                               $hash,
                               $decode_json->{abilities}[$abilities]{name} . '-'
