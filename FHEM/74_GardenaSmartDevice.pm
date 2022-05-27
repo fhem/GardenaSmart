@@ -776,13 +776,25 @@ sub WriteReadings {
 
                 if ( ref( $propertie->{value} ) eq "HASH" ) {
                     while ( my ( $r, $v ) = each %{ $propertie->{value} } ) {
-                        readingsBulkUpdate(
-                            $hash,
-                            $decode_json->{abilities}[$abilities]{name} . '-'
+^                        if ( ref( $v ) ne "HASH" ) {
+                            readingsBulkUpdate(
+                              $hash,
+                              $decode_json->{abilities}[$abilities]{name} . '-'
+                                . $propertie->{name} . '_'
+                                . $r,
+                                RigReadingsValue( $hash, $v )
+                            );
+                        } else {
+                          while ( my ( $i_r, $i_v ) = each %{ $v } ) {
+                            readingsBulkUpdate(
+                              $hash,
+                              $decode_json->{abilities}[$abilities]{name} . '-'
                               . $propertie->{name} . '_'
-                              . $r,
-                            RigReadingsValue( $hash, $v )
-                        );
+                              . $r . '_' . $i_r,
+                              RigReadingsValue( $hash, $i_v )
+                            );
+                          }
+                        }
                     }
                 }
             }
