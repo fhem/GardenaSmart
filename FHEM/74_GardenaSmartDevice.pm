@@ -889,25 +889,19 @@ sub setState {
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ){
       my $opened_ventils = 0;
       my $state_string = '';
-      ## calc bit wise 1 - 6 dec => 1 - 63 dec ( 11 1111 )   
-      for (my $i = 1; $i < 7; $i++){
-        $activ_watering = 0;
-        my $zahl = ( ReadingsVal( $name, "watering-watering_timer_".$i."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? ($i -1) : 0;
-        $activ_watering = $i if ( $zahl > 0 );
-				$opened_ventils=$opened_ventils+(2**$zahl) if ( $zahl > 0 );
-        Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) / watering-watering_timer_".$i."_duration - wasser timer($i) =-1 ( $zahl ) : $opened_ventils";
-      
+      ## calc bit wise 1 - 6 dec => 1 - 63 dec ( 11 1111 )  
+      my @valves_connected = split(',', ReadingsVal( $name, 'ic24-valves_connected', ''));
 
-      # $activ_watering = 1 if ( ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
-      # $activ_watering = 2 if ( ReadingsVal( $name, 'watering-watering_timer_2_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
-      # $activ_watering = 3 if ( ReadingsVal( $name, 'watering-watering_timer_3_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
-      # $activ_watering = 4 if ( ReadingsVal( $name, 'watering-watering_timer_4_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
-      # $activ_watering = 5 if ( ReadingsVal( $name, 'watering-watering_timer_5_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
-      # $activ_watering = 6 if ( ReadingsVal( $name, 'watering-watering_timer_6_duration', 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms );
-      # Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) - wasser timer: $activ_watering";
+
+      for (@valves_connected){
+        $activ_watering = 0;
+        my $zahl = ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0;
+        $activ_watering = $_ if ( $zahl > 0 );
+				$opened_ventils=$opened_ventils+(2**$zahl) if ( $zahl > 0 );
+        Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) / watering-watering_timer_".$_."_duration - wasser timer($_) =-1 ( $zahl ) : $opened_ventils";
+
       # ### eventuell auf binare bits und shiften 
-      
-       $state_string .= $activ_watering > 0 
+        $state_string .= $activ_watering > 0 
               # offen
               ? 
                 ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$activ_watering, '' ) eq '' )
