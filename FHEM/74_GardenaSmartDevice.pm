@@ -936,7 +936,8 @@ sub setState {
       #     my $state_string = "ein ventil offen"
 
       #   }
-
+      readingsBulkUpdate(
+        $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
     }
     #online state water control
     # zeitplan   -> dauert pausiert wenn 2038-01-18T00:00:00.000Z
