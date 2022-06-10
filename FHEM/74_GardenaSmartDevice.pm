@@ -886,13 +886,13 @@ sub setState {
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ){
         my @ic24opened_ventils; 
         my $state_string = ''; my $nearst_irrigation = '2999-12-12 24:00';
-        my $has_scheduling = false;
+        my $has_scheduling = 0;
         my @valves_connected = split(',', ReadingsVal( $name, 'ic24-valves_connected', ''));
         for (@valves_connected){ 
           ## add to opened ventils, if watering active
           push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
           ## find nearst timestamp 
-          $has_scheduling = true if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z');
+          $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z');
 
           if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne '') {
             $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') if ( Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M"))
