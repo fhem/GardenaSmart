@@ -884,14 +884,11 @@ sub setState {
     if ( AttrVal( $name, "extendedState", 0 ) == 1) {
       ### ic24
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ){
-        my @ic24opened_ventils;
-        my $opened_ventils = 0; # bit maker
+        my @ic24opened_ventils; 
         my $state_string = ''; my $nearst_irrigation = '2999-12-12 24:00';
         my $has_scheduling = false;
         my @valves_connected = split(',', ReadingsVal( $name, 'ic24-valves_connected', ''));
-        for (@valves_connected){
-          ## calc bit wise 1 - 6 dec => 1 - 63 dec ( 11 1111 )  
-          $opened_ventils=$opened_ventils+(2**$zahl) if ( $zahl > 0 );
+        for (@valves_connected){ 
           ## add to opened ventils, if watering active
           push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
           ## find nearst timestamp 
