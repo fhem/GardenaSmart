@@ -902,7 +902,7 @@ sub setState {
         #TODO: Write state format for ventil 1-@valces_connected  -> map ?
 
       } else {
-        $state_string = scalar(@ic24opened_ventils) > 0 ?
+        $state_string = scalar(@ic24opened_ventils) > 0
           # offen
           ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $lowest_duration/60); 
           # zu
