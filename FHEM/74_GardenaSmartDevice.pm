@@ -904,7 +904,7 @@ sub setState {
       } else {
         $state_string = scalar(@ic24opened_ventils) > 0
           # offen
-          ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $lowest_duration/60); 
+          ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $lowest_duration/60) 
           # zu
           :
             ( $has_scheduling )
