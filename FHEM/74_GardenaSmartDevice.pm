@@ -168,7 +168,7 @@ sub Initialize {
       . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
       . "IODev "
       . $readingFnAttributes;
-    $hash->{AttrList} .= "extendedState:0,1 " if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+    $hash->{AttrList} .= "extendedState:0,1 " if ( AttrVal( $hash[1], 'model', 'unknown' ) eq 'ic24' );
     $hash->{parseParams} = 1;
 
     return FHEM::Meta::InitMod( __FILE__, $hash );
