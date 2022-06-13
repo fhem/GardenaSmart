@@ -872,20 +872,24 @@ sub setState {
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ){
       my @ic24opened_ventils; 
       my $state_string = ''; my $nearst_irrigation = '2999-12-12 23:59';
-      my $has_scheduling = 0; my $lowest_duration = 9999;
+      my $has_scheduling = 0; my $longest_duration = 0;
       my @valves_connected = split(',', ReadingsVal( $name, 'ic24-valves_connected', ''));
       for (@valves_connected){ 
         ## add to opened ventils, if watering active
         push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
         ## find nearst timestamp 
         $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z');
-        $lowest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) if ( 
+        $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) if ( 
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > 0 
-              && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) < $lowest_duration ) );
+              && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
 
         if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne '') {
-          $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') if ( Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M"))
+          $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') 
+            if ( 
+                Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
+                && has_scheduling
+            )
         } # fi
       }
       # override state 4 extendedstates
@@ -904,7 +908,7 @@ sub setState {
       } else {
         $state_string = scalar(@ic24opened_ventils) > 0
           # offen
-          ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $lowest_duration/60) 
+          ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $longest_duration/60) 
           # zu
           :
             ( $has_scheduling )
