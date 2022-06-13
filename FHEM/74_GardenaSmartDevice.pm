@@ -871,7 +871,7 @@ sub setState {
     # ic24
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ){
       my @ic24opened_ventils; 
-      my $state_string = ''; my $nearst_irrigation = '2999-12-12 23:59';
+      my $state_string = ''; my $nearst_irrigation = '2038-01-18 00:00';
       my $has_scheduling = 0; my $longest_duration = 0;
       my @valves_connected = split(',', ReadingsVal( $name, 'ic24-valves_connected', ''));
       for (@valves_connected){ 
