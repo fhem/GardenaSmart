@@ -878,7 +878,7 @@ sub setState {
         ## add to opened ventils, if watering active
         push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
         ## find nearst timestamp 
-        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') ne '' );
+        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
         $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) if ( 
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > 0 
@@ -911,7 +911,7 @@ sub setState {
             ' )
             if ( AttrVal( $name, 'stateFormat', 'none' ) eq 'none' );
       } else {
-        Log3 $name, 3, "[DEBUG] - Offene Ventile :".scalar(@ic24opened_ventils)." laengste bewaesserung: $longest_duration . hat Zeitplan: ". ($has_scheduling) ? "ja":"nein" . "Naechster Zeitplan: $nearst_irrigation";
+        Log3 $name, 3, "[DEBUG] - Offene Ventile :".scalar(@ic24opened_ventils)." laengste bewaesserung: $longest_duration . hat Zeitplan: $has_scheduling Naechster Zeitplan: $nearst_irrigation";
         $state_string = scalar(@ic24opened_ventils) > 0
           # offen
           ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $longest_duration/60) 
