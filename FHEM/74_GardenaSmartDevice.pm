@@ -758,7 +758,7 @@ sub WriteReadings {
                      . '_irrigation_left', 
                      sprintf("%.f" ,
                       Time::Piece::localtime->strptime(
-                        $decode_json->{abilities}[$abilities]{timestamp}, "%Y-%m-%d %H:%M:%S")
+                        RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S")
                         + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new )
                   )
                   if ( defined( $propertie->{value} )
@@ -768,15 +768,16 @@ sub WriteReadings {
                   if ( defined( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} eq 'watering'
                     && $propertie->{value}{duration} > 0 ){
-                      Log3 $name, 2, "[DDebug] " . RigReadingsValue($hash, Time::Piece::localtime->strptime( $decode_json->{abilities}[$abilities]{timestamp}));
-                      my $dt = RigReadingsValue($hash, Time::Piece::localtime->strptime( $decode_json->{abilities}[$abilities]{timestamp}), "%Y-%m-%d %H:%M:%S");
+                      Log3 $name, 2, "[DDebug] " . Time::Piece::localtime->strptime( 
+                                  RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S");                                  
+                      my $dt = Time::Piece::localtime->strptime( RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S");
                       Log3 $name, 2, "[DEBUG] $dt";
                       my $ndt =  Time::Piece::localtime->new;
                       Log3 $name, 2, "[DEBUG] $ndt";
                       Log3 $name, 2, "[DEBUG] " . $dt + ($propertie->{value}{duration} + 3 );
                       Log3 $name, 2, "[DEBUG] " . sprintf("%.f" ,
-                      Time::Piece::localtime->strptime(
-                        $decode_json->{abilities}[$abilities]{timestamp}, "%Y-%m-%d %H:%M:%S")
+                     Time::Piece::localtime->strptime(
+                        RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S")
                         + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new );
                     }
 #2022-06-21T08:56:42.488Z -> 2022-06-21 08:56:48 
