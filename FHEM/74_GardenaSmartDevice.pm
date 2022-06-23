@@ -756,10 +756,13 @@ sub WriteReadings {
                     $decode_json->{abilities}[$abilities]{name} . '-'
                      . $propertie->{name} 
                      . '_irrigation_left', 
-                     sprintf("%.f" ,(RigReadingsValue(
-                         $hash,
-                         $decode_json->{abilities}[$abilities]{timestamp}
-                         "%Y-%m-%d %H:%M:%S")+($propertie->{value}{duration} + 3 )) - Time::Piece::localtime->new )
+                     sprintf("%.f" ,
+                     
+                     Time::Piece::localtime->strptime(
+                        RigReadingsValue(
+                          $hash,
+                          $decode_json->{abilities}[$abilities]{timestamp}),
+                         "%Y-%m-%d %H:%M:%S") +($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new )
                   )
                   if ( defined( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} eq 'watering'
