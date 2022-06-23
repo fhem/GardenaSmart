@@ -768,7 +768,7 @@ sub WriteReadings {
                   if ( defined( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} eq 'watering'
                     && $propertie->{value}{duration} > 0 ){
-                      Log3 $name, 2, "[DDebug] " . RigReadingsValue($hash, Time::Piece::localtime->strptime( $decode_json->{abilities}[$abilities]{timestamp});
+                      Log3 $name, 2, "[DDebug] " . RigReadingsValue($hash, Time::Piece::localtime->strptime( $decode_json->{abilities}[$abilities]{timestamp}));
                       my $dt = RigReadingsValue($hash, Time::Piece::localtime->strptime( $decode_json->{abilities}[$abilities]{timestamp}), "%Y-%m-%d %H:%M:%S");
                       Log3 $name, 2, "[DEBUG] $dt";
                       my $ndt =  Time::Piece::localtime->new;
