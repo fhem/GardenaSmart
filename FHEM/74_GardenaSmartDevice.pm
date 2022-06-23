@@ -753,13 +753,13 @@ sub WriteReadings {
                     $decode_json->{abilities}[$abilities]{name} . '-'
                      . $propertie->{name} 
                      . '_irrigation_left', 
-                      (Time::Piece::localtime->strptime(
+                      ( $propertie->{value}{duration} > 0 ) ? (Time::Piece::localtime->strptime(
                         RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S")
-                        + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new) 
+                        + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new) : 0
                   )
                   if ( defined( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} eq 'watering'
-                    && $propertie->{value}{duration} > 0 );
+                  );
             }
         }
 
@@ -1662,7 +1662,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.4",
+  "version": "v2.5.3",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
