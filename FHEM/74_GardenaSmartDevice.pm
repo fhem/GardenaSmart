@@ -759,7 +759,7 @@ sub WriteReadings {
                      sprintf("%.f" ,
                       Time::Piece::localtime->strptime(
                         RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S")
-                        + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new )
+                        + ($propertie->{value}{duration} - 3 ) - Time::Piece::localtime->new )
                   )
                   if ( defined( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} eq 'watering'
@@ -773,12 +773,12 @@ sub WriteReadings {
                       my $dt = Time::Piece::localtime->strptime( RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S");
                       Log3 $name, 2, "[DEBUG] $dt";
                       my $ndt =  Time::Piece::localtime->new;
-                      Log3 $name, 2, "[DEBUG] $ndt";
-                      Log3 $name, 2, "[DEBUG] " . $dt + ($propertie->{value}{duration} + 3 );
-                      Log3 $name, 2, "[DEBUG] " . sprintf("%.f" ,
+                      Log3 $name, 2, "[cDEBUG] $ndt";
+                      Log3 $name, 2, "[aDEBUG] " . ($propertie->{value}{duration} + 3 );
+                      Log3 $name, 2, "[sDEBUG] " . sprintf("%.f" ,
                      Time::Piece::localtime->strptime(
                         RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S")
-                        + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new );
+                        + ($propertie->{value}{duration} - 6 ) - Time::Piece::localtime->new );
                     }
 #2022-06-21T08:56:42.488Z -> 2022-06-21 08:56:48 
                       
