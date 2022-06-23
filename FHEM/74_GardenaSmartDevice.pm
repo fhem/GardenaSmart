@@ -734,6 +734,7 @@ sub WriteReadings {
                     . $propertie->{name} eq 'ic24-valves_master_config' );
 
                 if ( ref( $propertie->{value} ) eq "HASH" ) {
+                    my $sub_state = 0; my $sub_value = 0;
                     while ( my ( $r, $v ) = each %{ $propertie->{value} } ) {
                         readingsBulkUpdate(
                             $hash,
@@ -742,10 +743,54 @@ sub WriteReadings {
                               . $r,
                             RigReadingsValue( $hash, $v )
                         );
-                      Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) Ventil $propertie->{name} $r: $v";     
 
+                      Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) Ventil $propertie->{name} $r: $v";     
                     }
                 }
+
+
+
+                 # ic24 and more watering duration ?
+                 readingsBulkUpdateIfChanged(
+                    $hash,
+                    $decode_json->{abilities}[$abilities]{name} . '-'
+                     . $propertie->{name} 
+                     . '_irrigation_left', 
+                     sprintf("%.f" ,(RigReadingsValue(
+                         $hash,
+                         $decode_json->{abilities}[$abilities]{timestamp}
+                         "%Y-%m-%d %H:%M:%S")+($propertie->{value}{duration} + 3 )) - Time::Piece::localtime->new )
+                  )
+                  if ( defined( $propertie->{value} )
+                    && $decode_json->{abilities}[$abilities]{name} eq 'watering'
+                    && $propertie->{value}{duration} > 0 );
+
+#2022-06-21T08:56:42.488Z -> 2022-06-21 08:56:48 
+                      
+ 
+                      # $propertie->{value}{duration}
+                      # $propertie->{value}{valve_id}
+                      
+                      
+                      # Time::Piece->strptime(
+                      #   RigReadingsValue( $hash, $propertie->{timestamp} ),
+                      #   "%Y-%m-%d %H:%M:%S" )->add(seconds => ($propertie->{value}{duration} +3)))
+
+                    
+                    
+                    #                        "%Y-%m-%d %H:%M:%S" )->strftime('%s')
+
+
+                      # "name": "watering_timer_4",
+                      #   "timestamp": "2022-06-21T08:56:42.488Z", + durati^n + 3
+                      #   "unit": "complex",
+                      #   "value": {
+                      #       "state": "manual",
+                      #       "duration": 1497,
+                      #       "valve_id": 4
+
+
+
             }
         }
 
@@ -885,7 +930,8 @@ sub setState {
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > 0 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
 
-        if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne '') {
+        if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne ''
+         &&  ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
           $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') 
             if ( 
                 Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
