@@ -747,65 +747,19 @@ sub WriteReadings {
                       Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) Ventil $propertie->{name} $r: $v";     
                     }
                 }
-
-
-
-                 # ic24 and more watering duration ?
+                 # ic24 and other watering devices calc irrigation left in sec
                  readingsBulkUpdateIfChanged(
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                      . $propertie->{name} 
                      . '_irrigation_left', 
-                     sprintf("%.f" ,
                       (Time::Piece::localtime->strptime(
                         RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S")
-                        + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new) / 60 )
+                        + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new) 
                   )
                   if ( defined( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} eq 'watering'
                     && $propertie->{value}{duration} > 0 );
-
-                  # if ( defined( $propertie->{value} )
-                  #   && $decode_json->{abilities}[$abilities]{name} eq 'watering'
-                  #   && $propertie->{value}{duration} > 0 ){
-                  #     Log3 $name, 2, "[DDebug] " . Time::Piece::localtime->strptime( 
-                  #                 RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S");                                  
-                  #     my $dt = Time::Piece::localtime->strptime( RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S");
-                  #     Log3 $name, 2, "[DEBUG] $dt";
-                  #     my $ndt =  Time::Piece::localtime->new;
-                  #     Log3 $name, 2, "[cDEBUG] $ndt";
-                  #     Log3 $name, 2, "[aDEBUG] " . ($propertie->{value}{duration} + 3 );
-                  #     Log3 $name, 2, "[sDEBUG] " . sprintf("%.f" ,
-                  #    Time::Piece::localtime->strptime(
-                  #       RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S")
-                  #       + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new );
-                  #   }
-#2022-06-21T08:56:42.488Z -> 2022-06-21 08:56:48 
-                      
- 
-                      # $propertie->{value}{duration}
-                      # $propertie->{value}{valve_id}
-                      
-                      
-                      # Time::Piece->strptime(
-                      #   RigReadingsValue( $hash, $propertie->{timestamp} ),
-                      #   "%Y-%m-%d %H:%M:%S" )->add(seconds => ($propertie->{value}{duration} +3)))
-
-                    
-                    
-                    #                        "%Y-%m-%d %H:%M:%S" )->strftime('%s')
-
-
-                      # "name": "watering_timer_4",
-                      #   "timestamp": "2022-06-21T08:56:42.488Z", + durati^n + 3
-                      #   "unit": "complex",
-                      #   "value": {
-                      #       "state": "manual",
-                      #       "duration": 1497,
-                      #       "valve_id": 4
-
-
-
             }
         }
 
@@ -1058,12 +1012,12 @@ sub setState {
             ? 
               ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
               # leer ( zeitplan aktiv ... ) 
-              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_irrigation_left', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
               # zeitplan pausiert
               : 
                 ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
                 # pause bis  dauerhaft
-                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60) )
+                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_irrigation_left', 0 )/60) )
                 # naechter termin
                 : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
             # zu
