@@ -935,7 +935,7 @@ sub setState {
           :
             ( $has_scheduling )
             # zeitplan aktiv  
-              ? ( $nearst_irrigation eq '2038-01-18T00:00:00.000Z')
+              ? ( $nearst_irrigation eq '2038-01-18 00:00')
                 # dauerhaft pausiert
                 ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash , 'schedule permanently paused'))  )
                 # naechster zeutplan
