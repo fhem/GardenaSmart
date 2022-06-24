@@ -934,8 +934,12 @@ sub setState {
           # zu
           :
             ( $has_scheduling )
-            # zeitplan aktiv
-            ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')), $nearst_irrigation )
+            # zeitplan aktiv  
+              ? ( $nearst_irrigation eq '2038-01-18T00:00:00.000Z')
+                # dauerhaft pausiert
+                ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash , 'schedule permanently paused'))  )
+                # naechster zeutplan
+                : sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')), $nearst_irrigation )
             # zeitplan pausiert
             : RigReadingsValue($hash, 'closed')
         ;
