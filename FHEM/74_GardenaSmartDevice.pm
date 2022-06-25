@@ -568,7 +568,7 @@ sub Set {
 'closeAllValves:noArg stopScheduleValve:selectnumbers,1,1,6,0,lin resumeScheduleValve:selectnumbers,1,1,6,0,lin manualDurationValve1:slider,1,1,90 manualDurationValve2:slider,1,1,90 manualDurationValve3:slider,1,1,90 manualDurationValve4:slider,1,1,90 manualDurationValve5:slider,1,1,90 manualDurationValve6:slider,1,1,90 cancelOverrideValve1:noArg cancelOverrideValve2:noArg cancelOverrideValve3:noArg cancelOverrideValve4:noArg cancelOverrideValve5:noArg cancelOverrideValve6:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
-        $list .= 'manualOverride:slider,1,1,90 cancelOverride:noArg operatingMode:automatic,scheduled leakageDetection:watering,washing_machine,domestic_water_supply,off turnOnpressure:slider,2,0.2,3.0,1 resetValveErrors:noArg'
+        $list .= 'manualOverride:slider,1,1,90 cancelOverride:noArg operating_mode:automatic,scheduled leakage_detection:watering,washing_machine,domestic_water_supply,off turn_on_pressure:slider,2,0.2,3.0,1 resetValveErrors:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
 
         $list .= 'refresh:temperature,humidity'
@@ -835,7 +835,7 @@ sub WriteReadings {
                     $decode_json->{settings}[$settings]{value} );
             }
 
-            # save electroni presse pump settings as readings
+            # save electronid pressure pump settings as readings
             if ( $decode_json->{settings}[$settings]{name} eq 'operating_mode' 
                 || $decode_json->{settings}[$settings]{name} eq 'leakage_detection' 
                 || $decode_json->{settings}[$settings]{name} eq 'turn_on_pressure' ) {
