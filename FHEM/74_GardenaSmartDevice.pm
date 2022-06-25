@@ -798,8 +798,12 @@ sub WriteReadings {
             #ic24 schedules pause until
             if ($decode_json->{settings}[$settings]{name} =~ /schedules_paused_until_?\d?$/) {
               #my $ventil = substr($decode_json->{settings}[$settings]{name}, -1); # => 1 - 6
+              # check if empty, clear scheduling-scheduled_watering_next_start_x
               readingsBulkUpdateIfChanged( $hash, 'scheduling-'.$decode_json->{settings}[$settings]{name},
                                   $decode_json->{settings}[$settings]{value} );
+              readingsBulkUpdateIfChanged( $hash, "scheduling-scheduled_watering_next_start_$1", $decode_json->{settings}[$settings]{value}) if ($decode_json->{settings}[$settings]{value} eq '');
+
+              # CommandAttr( undef, $name . " scheduling-scheduled_watering_next_start_")  if ($decode_json->{settings}[$settings]{value} eq '' )
             }
 
             ######
@@ -904,7 +908,7 @@ sub setState {
           $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') 
             if ( 
                 Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-                && $has_scheduling
+                && $has_scheduling && Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") > Time::Pice->new
             )
         } # fi
       }
