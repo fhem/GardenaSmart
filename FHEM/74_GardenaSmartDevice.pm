@@ -796,7 +796,7 @@ sub WriteReadings {
             }
             #####
             #ic24 schedules pause until
-            if ($decode_json->{settings}[$settings]{name} =~ /schedules_paused_until_?\d?$/) {
+            if ($decode_json->{settings}[$settings]{name} =~ /schedules_paused_until_?(\d)?$/) {
               #my $ventil = substr($decode_json->{settings}[$settings]{name}, -1); # => 1 - 6
               # check if empty, clear scheduling-scheduled_watering_next_start_x
               readingsBulkUpdateIfChanged( $hash, 'scheduling-'.$decode_json->{settings}[$settings]{name},
