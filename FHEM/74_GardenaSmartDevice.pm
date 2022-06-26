@@ -908,7 +908,7 @@ sub setState {
           $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') 
             if ( 
                 Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-                && $has_scheduling && Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") > Time::Pice->new
+                && $has_scheduling && Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") > Time::Piece->new
             )
         } # fi
       }
