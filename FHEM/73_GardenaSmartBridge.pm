@@ -746,7 +746,7 @@ sub ErrorHandling {
         $i = 0;
 
         for my $dev_settings ( @{ $devJson->{abilities} } ) {
-            $output .= "[" . $i++ . "]\nid: $dev_settings->{id} \n";
+            $output .= "[" . $i++ . "]id: $dev_settings->{id} \n";
             $output .= "name: $dev_settings->{name} \n";
         }
 
