@@ -652,7 +652,7 @@ sub WriteReadings {
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name},
-                      ($propertie->{value} eq '') ? undef : RigReadingsValue( $hash, $propertie->{value} )
+                      ($propertie->{value} eq '') ? 'N/A' : RigReadingsValue( $hash, $propertie->{value} )
                   )
                   if ( exists( $propertie->{value} ) # defined ignored 'value':null
                     && $decode_json->{abilities}[$abilities]{name} . '-'
