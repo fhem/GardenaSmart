@@ -746,11 +746,13 @@ sub ErrorHandling {
         $i = 0;
 
         for my $dev_settings ( @{ $devJson->{abilities} } ) {
-            $output .= "[" . $i++ . "]id: $dev_settings->{id} \n";
-            $output .= "name: $dev_settings->{name} ";
+            $output .= "[" . $i++ . "]\nid: $dev_settings->{id} \n";
+            $output .= "name: $dev_settings->{name} \n";
 
-            if (   ref( $dev_settings->{value} ) eq 'ARRAY'
+            if ((   ref( $dev_settings->{value} ) eq 'ARRAY'
                 || ref( $dev_settings->{value} ) eq 'HASH' )
+                && (defined($dev_settings->{value})))
+
             {
                 $output .= 'N/A \n';
             }
@@ -1577,7 +1579,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.4.7",
+  "version": "v2.4.8",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
