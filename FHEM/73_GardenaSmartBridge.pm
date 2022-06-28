@@ -747,7 +747,7 @@ sub ErrorHandling {
 
         for my $dev_settings ( @{ $devJson->{abilities} } ) {
             $output .= "[" . $i++ . "]\nid: $dev_settings->{id} \n";
-            $output .= "name: $dev_settings->{name} ";
+            $output .= "name: $dev_settings->{name} \n";
         }
 
         $hash->{helper}{debug_device_output} = $output;
