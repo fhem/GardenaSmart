@@ -652,9 +652,9 @@ sub WriteReadings {
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name},
-                    RigReadingsValue( $hash, $propertie->{value} )
+                      ($propertie->{value} eq '') ? 'N/A' : RigReadingsValue( $hash, $propertie->{value} )
                   )
-                  if ( defined( $propertie->{value} )
+                  if ( exists( $propertie->{value} ) # defined ignored 'value':null
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'radio-quality'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
@@ -743,8 +743,6 @@ sub WriteReadings {
                               . $r,
                             RigReadingsValue( $hash, $v )
                         );
-
-                      Log3 $name, 3,  "[DEBUG] - GardenaSmartDevice ($name) Ventil $propertie->{name} $r: $v";     
                     }
                 }
                  # ic24 and other watering devices calc irrigation left in sec
@@ -801,8 +799,6 @@ sub WriteReadings {
               # check if empty, clear scheduling-scheduled_watering_next_start_x
               readingsBulkUpdateIfChanged( $hash, 'scheduling-'.$decode_json->{settings}[$settings]{name},
                                   $decode_json->{settings}[$settings]{value} );
-              readingsBulkUpdateIfChanged( $hash, "scheduling-scheduled_watering_next_start_$1", $decode_json->{settings}[$settings]{value}) if ($decode_json->{settings}[$settings]{value} eq '');
-
               # CommandAttr( undef, $name . " scheduling-scheduled_watering_next_start_")  if ($decode_json->{settings}[$settings]{value} eq '' )
             }
 
@@ -897,20 +893,26 @@ sub setState {
         push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
         ## find nearst timestamp 
         #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
-        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'N/A') eq '' );
+        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'N/A') eq '' );
+        #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'N/A') eq '' );
         $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_irrigation_left", 0 ) if ( 
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > 0 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
 
-        if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne ''
-         &&  ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
-          $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') 
-            if ( 
-                Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-                && $has_scheduling && Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") > Time::Piece->new
-            )
-        } # fi
+        # if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne ''
+        #  &&  ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
+        #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+        #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') 
+        #     if ( 
+        #         Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
+        #         && $has_scheduling && Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") > Time::Piece->new
+        #     )
+        # } # fi
+
+        $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') 
+          if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne '' );
+
       }
       # override state 4 extendedstates
       if ( AttrVal( $name, "extendedState", 0 ) == 1) {
