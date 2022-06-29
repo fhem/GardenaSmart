@@ -483,7 +483,7 @@ sub Set {
           . $hash->{DEVICEID} . '"}';
     }
     ### Watering_pressure_pump
-    elsif ( lc $cmd eq 'operatingmode') {
+    elsif ( lc $cmd eq 'operating_mode') {
       my $op_mode = $aArg->[0];
       $payload = '"settings":{"name":"operating_mode",'
                  .'"value":"'.$op_mode.'",'
@@ -492,7 +492,7 @@ sub Set {
       $abilities = 'watering_pressure_pump_settings';
       $service_id = $hash->{helper}->{ 'operating_mode_id' };
     }
-    elsif ( lc $cmd eq 'leakagedetection') {
+    elsif ( lc $cmd eq 'leakage_detection') {
       my $leakdetection_mode = $aArg->[0];
       $payload = '"settings":{"name":"leakage_detection",'
                  .'"value":"'.$leakdetection_mode.'",'
@@ -501,7 +501,7 @@ sub Set {
       $abilities = 'watering_pressure_pump_settings';
       $service_id = $hash->{helper}->{ 'leakage_detection_id' };
     }
-    elsif ( lc $cmd eq 'turnonpressure') {
+    elsif ( lc $cmd eq 'turn_on_pressure') {
       my $turnonpressure = $aArg->[0];
       $payload = '"settings":{"name":"turn_on_pressure",'
                  .'"value":"'.$turnonpressure.'",'
