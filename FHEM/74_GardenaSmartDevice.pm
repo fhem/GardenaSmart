@@ -893,7 +893,7 @@ sub setState {
         push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
         ## find nearst timestamp 
         #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
-        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'n/a') eq '' );
+        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') ne 'n/a' );
         #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'n/a') eq '' );
         $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_irrigation_left", 0 ) if ( 
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
@@ -910,8 +910,8 @@ sub setState {
         #     )
         # } # fi
 
-        $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') 
-          if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne '' );
+        $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+        #  if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, 'n/a') ne 'n/a' );
 
       }
       # override state 4 extendedstates
@@ -941,7 +941,8 @@ sub setState {
           :
             ( $has_scheduling )
             # zeitplan aktiv  
-              ? ( $nearst_irrigation eq '2038-01-18 00:00')
+              # ? ( $nearst_irrigation eq '2038-01-18 00:00')
+              ? ( $nearst_irrigation eq 'n/a')
                 # dauerhaft pausiert
                 ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash , 'schedule permanently paused'))  )
                 # naechster zeutplan
