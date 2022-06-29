@@ -652,7 +652,7 @@ sub WriteReadings {
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name},
-                      ($propertie->{value} eq '') ? 'N/A' : RigReadingsValue( $hash, $propertie->{value} )
+                      ($propertie->{value} eq '') ? RigReadingsValue( $hash, 'n/a') : RigReadingsValue( $hash, $propertie->{value} )
                   )
                   if ( exists( $propertie->{value} ) # defined ignored 'value':null
                     && $decode_json->{abilities}[$abilities]{name} . '-'
@@ -893,8 +893,8 @@ sub setState {
         push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
         ## find nearst timestamp 
         #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
-        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'N/A') eq '' );
-        #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'N/A') eq '' );
+        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'n/a') eq '' );
+        #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'n/a') eq '' );
         $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_irrigation_left", 0 ) if ( 
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > 0 
@@ -1191,6 +1191,7 @@ sub ReadingLangGerman {
         'paused until %s'                => 'pausiert bis %s',        
         'will be irrigated %.f minutes remaining.'=> 'Wird bewässert. %.f Minuten verbleibend.',
         'next watering: %s'              => 'Nächste Bewässerung: %s',
+        'n/a'                            => 'nicht verfügbar',
     );
 
     if (
