@@ -901,16 +901,16 @@ sub setState {
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
 
         # if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne ''
-        #  &&  ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
+        if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
         #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
-        #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') 
-        #     if ( 
-        #         Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-        #         && $has_scheduling && Time::Piece->strptime( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, ''), "%Y-%m-%d %H:%M") > Time::Piece->new
-        #     )
-        # } # fi
+          $nearst_irrigation = ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '') 
+            if ( 
+                Time::Piece->strptime( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
+                && $has_scheduling && Time::Piece->strptime( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''), "%Y-%m-%d %H:%M") > Time::Piece->new
+            )
+        } # fi
 
-        $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+        #$nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
         #  if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, 'n/a') ne 'n/a' );
 
       }
