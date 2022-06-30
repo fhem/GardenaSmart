@@ -906,7 +906,7 @@ sub setState {
           $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
             if ( 
                 Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-                && $has_scheduling && Time::Piece->strptime( RigReadingsValue($has, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") > Time::Piece->new
+                && $has_scheduling && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") > Time::Piece->new
             )
         } # fi
 
