@@ -1,2 +1,2 @@
 UPD 2022-07-01_16:13:02 49241 FHEM/73_GardenaSmartBridge.pm
-UPD 2022-07-07_20:03:42 71765 FHEM/74_GardenaSmartDevice.pm
+UPD 2022-07-07_20:04:59 71767 FHEM/74_GardenaSmartDevice.pm
