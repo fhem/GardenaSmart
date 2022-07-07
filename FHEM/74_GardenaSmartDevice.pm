@@ -893,7 +893,7 @@ sub setState {
         push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
         ## find nearst timestamp 
         #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
-        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') ne 'n/a' );
+        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') ne '' );
         #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'n/a') eq '' );
         $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_irrigation_left", 0 ) if ( 
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
@@ -901,13 +901,26 @@ sub setState {
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
 
         # if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne ''
+        # --- wenn next_start_x ne 'na' && paused_until_x eq '' -> start_x
         if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
-        #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
-          $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
-            if ( 
-                Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-                && $has_scheduling && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") > Time::Piece->new
-            )
+          #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+
+          # $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
+          #   if ( 
+          #       Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
+          #       && $has_scheduling && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") > Time::Piece->new
+          #   )
+          if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') eq '' )  { # non next start, schedules paused permanently or next schedule > 1 year; get nearst paused_until
+            $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
+               if ( Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") 
+                      < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
+                    && $has_scheduling 
+                    && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") 
+                      > Time::Piece->new
+                  )
+          } else {
+             $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+          }            
         } # fi
 
         #$nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
@@ -942,7 +955,7 @@ sub setState {
             ( $has_scheduling )
             # zeitplan aktiv  
               # ? ( $nearst_irrigation eq '2038-01-18 00:00')
-              ? ( $nearst_irrigation eq RigReadingsValue( $hash, 'n/a') )
+              ? ( $nearst_irrigation eq RigReadingsValue( $hash, 'n/a') || $nearst_irrigation eq '2038-01-18 00:00') 
                 # dauerhaft pausiert
                 ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash , 'schedule permanently paused'))  )
                 # naechster zeutplan
