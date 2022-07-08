@@ -774,18 +774,23 @@ sub WriteReadings {
     ) {
         readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
                                         scalar ($decode_json->{scheduled_events} ) );
-        my $valve_id = 1; # ic24 [1..6] | wc, pump [1]
+        my $valve_id, $index= 1; # ic24 [1..6] | wc, pump [1]
         
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
           $valve_id = $event_schedules->{valve_id} if ( exists($event_schedules->{valve_id} ) ); #ic24
+          my $event_id = $index++; # event id
           
           while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
             readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_valve_'
+                                              . $event_id
+                                              . '_'
                                               . $valve_id 
                                               . '_'
-                                              . $v,
-                                              $r) if (ref($v) ne 'HASH' );
+                                              . $r,
+                                              $v) if (ref($v) ne 'HASH' );
             readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_valve_'
+                                              . $event_id
+                                              . '_'
                                               . $valve_id 
                                               . '_'
                                               . $v->{type},
