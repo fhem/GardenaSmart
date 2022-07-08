@@ -772,7 +772,7 @@ sub WriteReadings {
       #  && scalar ($decode_json->{scheduled_events} ) > 0
         && ref ($decode_json->{scheduled_events}) eq 'ARRAY' ) {
         readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
-                                        scalar ($decode_json->{scheduled_events} ) );
+                                        scalar( @{$decode_json->{scheduled_events} } ) );
         my $valve_id =1; my $event_id = 1; # ic24 [1..6] | wc, pump [1]
         
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
