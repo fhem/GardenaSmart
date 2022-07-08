@@ -780,16 +780,16 @@ sub WriteReadings {
           $event_id++; # event id
           
           while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
-            readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_valve_'
+            readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_'
                                               . $event_id
-                                              . '_'
+                                              . '_valve_'
                                               . $valve_id 
                                               . '_'
                                               . $r,
                                               $v) if (ref($v) ne 'HASH' );
-            readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_valve_'
+            readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_'
                                               . $event_id
-                                              . '_'
+                                              . '_valve_'
                                               . $valve_id 
                                               . '_'
                                               . $v->{type},
