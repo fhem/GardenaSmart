@@ -189,23 +189,23 @@ sub Define {
     my $deviceId = $aArg->[2];
     my $category = $aArg->[3];
 
-    $hash->{DEVICEID}                = $deviceId;
-    $hash->{VERSION}                 = version->parse($VERSION)->normal;
-    $hash->{helper}{STARTINGPOINTID} = '';
-    $hash->{helper}{schedules_paused_until_id} = '';
-    $hash->{helper}{eco_mode_id}               = '';
-    $hash->{helper}{button_config_time_id}     = '';
-    $hash->{helper}{winter_mode_id}            = '';
+    $hash->{DEVICEID}                             = $deviceId;
+    $hash->{VERSION}                              = version->parse($VERSION)->normal;
+    $hash->{helper}{STARTINGPOINTID}              = '';
+    $hash->{helper}{schedules_paused_until_id}    = '';
+    $hash->{helper}{eco_mode_id}                  = '';
+    $hash->{helper}{button_config_time_id}        = '';
+    $hash->{helper}{winter_mode_id}               = '';
 
     $hash->{helper}{_id} = '';
 
     # IrrigationControl valve control max 6
-    $hash->{helper}{schedules_paused_until_1_id} = '';
-    $hash->{helper}{schedules_paused_until_2_id} = '';
-    $hash->{helper}{schedules_paused_until_3_id} = '';
-    $hash->{helper}{schedules_paused_until_4_id} = '';
-    $hash->{helper}{schedules_paused_until_5_id} = '';
-    $hash->{helper}{schedules_paused_until_6_id} = '';
+    $hash->{helper}{schedules_paused_until_1_id}  = '';
+    $hash->{helper}{schedules_paused_until_2_id}  = '';
+    $hash->{helper}{schedules_paused_until_3_id}  = '';
+    $hash->{helper}{schedules_paused_until_4_id}  = '';
+    $hash->{helper}{schedules_paused_until_5_id}  = '';
+    $hash->{helper}{schedules_paused_until_6_id}  = '';
 
     CommandAttr( undef,
         "$name IODev $modules{GardenaSmartBridge}{defptr}{BRIDGE}->{NAME}" )
@@ -609,6 +609,7 @@ sub WriteReadings {
     my $name      = $hash->{NAME};
     my $abilities = scalar( @{ $decode_json->{abilities} } );
     my $settings  = scalar( @{ $decode_json->{settings} } );
+    my $scheduled_events  = scalar( @{ $decode_json->{scheduled_events} } );
 
     readingsBeginUpdate($hash);
 
@@ -628,6 +629,7 @@ sub WriteReadings {
                         'watering' )
                   )
                 {
+
                     if ( $propertie->{name} eq 'button_config_time' ) {
                         if ( $hash->{helper}{ $propertie->{name} . '_id' } ne
                             $decode_json->{abilities}[$abilities]{id} )
@@ -764,6 +766,35 @@ sub WriteReadings {
         $abilities--;
     } while ( $abilities >= 0 );
 
+
+    if ( 
+        exists( $decode_json->{scheduled_events} )
+        && scalar ($decode_json->{scheduled_events} > 0
+        && ref ($decode_json->{scheduled_events}) eq 'ARRAY' )
+    ) {
+        readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
+                                        scalar ($decode_json->{scheduled_events} ) );
+        my $valve_id = 1; # ic24 [1..6] | wc, pump [1]
+        
+        for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
+          $valve_id = $event_schedules->{valve_id} if ( exists($event_schedules->{valve_id} ) ); #ic24
+          
+          while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
+            readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_valve_'
+                                              . $valve_id 
+                                              . '_'
+                                              . $v,
+                                              $r) if (ref($v) ne 'HASH' );
+            readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_valve_'
+                                              . $valve_id 
+                                              . '_'
+                                              . $v->{type},
+                                              join(',', @ { $v->{weekdays}}) ) if (ref($v) qe 'HASH' );
+          };
+        };
+    
+    }; # fi scheduled_events
+
     my $winter_mode;
 
     do {
@@ -882,55 +913,67 @@ sub setState {
         : 'offline' )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
 
-    # ic24
-    if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ){
-      my @ic24opened_ventils; 
-      my $state_string = ''; my $nearst_irrigation = '2038-01-18 00:00';
-      my $has_scheduling = 0; my $longest_duration = 0;
-      my @valves_connected = split(',', ReadingsVal( $name, 'ic24-valves_connected', ''));
-      for (@valves_connected){ 
+    # ic24 / wc / electronic pump
+
+    if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
+        ||  AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' 
+        ||  AttrVal( $name, 'model', 'unknown' ) eq 'electronic_water_pump' ){
+      my @opened_valves; 
+      my $state_string = ''; my $nearst_irrigation = '';
+      my $has_schedule = 0; my $longest_duration = 0;
+      my @valves_connected = AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ? split(',', ReadingsVal( $name, 'ic24-valves_connected', '')) : '1';
+
+      for (@valves_connected){ # valves 1 or 1..6 
         ## add to opened ventils, if watering active
-        push @ic24opened_ventils, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
-        ## find nearst timestamp 
-        #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' && ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
-        ## wenn nicht dauerhaft pausiert , dann zeitplan vorhanden.
-        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ); #&& ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
-        #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'n/a') eq '' );
+        push @opened_valves, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
+        ## find longest irrigation duration 
         $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_irrigation_left", 0 ) if ( 
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > 0 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
+        
+        ## wenn nicht dauerhaft pausiert , dann zeitplan vorhanden oder datum der pause enthalten in T Zulu
+        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' )
 
-        # if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne ''
-        # --- wenn next_start_x ne 'na' && paused_until_x eq '' -> start_x
-        if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
-          #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
 
-          # $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
-          #   if ( 
-          #       Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-          #       && $has_scheduling && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") > Time::Piece->new
-          #   )
-          if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') eq '' )  { # non next start, schedules paused permanently or next schedule > 1 year; get nearst paused_until
-            $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
-               if ( Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") 
-                      < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-                    && $has_scheduling 
-                    && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") 
-                      > Time::Piece->new
-                  )
-          } else {
-             $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
-          }            
-        } # fi
-
-        #$nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
-        #  if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, 'n/a') ne 'n/a' );
-
-      }
+###### 
+###### 
+######         $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ); #&& ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
+######         #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'n/a') eq '' );
+###### 
+######         # if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne ''
+######         # --- wenn next_start_x ne 'na' && paused_until_x eq '' -> start_x
+###### ## scheduling-schedules_paused_until_*  = leer oder n/a  -> keine zeitpläne
+###### 
+######         if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
+######           #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+######           Log3 $name, 3, "[DEBUG] - ";
+###### 
+######           # $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
+######           #   if ( 
+######           #       Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
+######           #       && $has_scheduling && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") > Time::Piece->new
+######           #   )
+######           if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') eq '' )  { # non next start, schedules paused permanently or next schedule > 1 year; get nearst paused_until
+######             $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
+######                if ( Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") 
+######                       < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
+######                     && $has_scheduling 
+######                     && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") 
+######                       > Time::Piece->new
+######                   )
+######           } else {
+######              $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+######           }            
+######         } # fi
+###### 
+######         #$nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+######         #  if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, 'n/a') ne 'n/a' );
+###### 
+      } # for
       # override state 4 extendedstates
       if ( AttrVal( $name, "extendedState", 0 ) == 1) {
-        if (scalar(@ic24opened_ventils) > 0){
+        if (scalar(@opened_valves) > 0){
           ## valve 1 will be ir.. 23 minutes remaining
           for (@valves_connected){
             $state_string .= sprintf(RigReadingsValue($hash,'valve').' '.$_.' '.(RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.') .'</br>'), (ReadingsVal( $name, 'watering-watering_timer_'.$_.'_duration', 0 )/60));
@@ -947,8 +990,8 @@ sub setState {
             ' )
             if ( AttrVal( $name, 'stateFormat', 'none' ) eq 'none' );
       } else {
-        Log3 $name, 3, "[DEBUG] - Offene Ventile :".scalar(@ic24opened_ventils)." laengste bewaesserung: $longest_duration . hat Zeitplan: $has_scheduling Naechster Zeitplan: $nearst_irrigation";
-        $state_string = scalar(@ic24opened_ventils) > 0
+        Log3 $name, 3, "[DEBUG] - Offene Ventile :".scalar(@opened_valves)." laengste bewaesserung: $longest_duration . hat Zeitplan: $has_scheduling Naechster Zeitplan: $nearst_irrigation";
+        $state_string = scalar(@opened_valves) > 0
           # offen
           ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $longest_duration/60) 
           # zu
@@ -1029,36 +1072,37 @@ sub setState {
     #   Wird bewässert   xx Minuten verbleibend" und "Nächste Bewässerung   heute um xx:yy Uhr"
     # 4. Ventil manuell geoeffnet, Zeitpläne deaktiviert.
     #   App zeigt: "Wird bewässert   xx Minuten verbleibend"
-    if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
+    ### CHANGE to one
+    # if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' ){
 
-         my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
-              m{\A[1-9]([0-9]+)?\z}xms
-            # offen
-            ? 
-              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
-              # leer ( zeitplan aktiv ... ) 
-              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_irrigation_left', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
-              # zeitplan pausiert
-              : 
-                ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
-                # pause bis  dauerhaft
-                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_irrigation_left', 0 )/60) )
-                # naechter termin
-                : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
-            # zu
-            :
-              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
-              # zeitplan aktiv
-              ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
-              # zeitplan pausiert
-              : RigReadingsValue($hash, 'closed')
-            ;
-      # state offline | override
-      $state_string = 'offline' if ($online_state eq 'offline');
+    #      my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
+    #           m{\A[1-9]([0-9]+)?\z}xms
+    #         # offen
+    #         ? 
+    #           ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+    #           # leer ( zeitplan aktiv ... ) 
+    #           ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_irrigation_left', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+    #           # zeitplan pausiert
+    #           : 
+    #             ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
+    #             # pause bis  dauerhaft
+    #             ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_irrigation_left', 0 )/60) )
+    #             # naechter termin
+    #             : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
+    #         # zu
+    #         :
+    #           ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+    #           # zeitplan aktiv
+    #           ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
+    #           # zeitplan pausiert
+    #           : RigReadingsValue($hash, 'closed')
+    #         ;
+    #   # state offline | override
+    #   $state_string = 'offline' if ($online_state eq 'offline');
  
-      readingsBulkUpdate(
-        $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
-    }
+    #   readingsBulkUpdate(
+    #     $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
+    # }
 
     if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ ) {
         my $state_string =
