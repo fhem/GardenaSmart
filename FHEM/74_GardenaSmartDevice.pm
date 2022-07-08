@@ -985,7 +985,7 @@ sub setState {
         } else {
           $state_string .= RigReadingsValue($hash, 'closed');
         }
-        $state_string .= ($has_scheduling) ? sprintf( RigReadingsValue($hash, 'next watering: %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', ''))) : sprintf( RigReadingsValue($hash, 'paused until %s') , $nearst_irrigation); 
+        $state_string .= ($has_schedule) ? sprintf( RigReadingsValue($hash, 'next watering: %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', ''))) : sprintf( RigReadingsValue($hash, 'paused until %s') , $nearst_irrigation); 
         #TODO: Write state format for ventil 1-@valces_connected  -> map ?
         CommandAttr( undef, $name . ' stateFormat 
               {
@@ -994,13 +994,13 @@ sub setState {
             ' )
             if ( AttrVal( $name, 'stateFormat', 'none' ) eq 'none' );
       } else {
-        Log3 $name, 3, "[DEBUG] - Offene Ventile :".scalar(@opened_valves)." laengste bewaesserung: $longest_duration . hat Zeitplan: $has_scheduling Naechster Zeitplan: $nearst_irrigation";
+        Log3 $name, 3, "[DEBUG] - Offene Ventile :".scalar(@opened_valves)." laengste bewaesserung: $longest_duration . hat Zeitplan: $has_schedule Naechster Zeitplan: $nearst_irrigation";
         $state_string = scalar(@opened_valves) > 0
           # offen
           ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $longest_duration/60) 
           # zu
           :
-            ( $has_scheduling )
+            ( $has_schedule )
             # zeitplan aktiv  
               # ? ( $nearst_irrigation eq '2038-01-18 00:00')
               ? ( $nearst_irrigation eq RigReadingsValue( $hash, 'n/a') || $nearst_irrigation eq '2038-01-18 00:00') 
