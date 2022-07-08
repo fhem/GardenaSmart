@@ -769,7 +769,7 @@ sub WriteReadings {
 
     if ( 
         exists( $decode_json->{scheduled_events} )
-        && scalar ($decode_json->{scheduled_events} > 0
+      #  && scalar ($decode_json->{scheduled_events} > 0
         && ref ($decode_json->{scheduled_events}) eq 'ARRAY' )
     ) {
         readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
@@ -794,7 +794,7 @@ sub WriteReadings {
                                               . $valve_id 
                                               . '_'
                                               . $v->{type},
-                                              join(',', @ { $v->{weekdays}}) ) if (ref($v) qe 'HASH' );
+                                              join(',', @ { $v->{weekdays}}) ) if (ref($v) eq 'HASH' );
           };
         };
     
@@ -938,7 +938,7 @@ sub setState {
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
         
         ## wenn nicht dauerhaft pausiert , dann zeitplan vorhanden oder datum der pause enthalten in T Zulu
-        $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' )
+        $has_schedule = 1 if ( ReadingsVal($name, 'scheduling-schedules_events_count', '')  ne '' );
 
 
 ###### 
