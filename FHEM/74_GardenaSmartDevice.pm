@@ -923,10 +923,11 @@ sub setState {
         ||  AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' 
         ||  AttrVal( $name, 'model', 'unknown' ) eq 'electronic_water_pump' ){
       my @opened_valves; 
-      my $state_string = ''; my $nearst_irrigation = '';
-      my $has_schedule = 0; my $longest_duration = 0;
+      my $state_string = ''; my $nearst_irrigation = '2999-12-12 23:59';
+      my $has_schedule = 0; my $longest_duration = 0; my $processed_item = '';
       my @valves_connected = AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ? split(',', ReadingsVal( $name, 'ic24-valves_connected', '')) : '1';
 
+      $has_schedule = 1 if ( ReadingsVal($name, 'scheduling-schedules_events_count', '')  ne '' );
       for (@valves_connected){ # valves 1 or 1..6 
         ## add to opened ventils, if watering active
         push @opened_valves, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
@@ -935,9 +936,29 @@ sub setState {
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > 0 
               && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
-        
-        ## wenn nicht dauerhaft pausiert , dann zeitplan vorhanden oder datum der pause enthalten in T Zulu
-        $has_schedule = 1 if ( ReadingsVal($name, 'scheduling-schedules_events_count', '')  ne '' );
+
+        # y-m-d h:m
+        $processed_item = AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
+                              ? RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')) 
+                              : RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', ''));
+
+        Log3 $name, 3, "[DEBUG] - process: $processed_item";
+        Log3 $name, 3, "[DEBUG] - next_start: ". ReadingsVal($name, 'scheduling-scheduled_watering_next_start', ''); # n/a  RigReadingsValue( $hash, 'n/a')
+        # $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
+          if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') eq RigReadingsValue( $hash, 'n/a') )  { # non next start, schedules paused permanently or next schedule > 1 year; get nearst paused_until
+            Log3 $name, 3, "[DEBUG] - next_start: empty ";
+            
+            $nearst_irrigation = $processed_item
+               if ( Time::Piece->strptime( $processed_item, "%Y-%m-%d %H:%M") 
+                      < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
+                    && $has_schedule 
+                    && Time::Piece->strptime( $processed_item, "%Y-%m-%d %H:%M") 
+                      > Time::Piece->new
+                  )
+          } else {
+             $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
+          }            
+        Log3 $name, 3, "[DEBUG] - nearst 2: $nearst_irrigation";
 
 
 ###### 
