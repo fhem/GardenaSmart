@@ -1,1 +1,1 @@
-    [enhancement] - scheudiles handling wc,ic24,pump, next schedule, permanenlty cloesd
+    [fix] Garbage at end of string in strptime

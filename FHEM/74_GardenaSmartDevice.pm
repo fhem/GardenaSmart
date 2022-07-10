@@ -959,7 +959,7 @@ sub setState {
           } else {
              $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
           }            
-        Log3 $name, 3, "[DEBUG] - nearst 2: $nearst_irrigation";
+        Log3 $name, 3, "[DEBUG] - choosed nearst: $nearst_irrigation";
 
 
 ###### 
@@ -1022,16 +1022,19 @@ sub setState {
           ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $longest_duration/60) 
           # zu
           :
-            ( $has_schedule )
+            ( $has_schedule 
+            && $nearst_irrigation ne '2999-12-12 12:00')
             # zeitplan aktiv  
-              # ? ( $nearst_irrigation eq '2038-01-18 00:00')
+              # ? ( $nearst_irrigation eq '2038-01-18 00:00')   sprintf( RigReadingsValue($hash, 'paused until %s') , $nearst_irrigation)
               ? ( $nearst_irrigation eq RigReadingsValue( $hash, 'n/a') || $nearst_irrigation =~ '2038-01-18.*') 
                 # dauerhaft pausiert
                 ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash , 'schedule permanently paused'))  )
                 # naechster zeutplan
-                : sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')), $nearst_irrigation )
+                : (ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') eq RigReadingsValue($hash, 'n/a')) 
+                  ? sprintf( RigReadingsValue($hash, 'paused until %s') , $nearst_irrigation) 
+                  : sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')), $nearst_irrigation )
             # zeitplan pausiert
-            : RigReadingsValue($hash, 'closed')
+              : RigReadingsValue($hash, 'closed')
         ;
       # state offline | override
       $state_string = 'offline' if ($online_state eq 'offline');
