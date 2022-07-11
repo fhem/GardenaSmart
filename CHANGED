@@ -1,1 +1,1 @@
-    [fix] state , initial nearst fallback, paused untel readded -  paused_until is UTC no bug -> calc for state in localtim
+    [enhancement] - change stopSchedule and resumeSchedule setter to connected valves
