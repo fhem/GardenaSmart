@@ -1,1 +1,1 @@
-    [fix] Garbage at end of string in strptime
+    [fix] state , initial nearst fallback, paused untel readded -  paused_until is UTC no bug -> calc for state in localtim
