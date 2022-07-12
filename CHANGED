@@ -1,1 +1,1 @@
-    [enhancement] - change stopSchedule and resumeSchedule setter to connected valves
+    [add] - cancleValve for conencted valvs only
