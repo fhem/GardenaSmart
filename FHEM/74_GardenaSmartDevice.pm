@@ -992,7 +992,7 @@ sub setState {
 
     if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
         ||  AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' 
-        ||  AttrVal( $name, 'model', 'unknown' ) eq 'electronic_water_pump' ){
+        ||  AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' ){
       my @opened_valves; 
       my $state_string = ''; my $nearst_irrigation = '2999-12-12 12:00';
       my $has_schedule = 0; my $longest_duration = 0; my $processed_item = '';
