@@ -565,6 +565,10 @@ sub Set {
 'manualOverride:slider,1,1,59 cancelOverride:noArg resumeSchedule:noArg stopSchedule manualButtonTime:slider,0,2,100'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
+
+        $list .= 'manualOverride:slider,1,1,90 cancelOverride:noArg operating_mode:automatic,scheduled leakage_detection:watering,washing_machine,domestic_water_supply,off turn_on_pressure:slider,2,0.2,3.0,1 resetValveErrors:noArg'
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
+
         $list .=
 'closeAllValves:noArg stopScheduleValve:select,'.ReadingsVal( $name, 'ic24-valves_connected', '1' ).' resumeScheduleValve:select,'.ReadingsVal( $name, 'ic24-valves_connected', '1' )
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
@@ -1237,39 +1241,39 @@ sub setState {
         ReadingsVal( $name, 'power-power_timer', 'no info from power-timer' ) )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
 
-    #electronic water pump
-    if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' ) {  #        | ok | pump_not_filled (Pumpe nicht gefüllt)
-         my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
-              m{\A[1-9]([0-9]+)?\z}xms
-            # offen
-            ? 
-              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
-              # leer ( zeitplan aktiv ... ) 
-              ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
-              # zeitplan pausiert
-              : 
-                ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
-                # pause bis  dauerhaft
-                ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60) )
-                # naechter termin
-                : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
-            # zu
-            :
-              ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
-              # zeitplan aktiv
-              ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
-              # zeitplan pausiert
-              : RigReadingsValue($hash, 'closed')
-            ;
-      # state offline | override
-      $state_string = 'offline' if ($online_state eq 'offline');
-      # check valv error, override state 
-      my $error_type = ReadingsVal( $name, 'error-valve_error_1_type', 'ok' );
-      $state_string = ( $error_type ne 'ok' ) ? $error_type : $state_string;
+    # #electronic water pump
+    # if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' ) {  #        | ok | pump_not_filled (Pumpe nicht gefüllt)
+    #      my $state_string = ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 ) =~
+    #           m{\A[1-9]([0-9]+)?\z}xms
+    #         # offen
+    #         ? 
+    #           ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+    #           # leer ( zeitplan aktiv ... ) 
+    #           ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash, 'next watering: %s')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '')) ) 
+    #           # zeitplan pausiert
+    #           : 
+    #             ( ReadingsVal($name, 'scheduling-schedules_paused_until', '') eq '2038-01-18T00:00:00.000Z')
+    #             # pause bis  dauerhaft
+    #             ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.').' '.RigReadingsValue($hash , 'schedule permanently paused')), (ReadingsVal( $name, 'watering-watering_timer_1_duration', 0 )/60) )
+    #             # naechter termin
+    #             : sprintf( RigReadingsValue($hash , 'paused until %s'), RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', '')) )
+    #         # zu
+    #         :
+    #           ( ReadingsVal($name, 'scheduling-schedules_paused_until', '' ) eq '' )
+    #           # zeitplan aktiv
+    #           ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') ) )
+    #           # zeitplan pausiert
+    #           : RigReadingsValue($hash, 'closed')
+    #         ;
+    #   # state offline | override
+    #   $state_string = 'offline' if ($online_state eq 'offline');
+    #   # check valv error, override state 
+    #   my $error_type = ReadingsVal( $name, 'error-valve_error_1_type', 'ok' );
+    #   $state_string = ( $error_type ne 'ok' ) ? $error_type : $state_string;
   
-      readingsBulkUpdate(
-        $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
-    }
+    #   readingsBulkUpdate(
+    #     $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
+    # }
     return;
 }
 
