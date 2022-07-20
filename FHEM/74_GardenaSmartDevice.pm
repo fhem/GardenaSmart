@@ -1040,41 +1040,6 @@ sub setState {
           }            
         Log3 $name, 5, "[DEBUG] - choosed nearst: $nearst_irrigation";
 
-
-###### 
-###### 
-######         $has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ); #&& ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '') eq '' );
-######         #$has_scheduling = 1 if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , 'n/a') eq '' );
-###### 
-######         # if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, '') ne ''
-######         # --- wenn next_start_x ne 'na' && paused_until_x eq '' -> start_x
-###### ## scheduling-schedules_paused_until_*  = leer oder n/a  -> keine zeitpläne
-###### 
-######         if ( ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_ , '')  ne '2038-01-18T00:00:00.000Z' ) {
-######           #   $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
-######           Log3 $name, 3, "[DEBUG] - ";
-###### 
-######           # $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
-######           #   if ( 
-######           #       Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-######           #       && $has_scheduling && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") > Time::Piece->new
-######           #   )
-######           if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') eq '' )  { # non next start, schedules paused permanently or next schedule > 1 year; get nearst paused_until
-######             $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
-######                if ( Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") 
-######                       < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M")
-######                     && $has_scheduling 
-######                     && Time::Piece->strptime( RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')), "%Y-%m-%d %H:%M") 
-######                       > Time::Piece->new
-######                   )
-######           } else {
-######              $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
-######           }            
-######         } # fi
-###### 
-######         #$nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
-######         #  if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start_'.$_, 'n/a') ne 'n/a' );
-###### 
       } # for
       # override state 4 extendedstates
       if ( AttrVal( $name, "extendedState", 0 ) == 1) {
