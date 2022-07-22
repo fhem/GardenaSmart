@@ -709,7 +709,7 @@ sub WriteReadings {
                       . $propertie->{name},
                       ($propertie->{value} eq '') ? RigReadingsValue( $hash, 'n/a') : RigReadingsValue( $hash, $propertie->{value} )
                   )
-                  if ( exists( $propertie->{value} ) # defined ignored 'value':null
+                  if ( defined( $propertie->{value} ) 
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'radio-quality'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
@@ -904,7 +904,7 @@ sub WriteReadings {
                                   $decode_json->{settings}[$settings]{value} );
               # CommandAttr( undef, $name . " scheduling-scheduled_watering_next_start_")  if ($decode_json->{settings}[$settings]{value} eq '' )
             }
-
+#TODO: Readings und Setter ?!
             # save electronid pressure pump settings as readings
             if ( $decode_json->{settings}[$settings]{name} eq 'operating_mode' 
                 || $decode_json->{settings}[$settings]{name} eq 'leakage_detection' 
