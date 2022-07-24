@@ -1238,6 +1238,7 @@ sub ReadingLangGerman {
         'next watering: %s'              => 'Nächste Bewässerung: %s',
         'n/a'                            => 'nicht verfügbar',
         'pump_not_filled'                => 'Pumpe nicht gefüllt',
+        'clean_fine_filter'              => 'Filter reinigen',
     );
 
     if (
