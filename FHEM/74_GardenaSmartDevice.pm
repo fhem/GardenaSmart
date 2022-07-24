@@ -707,9 +707,9 @@ sub WriteReadings {
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name},
-                      ($propertie->{value} eq '') ? RigReadingsValue( $hash, 'n/a') : RigReadingsValue( $hash, $propertie->{value} )
+                      (defined ($propertie->{value} ) eq '') ? RigReadingsValue( $hash, 'n/a') : RigReadingsValue( $hash, $propertie->{value} )
                   )
-                  if ( defined( $propertie->{value} ) 
+                  if ( exists( $propertie->{value} ) 
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'radio-quality'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
