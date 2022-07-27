@@ -7,6 +7,7 @@
 #
 #   Special thanks goes to comitters:
 #       - Michael (mbrak)       Thanks for Commandref
+#       - Christian (zife)      Thanks for Commandref
 #       - Matthias (Kenneth)    Thanks for Wiki entry
 #       - BioS                  Thanks for predefined start points Code
 #       - fettgu                Thanks for Debugging Irrigation Control data flow
@@ -1234,7 +1235,7 @@ sub ReadingLangGerman {
         'awake'                          => 'Aufgewacht',
         'schedule permanently paused'    => 'Zeitplan dauerhaft pausiert',
         'paused until %s'                => 'pausiert bis %s',        
-        'will be irrigated %.f minutes remaining.'=> 'Wird bewässert. %.f Minuten verbleibend.',
+        'watering. %.f minutes left'     => 'Wird bewässert. %.f Minuten verbleibend.',
         'next watering: %s'              => 'Nächste Bewässerung: %s',
         'n/a'                            => 'nicht verfügbar',
         'pump_not_filled'                => 'Pumpe nicht gefüllt',
@@ -1389,20 +1390,27 @@ sub SetPredefinedStartPoints {
 
 =item device
 =item summary    Modul to control GardenaSmart Devices
-=item summary_DE Modul zur Steuerung von GardenaSmartger&aumlten
-
+=item summary_DE Modul zur Steuerung von GardenaSmartger&auml;ten
 =begin html
 
 <a name="GardenaSmartDevice"></a>
 <h3>GardenaSmartDevice</h3>
-<ul>
-    In combination with GardenaSmartBridge this FHEM Module controls the GardenaSmart Device using the GardenaCloud
+<ul> 
+    In combination with Fhem device GardenaSmartBridge this Fhem module enables communication between GardenaCloud and
+    fhem.
     <br><br>
-    Once the Bridge device is created, the connected devices are automatically recognized and created in FHEM. <br>
-    From now on the devices can be controlled and changes in the GardenaAPP are synchronized with the state and readings of the devices.
+    Once the bridge device is created, the connected Gardena devices will be recognized and created in Fhem
+    automatically.<br>
+    From now on these devices can be controlled via Fhem. Changes in the Gardena App are synchronized with state and
+    redings of the devices.
+    <br><br>
+    So far, known devices are mower, smart water control, irrigation control, smart sensors, power plug and pressure
+    pump. Schedules can be disabled/enabled via fhem, defining or deleting them must be done via the Gardena App.<br>
     <a name="GardenaSmartDevicereadings"></a>
-    <br><br><br>
-    <b>Readings</b>
+</ul>
+<br>
+<ul>
+    <b>Readings (model = mower)</b>
     <ul>
         <li>battery-charging - Indicator if the Battery is charged (0/1) or with newer Firmware (false/true)</li>
         <li>battery-level - load percentage of the Battery</li>
@@ -1421,149 +1429,235 @@ sub SetPredefinedStartPoints {
         <li>firmware-inclusion_status - inclusion status</li>
         <li>internal_temperature-temperature - internal device temperature</li>
         <li>mower-error - actual error message
-        <ul>
-            <li>no_message</li>
-            <li>outside_working_area</li>
-            <li>no_loop_signal</li>
-            <li>wrong_loop_signal</li>
-            <li>loop_sensor_problem_front</li>
-            <li>loop_sensor_problem_rear</li>
-            <li>trapped</li>
-            <li>upside_down</li>
-            <li>low_battery</li>
-            <li>empty_battery</li>
-            <li>no_drive</li>
-            <li>lifted</li>
-            <li>stuck_in_charging_station</li>
-            <li>charging_station_blocked</li>
-            <li>collision_sensor_problem_rear</li>
-            <li>collision_sensor_problem_front</li>
-            <li>wheel_motor_blocked_right</li>
-            <li>wheel_motor_blocked_left</li>
-            <li>wheel_drive_problem_right</li>
-            <li>wheel_drive_problem_left</li>
-            <li>cutting_system_blocked</li>
-            <li>invalid_sub_device_combination</li>
-            <li>settings_restored</li>
-            <li>electronic_problem</li>
-            <li>charging_system_problem</li>
-            <li>tilt_sensor_problem</li>
-            <li>wheel_motor_overloaded_right</li>
-            <li>wheel_motor_overloaded_left</li>
-            <li>charging_current_too_high</li>
-            <li>temporary_problem</li>
-            <li>guide_1_not_found</li>
-            <li>guide_2_not_found</li>
-            <li>guide_3_not_found</li>
-            <li>difficult_finding_home</li>
-            <li>guide_calibration_accomplished</li>
-            <li>guide_calibration_failed</li>
-            <li>temporary_battery_problem</li>
-            <li>battery_problem</li>
-            <li>alarm_mower_switched_off</li>
-            <li>alarm_mower_stopped</li>
-            <li>alarm_mower_lifted</li>
-            <li>alarm_mower_tilted</li>
-            <li>connection_changed</li>
-            <li>connection_not_changed</li>
-            <li>com_board_not_available</li>
-            <li>slipped</li>
-        </ul>
+            <ul>
+                <li>no_message</li>
+                <li>outside_working_area</li>
+                <li>no_loop_signal</li>
+                <li>wrong_loop_signal</li>
+                <li>loop_sensor_problem_front</li>
+                <li>loop_sensor_problem_rear</li>
+                <li>trapped</li>
+                <li>upside_down</li>
+                <li>low_battery</li>
+                <li>empty_battery</li>
+                <li>no_drive</li>
+                <li>lifted</li>
+                <li>stuck_in_charging_station</li>
+                <li>charging_station_blocked</li>
+                <li>collision_sensor_problem_rear</li>
+                <li>collision_sensor_problem_front</li>
+                <li>wheel_motor_blocked_right</li>
+                <li>wheel_motor_blocked_left</li>
+                <li>wheel_drive_problem_right</li>
+                <li>wheel_drive_problem_left</li>
+                <li>cutting_system_blocked</li>
+                <li>invalid_sub_device_combination</li>
+                <li>settings_restored</li>
+                <li>electronic_problem</li>
+                <li>charging_system_problem</li>
+                <li>tilt_sensor_problem</li>
+                <li>wheel_motor_overloaded_right</li>
+                <li>wheel_motor_overloaded_left</li>
+                <li>charging_current_too_high</li>
+                <li>temporary_problem</li>
+                <li>guide_1_not_found</li>
+                <li>guide_2_not_found</li>
+                <li>guide_3_not_found</li>
+                <li>difficult_finding_home</li>
+                <li>guide_calibration_accomplished</li>
+                <li>guide_calibration_failed</li>
+                <li>temporary_battery_problem</li>
+                <li>battery_problem</li>
+                <li>alarm_mower_switched_off</li>
+                <li>alarm_mower_stopped</li>
+                <li>alarm_mower_lifted</li>
+                <li>alarm_mower_tilted</li>
+                <li>connection_changed</li>
+                <li>connection_not_changed</li>
+                <li>com_board_not_available</li>
+                <li>slipped</li>
+            </ul>
         </li>
         <li>mower-manual_operation - (0/1) or with newer Firmware (false/true)</li>
         <li>mower-override_end_time - manual override end time</li>
         <li>mower-source_for_next_start - source for the next start
-        <ul>
-            <li>no_source</li>
-            <li>mower_charging</li>
-            <li>completed_cutting_autotimer</li>
-            <li>week_timer</li>
-            <li>countdown_timer</li>
-            <li>undefined</li>
-        </ul>
-        </li>  
+            <ul>
+                <li>no_source</li>
+                <li>mower_charging</li>
+                <li>completed_cutting_autotimer</li>
+                <li>week_timer</li>
+                <li>countdown_timer</li>
+                <li>undefined</li>
+            </ul>
+        </li>
         <li>mower-status - mower state (see state)</li>
         <li>mower-timestamp_next_start - timestamp of next scheduled start</li>
         <li>radio-connection_status - state of connection</li>
         <li>radio-quality - percentage of the radio quality</li>
         <li>radio-state - radio state (bad/poor/good/undefined)</li>
         <li>state - state of the mower
-        <ul>
-            <li>paused</li>
-            <li>ok_cutting</li>
-            <li>ok_searching</li>
-            <li>ok_charging</li>
-            <li>ok_leaving</li>
-            <li>wait_updating</li>
-            <li>wait_power_up</li>
-            <li>parked_timer</li>
-            <li>parked_park_selected</li>
-            <li>off_disabled</li>
-            <li>off_hatch_open</li>
-            <li>unknown</li>
-            <li>error</li>
-            <li>error_at_power_up</li>
-            <li>off_hatch_closed</li>
-            <li>ok_cutting_timer_overridden</li>
-            <li>parked_autotimer</li>
-            <li>parked_daily_limit_reached</li>
-        </ul>
+            <ul>
+                <li>paused</li>
+                <li>ok_cutting</li>
+                <li>ok_searching</li>
+                <li>ok_charging</li>
+                <li>ok_leaving</li>
+                <li>wait_updating</li>
+                <li>wait_power_up</li>
+                <li>parked_timer</li>
+                <li>parked_park_selected</li>
+                <li>off_disabled</li>
+                <li>off_hatch_open</li>
+                <li>unknown</li>
+                <li>error</li>
+                <li>error_at_power_up</li>
+                <li>off_hatch_closed</li>
+                <li>ok_cutting_timer_overridden</li>
+                <li>parked_autotimer</li>
+                <li>parked_daily_limit_reached</li>
+            </ul>
         </li>
     </ul>
     <br><br>
-    <a name="GardenaSmartDeviceattributes"></a>
-    <b>Attributes</b>
+    <b>Readings (model = watering_computer)</b>
     <ul>
-        <li>readingValueLanguage - Change the Language of Readings (de,en/if not set the default is english and the global language is not set at german) </li>
-        <li>model - </li>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = ic24)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = sensor)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = sensor2)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = power)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = electronic_pressure_pump)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <a name="GardenaSmartDeviceattributes"></a>
+    <b>Attribute</b>
+    <ul>
+        <li>IODev - Name of GardenaSmartBridge device</li>
+        <li>extendedState 0|1 - [tbd.]</li>
+        <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - model of
+            GardenaSmartDevice</li>
+        <li>readingValueLanguage en|de - Reading language enlish or german (default: english, if global language is not
+            set to german)</li>
     </ul>
     <br><br>
     <a name="GardenaSmartDeviceset"></a>
-    <b>set</b>
+    <b>set (model = mower)</b>
     <ul>
-      <li>winter_mode - awake | hibernate</li>
-    </ul>
-    <ul>
-        <h3>mower</h3>
-        <li>parkUntilFurtherNotice</li>
-        <li>parkUntilNextTimer</li>
-        <li>startOverrideTimer - (in minutes, 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
-        <li>startResumeSchedule</li>
-        <li>startpoint enable|disable 1|2|3 - enables or disables one or more predefined start points</li>
+        <li>parkUntilFurtherNotice - park mower and disable schedule</li>
+        <li>parkUntilNextTimer - park mower until next schedule</li>
+        <li>startOverrideTimer n - manual mowing for n minutes (e.g. 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
+        <li>startResumeSchedule - enable schedule</li>
+        <li>startPoint enable|disable 1|2|3 - enable or disable pre-defined starting points</li>
         <ul>
             <li>set NAME startpoint enable 1</li>
             <li>set NAME startpoint disable 3 enable 1</li>
         </ul>
-        <h3>irrigation control</h3>
-        <li>resumeScheduleValve - start schedule irrigation on valve n</li>
-        <li>stopScheduleValve - stop schedule irrigation on valve n  (Default: 2038-01-18T00:00:00.000Z) | optional params hours (now + hours)</li>
+        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+    </ul>
+    <br><br>
+    <b>set (model = watering_computer)</b>
+    <ul>
+        <li>cancelOverride - stop (manual) watering</li>
+        <li>manualButtonTime n - set watering time for manual button (0 disables button)</li>
+        <li>manualOverride n - manual watering for n minutes</li>
+        <li>resumeSchedule - enable schedule</li>
+        <li>stopSchedule n - disable schedule for n hours (Default: 2038-01-18T00:00:00.000Z, Gardena App reads it as
+            "permanently")</li>
+        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+    </ul>
+    <br><br>
+    <b>set (model = ic24)</b>
+    <ul>
+        <li>cancelOverrideValve1 - stop (manual) watering for valve 1 </li>
+        <li>cancelOverrideValve2 - stop (manual) watering for valve 2 </li>
+        <li>cancelOverrideValve3 - stop (manual) watering for valve 3 </li>
+        <li>cancelOverrideValve4 - stop (manual) watering for valve 4 </li>
+        <li>cancelOverrideValve5 - stop (manual) watering for valve 5 </li>
+        <li>cancelOverrideValve6 - stop (manual) watering for valve 6 </li>
         <li>closeAllValves - close all valves</li>
-        <h3>water control</h3>
-        <li>manualButtonTime - set manual time for button press (in minutes) 0 disable button</li>
-        <li>stopSchedule - stop schedule for now + n hours (Default: 2038-01-18T00:00:00.000Z)</li>
-        <li>resumeSchedule - resume schedule</li>
+        <li>manualDurationValve1 n - open valve 1 for n minutes</li>
+        <li>manualDurationValve2 n - open valve 2 for n minutes</li>
+        <li>manualDurationValve3 n - open valve 3 for n minutes</li>
+        <li>manualDurationValve4 n - open valve 4 for n minutes</li>
+        <li>manualDurationValve5 n - open valve 5 for n minutes</li>
+        <li>manualDurationValve6 n - open valve 6 for n minutes</li>
+        <li>resumeScheduleValve n - enable schedule for valve n</li>
+        <li>stopScheduleValve n m - disable schedule for valve n for m hours (Default: 2038-01-18T00:00:00.000Z, Gardena
+            App reads it as "permanently")</li>
+        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+    </ul>
+    <br><br>
+    <b>set (model = sensor)</b>
+    <ul>
+        <li>refresh temperature|humidity|light - refresh sensor reading for temperature, humidity or daylight</li>
+        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+    </ul>
+    <br><br>
+    <b>set (model = sensor2)</b>
+    <ul>
+        <li>refresh temperature|humidity - refresh sensor reading for temperature or humidity</li>
+        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+    </ul>
+    <br><br>
+    <b>set (model = power)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>set (model = electronic_pressure_pump)</b>
+    <ul>
+        <li>[tbd.]</li>
     </ul>
 </ul>
 
 =end html
+
 =begin html_DE
 
 <a name="GardenaSmartDevice"></a>
 <h3>GardenaSmartDevice</h3>
 <ul>
-    Zusammen mit dem Device GardenaSmartDevice stellt dieses FHEM Modul die Kommunikation zwischen der GardenaCloud und Fhem her.
+    Zusammen mit dem Device GardenaSmartBridge stellt dieses Fhem-Modul die Kommunikation zwischen der GardenaCloud und
+    Fhem her.
     <br><br>
-    Wenn das GardenaSmartBridge Device erzeugt wurde, werden verbundene Ger&auml;te automatisch erkannt und in Fhem angelegt.<br> 
-    Von nun an k&ouml;nnen die eingebundenen Ger&auml;te gesteuert werden. &Auml;nderungen in der APP werden mit den Readings und dem Status syncronisiert.
-    <a name="GardenaSmartDevicereadings"></a>
-    </ul>
+    Wenn das GardenaSmartBridge Device erzeugt wurde, werden verbundene Geräte automatisch erkannt und in Fhem angelegt.
     <br>
-    <ul>
-    <b>Readings</b>
+    Von nun an können die eingebundenen Geräte gesteuert werden. Änderungen in der App werden mit den Readings und dem
+    Status synchronisiert.
+    <br><br>
+    Bekannte Gardena-Geräte umfassen Rasenmäher, Smart Water Control, Irrigation Control, Smart Sensoren,
+    Steckdosen-Adapter und Pumpe. Zeitpläne können über fhem pausiert/aktiviert werden, das Anlegen oder Löschen erfolgt
+    derzeit nur über die App.
+    <a name="GardenaSmartDevicereadings"></a>
+</ul>
+<br>
+<ul>
+    <b>Readings (model = mower)</b>
     <ul>
         <li>battery-charging - Ladeindikator (0/1) oder mit neuerer Firmware (false/true)</li>
         <li>battery-level - Ladezustand der Batterie in Prozent</li>
-        <li>battery-rechargeable_battery_status - Zustand der Batterie (Ausser Betrieb/Kritischer Batteriestand, wechseln Sie jetzt/Niedrig/oK)</li>
+        <li>battery-rechargeable_battery_status - Zustand der Batterie (Ausser Betrieb/Kritischer Batteriestand,
+            wechseln Sie jetzt/Niedrig/oK)</li>
         <li>device_info-category - Eigenschaft des Ger&auml;tes (M&auml;her/Bew&auml;sserungscomputer/Bodensensor)</li>
         <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
         <li>device_info-manufacturer - Hersteller</li>
@@ -1571,133 +1665,214 @@ sub SetPredefinedStartPoints {
         <li>device_info-serial_number - Seriennummer</li>
         <li>device_info-sgtin - </li>
         <li>device_info-version - Firmware Version</li>
-        <li>firmware-firmware_command - Firmware Kommando (Nichts zu tun/Firmwareupload unterbrochen/Firmwareupload/nicht unterst&uuml;tzt)</li>
+        <li>firmware-firmware_command - Firmware Kommando (Nichts zu tun/Firmwareupload
+            unterbrochen/Firmwareupload/nicht unterst&uuml;tzt)</li>
         <li>firmware-firmware_status - Firmware Status </li>
         <li>firmware-firmware_update_start - Firmwareupdate (0/1) oder mit neuerer Firmware (false/true)</li>
         <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
         <li>firmware-inclusion_status - Einbindungsstatus</li>
         <li>internal_temperature-temperature - Interne Ger&auml;te Temperatur</li>
         <li>mower-error - Aktuelle Fehler Meldung
-        <ul>
-            <li>Kein Fehler</li>
-            <li>Au&szlig;erhalb des Arbeitsbereichs</li>
-            <li>Kein Schleifensignal</li>
-            <li>Falsches Schleifensignal</li>
-            <li>Problem Schleifensensor, vorne</li>
-            <li>Problem Schleifensensor, hinten</li>
-            <li>Eingeschlossen</li>
-            <li>Steht auf dem Kopf</li>
-            <li>Niedriger Batteriestand</li>
-            <li>Batterie ist leer</li>
-            <li>Kein Antrieb</li>
-            <li>Angehoben</li>
-            <li>Eingeklemmt in Ladestation</li>
-            <li>Ladestation blockiert</li>
-            <li>Problem Sto&szlig;sensor hinten</li>
-            <li>Problem Sto&szlig;sensor vorne</li>
-            <li>Radmotor rechts blockiert</li>
-            <li>Radmotor links blockiert</li>
-            <li>Problem Antrieb, rechts</li>
-            <li>Problem Antrieb, links</li>
-            <li>Schneidsystem blockiert</li>
-            <li>Fehlerhafte Verbindung</li>
-            <li>Standardeinstellungen</li>
-            <li>Elektronisches Problem</li>
-            <li>Problem Ladesystem</li>
-            <li>Kippsensorproblem</li>
-            <li>Rechter Radmotor &uuml;berlastet</li>
-            <li>Linker Radmotor &uuml;berlastet</li>
-            <li>Ladestrom zu hoch</li>
-            <li>Vor&uuml;bergehendes Problem</li>
-            <li>SK 1 nicht gefunden</li>
-            <li>SK 2 nicht gefunden</li>
-            <li>SK 3 nicht gefunden</li>
-            <li>Problem die Ladestation zu finden</li>
-            <li>Kalibration des Suchkabels beendet</li>
-            <li>Kalibration des Suchkabels fehlgeschlagen</li>
-            <li>Kurzzeitiges Batterieproblem</li>
-            <li>Batterieproblem</li>
-            <li>Alarm! M&auml;her ausgeschalten</li>
-            <li>Alarm! M&auml;her gestoppt</li>
-            <li>Alarm! M&auml;her angehoben</li>
-            <li>Alarm! M&auml;her gekippt</li>
-            <li>Verbindung geändert</li>
-            <li>Verbindung nicht ge&auml;ndert</li>
-            <li>COM board nicht verf&uuml;gbar</li>
-            <li>Rutscht</li>
-        </ul>
+            <ul>
+                <li>Kein Fehler</li>
+                <li>Au&szlig;erhalb des Arbeitsbereichs</li>
+                <li>Kein Schleifensignal</li>
+                <li>Falsches Schleifensignal</li>
+                <li>Problem Schleifensensor, vorne</li>
+                <li>Problem Schleifensensor, hinten</li>
+                <li>Eingeschlossen</li>
+                <li>Steht auf dem Kopf</li>
+                <li>Niedriger Batteriestand</li>
+                <li>Batterie ist leer</li>
+                <li>Kein Antrieb</li>
+                <li>Angehoben</li>
+                <li>Eingeklemmt in Ladestation</li>
+                <li>Ladestation blockiert</li>
+                <li>Problem Sto&szlig;sensor hinten</li>
+                <li>Problem Sto&szlig;sensor vorne</li>
+                <li>Radmotor rechts blockiert</li>
+                <li>Radmotor links blockiert</li>
+                <li>Problem Antrieb, rechts</li>
+                <li>Problem Antrieb, links</li>
+                <li>Schneidsystem blockiert</li>
+                <li>Fehlerhafte Verbindung</li>
+                <li>Standardeinstellungen</li>
+                <li>Elektronisches Problem</li>
+                <li>Problem Ladesystem</li>
+                <li>Kippsensorproblem</li>
+                <li>Rechter Radmotor &uuml;berlastet</li>
+                <li>Linker Radmotor &uuml;berlastet</li>
+                <li>Ladestrom zu hoch</li>
+                <li>Vor&uuml;bergehendes Problem</li>
+                <li>SK 1 nicht gefunden</li>
+                <li>SK 2 nicht gefunden</li>
+                <li>SK 3 nicht gefunden</li>
+                <li>Problem die Ladestation zu finden</li>
+                <li>Kalibration des Suchkabels beendet</li>
+                <li>Kalibration des Suchkabels fehlgeschlagen</li>
+                <li>Kurzzeitiges Batterieproblem</li>
+                <li>Batterieproblem</li>
+                <li>Alarm! M&auml;her ausgeschalten</li>
+                <li>Alarm! M&auml;her gestoppt</li>
+                <li>Alarm! M&auml;her angehoben</li>
+                <li>Alarm! M&auml;her gekippt</li>
+                <li>Verbindung geändert</li>
+                <li>Verbindung nicht ge&auml;ndert</li>
+                <li>COM board nicht verf&uuml;gbar</li>
+                <li>Rutscht</li>
+            </ul>
         </li>
         <li>mower-manual_operation - Manueller Betrieb (0/1) oder mit neuerer Firmware (false/true)</li>
         <li>mower-override_end_time - Zeitpunkt wann der manuelle Betrieb beendet ist</li>
         <li>mower-source_for_next_start - Grund f&uuml;r den n&auml;chsten Start
-        <ul>
-            <li>Kein Grund</li>
-            <li>M&auml;her wurde geladen</li>
-            <li>SensorControl erreicht</li>
-            <li>Wochentimer erreicht</li>
-            <li>Stoppuhr Timer</li>
-            <li>Undefiniert</li>
-        </ul>
-        </li>  
+            <ul>
+                <li>Kein Grund</li>
+                <li>M&auml;her wurde geladen</li>
+                <li>SensorControl erreicht</li>
+                <li>Wochentimer erreicht</li>
+                <li>Stoppuhr Timer</li>
+                <li>Undefiniert</li>
+            </ul>
+        </li>
         <li>mower-status - M&auml;her Status (siehe state)</li>
         <li>mower-timestamp_next_start - Zeitpunkt des n&auml;chsten geplanten Starts</li>
         <li>radio-connection_status - Status der Funkverbindung</li>
         <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
         <li>radio-state - radio state (schlecht/schwach/gut/Undefiniert)</li>
         <li>state - Staus des M&auml;hers
-        <ul>
-            <li>Pausiert</li>
-            <li>M&auml;hen</li>
-            <li>Suche Ladestation</li>
-            <li>L&auml;dt</li>
-            <li>M&auml;hen</li>
-            <li>Wird aktualisiert ...</li>
-            <li>Wird eingeschaltet ...</li>
-            <li>Geparkt nach Zeitplan</li>
-            <li>Geparkt</li>
-            <li>Der M&auml;her ist ausgeschaltet</li>
-            <li>Deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich</li>
-            <li>Unbekannter Status</li>
-            <li>Fehler</li>
-            <li>Neustart ...</li>
-            <li>Deaktiviert. Manueller Start erforderlich</li>
-            <li>Manuelles M&auml;hen</li>
-            <li>Geparkt durch SensorControl</li>
-            <li>Abgeschlossen</li>
-        </ul>
+            <ul>
+                <li>Pausiert</li>
+                <li>M&auml;hen</li>
+                <li>Suche Ladestation</li>
+                <li>L&auml;dt</li>
+                <li>M&auml;hen</li>
+                <li>Wird aktualisiert ...</li>
+                <li>Wird eingeschaltet ...</li>
+                <li>Geparkt nach Zeitplan</li>
+                <li>Geparkt</li>
+                <li>Der M&auml;her ist ausgeschaltet</li>
+                <li>Deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich</li>
+                <li>Unbekannter Status</li>
+                <li>Fehler</li>
+                <li>Neustart ...</li>
+                <li>Deaktiviert. Manueller Start erforderlich</li>
+                <li>Manuelles M&auml;hen</li>
+                <li>Geparkt durch SensorControl</li>
+                <li>Abgeschlossen</li>
+            </ul>
         </li>
+    </ul>
+    <br><br>
+    <b>Readings (model = watering_computer)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = ic24)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = sensor)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = sensor2)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = power)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>Readings (model = electronic_pressure_pump)</b>
+    <ul>
+        <li>[tbd.]</li>
     </ul>
     <br><br>
     <a name="GardenaSmartDeviceattributes"></a>
     <b>Attribute</b>
     <ul>
-        <li>readingValueLanguage - &Auml;nderung der Sprache der Readings (de,en/wenn nichts gesetzt ist, dann Englisch es sei denn deutsch ist als globale Sprache gesetzt) </li>
-        <li>model - </li>
+        <li>IODev - Name des GardenaSmartBridge Devices</li>
+        <li>extendedState 0|1 - [tbd.]</li>
+        <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - Modell des
+            GardenaSmartDevice</li>
+        <li>readingValueLanguage en|de - Sprache der Readings englisch oder deutsch (default: englisch, es sei denn,
+            Deutsch ist als globale Sprache gesetzt)</li>
     </ul>
+    <br><br>
     <a name="GardenaSmartDeviceset"></a>
-    <b>set</b>
+    <b>set (model = mower)</b>
     <ul>
-      <li>winter_mode - aufw&auml;cken (awake)| winterschlaf (hibernate)</li>
-    </ul>
-    <ul>
-        <h3>m&auml;her</h3>
-        <li>parkUntilFurtherNotice - Parken des M&auml;hers unter Umgehung des Zeitplans</li>
-        <li>parkUntilNextTimer - Parken bis zum n&auml;chsten Zeitplan</li>
-        <li>startOverrideTimer - Manuelles m&auml;hen (in Minuten, 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
-        <li>startResumeSchedule - Weiterf&uuml;hrung des Zeitplans</li>
-        <li>startpoint enable|disable 1|2|3 - Aktiviert oder deaktiviert einen vordefinierten Startbereich</li>
+        <li>parkUntilFurtherNotice - Parken des Mähers und Aussetzen des Zeitplans</li>
+        <li>parkUntilNextTimer - Parken bis zum nächsten Start nach Zeitplan</li>
+        <li>startOverrideTimer n - Manuelles Mähen für n Minuten (z.B. 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
+        <li>startResumeSchedule - Zeitplan wieder aktivieren</li>
+        <li>startPoint enable|disable 1|2|3 - Aktiviert oder deaktiviert einen vordefinierten Startbereich</li>
         <ul>
             <li>set NAME startpoint enable 1</li>
             <li>set NAME startpoint disable 3 enable 1</li>
         </ul>
-        <h3>irrigation control</h3>
-        <li>resumeScheduleValve - Startet Bew&aauml;sserung am Ventil n nach Zeitplan</li>
-        <li>stopScheduleValve - Setzt Bew&aauml;sserung am Ventil n aus (Default: 2038-01-18T00:00:00.000Z) | Optionaler Parameter Stunden (Jetzt + Stunden)</li>
-        <li>closeAllValves - Stopt Bew&aauml;sserung an allen Ventilen </li> 
-        <h3>water control</h3>
-        <li>manualButtonTime - setzt die Dauer f&uuml;r den manuellen Knopf (in Minuten) 0 Schaltet den Knopf aus</li>
-        <li>stopSchedule - Halte Zeitplan an für x Stunden - (Default: 2038-01-18T00:00:00.000Z)</li>
-        <li>resumeSchedule - Weiterf&uuml;hrung des Zeitplans</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+    </ul>
+    <br><br>
+    <b>set (model = watering_computer)</b>
+    <ul>
+        <li>cancelOverride - (Manuelle) Bewässerung stoppen</li>
+        <li>manualButtonTime n - Bewässerungsdauer für manuellen Knopf auf n Minuten setzen (0 schaltet den Knopf aus)
+        </li>
+        <li>manualOverride n - Manuelle Bewässerung für n Minuten</li>
+        <li>resumeSchedule - Zeitplan wieder aktivieren</li>
+        <li>stopSchedule n - Zeitplan anhalten für n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als
+            "dauerhaft" interpretiert)</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+    </ul>
+    <br><br>
+    <b>set (model = ic24)</b>
+    <ul>
+        <li>cancelOverrideValve1 - (Manuelle) Bewässerung an Ventil 1 stoppen </li>
+        <li>cancelOverrideValve2 - (Manuelle) Bewässerung an Ventil 2 stoppen </li>
+        <li>cancelOverrideValve3 - (Manuelle) Bewässerung an Ventil 3 stoppen </li>
+        <li>cancelOverrideValve4 - (Manuelle) Bewässerung an Ventil 4 stoppen </li>
+        <li>cancelOverrideValve5 - (Manuelle) Bewässerung an Ventil 5 stoppen </li>
+        <li>cancelOverrideValve6 - (Manuelle) Bewässerung an Ventil 6 stoppen </li>
+        <li>closeAllValves - Alle Ventile schließen</li>
+        <li>manualDurationValve1 n - Ventil 1 für n Minuten öffnen</li>
+        <li>manualDurationValve2 n - Ventil 2 für n Minuten öffnen</li>
+        <li>manualDurationValve3 n - Ventil 3 für n Minuten öffnen</li>
+        <li>manualDurationValve4 n - Ventil 4 für n Minuten öffnen</li>
+        <li>manualDurationValve5 n - Ventil 5 für n Minuten öffnen</li>
+        <li>manualDurationValve6 n - Ventil 6 für n Minuten öffnen</li>
+        <li>resumeScheduleValve n - Zeitplan für Ventil n wieder aktivieren</li>
+        <li>stopScheduleValve n m - Zeitplan für Ventil n anhalten für m Stunden (Default: 2038-01-18T00:00:00.000Z,
+            durch Gardena-App als "dauerhaft" interpretiert)</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+    </ul>
+    <br><br>
+    <b>set (model = sensor)</b>
+    <ul>
+        <li>refresh temperature|humidity|light - Sensorwert für Temperatur, Feuchtigkeit oder Helligkeit aktualisieren
+        </li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+    </ul>
+    <br><br>
+    <b>set (model = sensor2)</b>
+    <ul>
+        <li>refresh temperature|humidity - Sensorwert für Temperatur oder Feuchtigkeit aktualisieren</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+    </ul>
+    <br><br>
+    <b>set (model = power)</b>
+    <ul>
+        <li>[tbd.]</li>
+    </ul>
+    <br><br>
+    <b>set (model = electronic_pressure_pump)</b>
+    <ul>
+        <li>[tbd.]</li>
     </ul>
 </ul>
 
@@ -1720,7 +1895,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.5.5",
+  "version": "v2.5.6",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
