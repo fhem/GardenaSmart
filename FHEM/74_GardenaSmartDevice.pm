@@ -1601,8 +1601,8 @@ sub SetPredefinedStartPoints {
         <li>manualDurationValve4 n - open valve 4 for n minutes</li>
         <li>manualDurationValve5 n - open valve 5 for n minutes</li>
         <li>manualDurationValve6 n - open valve 6 for n minutes</li>
-        <li>resumeScheduleValve n - enable schedule for valve n</li>
-        <li>stopScheduleValve n m - disable schedule for valve n for m hours (Default: 2038-01-18T00:00:00.000Z, Gardena
+        <li>resumeScheduleValve n - (re)start irrigation schedule for valve n</li>
+        <li>stopScheduleValve n m - stop irrigation schedule for valve n  (Default: 2038-01-18T00:00:00.000Z, Gardena
             App reads it as "permanently")</li>
         <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
     </ul>
