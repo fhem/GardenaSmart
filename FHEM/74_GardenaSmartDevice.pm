@@ -793,7 +793,7 @@ sub WriteReadings {
                     my $sub_state = 0; my $sub_value = 0;
                     while ( my ( $r, $v ) = each %{ $propertie->{value} } ) {
                       if ( ref( $v ) ne "HASH" ) {
-                            readingsBulkUpdate(
+                            readingsBulkUpdateIfChanged(
                               $hash,
                               $decode_json->{abilities}[$abilities]{name} . '-'
                                 . $propertie->{name} . '_'
@@ -802,7 +802,7 @@ sub WriteReadings {
                             );
                         } else {
                           while ( my ( $i_r, $i_v ) = each %{ $v } ) {
-                            readingsBulkUpdate(
+                            readingsBulkUpdateIfChanged(
                               $hash,
                               $decode_json->{abilities}[$abilities]{name} . '-'
                               . $propertie->{name} . '_'
@@ -1109,11 +1109,6 @@ sub setState {
           if ( ReadingsVal( $name, 'device_info-category', 'unknown' ) eq
             'sensor' );
 
-# if ( $online_state eq 'offline') {
-#   readingsBulkUpdate( $hash, 'humidity-humidity', '-1' );
-#   readingsBulkUpdate( $hash, 'ambient_temperature-temperature', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
-#   readingsBulkUpdate( $hash, 'light-light', '-1' ) if (ReadingsVal($name, 'device_info-category', 'unknown') eq 'sensor');
-# }
         #online state sensor I II
         readingsBulkUpdate( $hash, 'state',
             $online_state eq 'online' ? RigReadingsValue( $hash, $state_string) : RigReadingsValue( $hash, 'offline') );

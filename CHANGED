@@ -1,1 +1,1 @@
-    [log] - removed valve_names log line
+    [fix] - remove _valve_ in non valve devices fpr schedules
