@@ -836,7 +836,8 @@ sub WriteReadings {
     if ( 
         exists( $decode_json->{scheduled_events} )
       #  && scalar ($decode_json->{scheduled_events} ) > 0
-        && ref ($decode_json->{scheduled_events}) eq 'ARRAY' ) {
+        && ref ($decode_json->{scheduled_events}) eq 'ARRAY'
+        && AttrVal( $name, 'model', 'unknown' ) !~ /sensor.?/ ) {
         readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
                                         scalar( @{$decode_json->{scheduled_events} } ) );
         my $valve_id =1; my $event_id = 1; # ic24 [1..6] | wc, pump [1]
@@ -848,15 +849,13 @@ sub WriteReadings {
           while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
             readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_'
                                               . $event_id
-                                              . '_valve_'
-                                              . $valve_id 
+                                              . ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '') 
                                               . '_'
                                               . $r,
                                               $v) if (ref($v) ne 'HASH' );
             readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_'
                                               . $event_id
-                                              . '_valve_'
-                                              . $valve_id 
+                                              . ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '')
                                               . '_'
                                               . $v->{type},
                                               join(',', @ { $v->{weekdays}}) ) if (ref($v) eq 'HASH' );
