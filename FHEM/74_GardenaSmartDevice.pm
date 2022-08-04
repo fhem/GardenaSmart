@@ -845,7 +845,12 @@ sub WriteReadings {
         readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
                                         scalar( @{$decode_json->{scheduled_events} } ) );
         my $valve_id =1; my $event_id = 0; # ic24 [1..6] | wc, pump [1]
-        
+        ## valcid zahlen.  readings mit valvid aber
+        for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
+          while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
+            push $cloud $v; # cloud hat  SOLL
+          }
+        }
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
           $valve_id = $event_schedules->{valve_id} if ( exists($event_schedules->{valve_id} ) ); #ic24
           $event_id++; # event id
@@ -1394,38 +1399,40 @@ sub SetPredefinedStartPoints {
 <a name="GardenaSmartDevice"></a>
 <h3>GardenaSmartDevice</h3>
 <ul> 
-    In combination with Fhem device GardenaSmartBridge this Fhem module enables communication between GardenaCloud and
+    In combination with Fhem device <b>GardenaSmartBridge</b> this Fhem module enables communication between GardenaCloud and
     fhem.
     <br><br>
     Once the bridge device is created, the connected Gardena devices will be recognized and created in Fhem
     automatically.<br>
     From now on these devices can be controlled via Fhem. Changes in the Gardena App are synchronized with state and
-    redings of the devices.
+    readings of the devices.
     <br><br>
     So far, known devices are mower, smart water control, irrigation control, smart sensors, power plug and pressure
-    pump. Schedules can be disabled/enabled via fhem, defining or deleting them must be done via the Gardena App.<br>
+    pump. Schedules can be disabled/enabled via fhem, defining or deleting them must be done via Gardena App or its web interface.<br>
     <a name="GardenaSmartDevicereadings"></a>
 </ul>
 <br>
 <ul>
     <b>Readings (model = mower)</b>
     <ul>
-        <li>battery-charging - Indicator if the Battery is charged (0/1) or with newer Firmware (false/true)</li>
-        <li>battery-level - load percentage of the Battery</li>
-        <li>battery-rechargeable_battery_status - healthyness of the battery (out_of_operation/replace_now/low/ok)</li>
+        <li>Readings are based on Sileno, other models might have different/additional readings depending on their functions (tbd.)</li>
+        <br>
+        <li>battery-charging - Indicator if battery is charged (0/1)</li>
+        <li>battery-level - load percentage of battery</li>
+        <li>battery-rechargeable_battery_status - healthyness of the battery (out_of_operation/replace_now/low/ok), not all models</li>
         <li>device_info-category - category of device (mower/watering_computer)</li>
+        <li>device_info-connection_status - connection status (online/offline/unknown)
         <li>device_info-last_time_online - timestamp of last radio contact</li>
         <li>device_info-manufacturer - manufacturer</li>
         <li>device_info-product - product type</li>
         <li>device_info-serial_number - serial number</li>
-        <li>device_info-sgtin - </li>
+        <li>device_info-sgtin - (tbd.)</li>
         <li>device_info-version - firmware version</li>
         <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
         <li>firmware-firmware_status - firmware status </li>
-        <li>firmware-firmware_update_start - indicator when a firmwareupload is started</li>
         <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
         <li>firmware-inclusion_status - inclusion status</li>
-        <li>internal_temperature-temperature - internal device temperature</li>
+        <li>internal_temperature-temperature - internal device temperature, not all models</li>
         <li>mower-error - actual error message
             <ul>
                 <li>no_message</li>
@@ -1476,8 +1483,7 @@ sub SetPredefinedStartPoints {
                 <li>slipped</li>
             </ul>
         </li>
-        <li>mower-manual_operation - (0/1) or with newer Firmware (false/true)</li>
-        <li>mower-override_end_time - manual override end time</li>
+        <li>mower-last_error_code - code of last error</li>
         <li>mower-source_for_next_start - source for the next start
             <ul>
                 <li>no_source</li>
@@ -1488,11 +1494,31 @@ sub SetPredefinedStartPoints {
                 <li>undefined</li>
             </ul>
         </li>
-        <li>mower-status - mower state (see state)</li>
+        <li>mower-status - mower status (see state reading)</li>
+        <li>mower-timestamp_last_error_code - timestamp of last error</li>
         <li>mower-timestamp_next_start - timestamp of next scheduled start</li>
-        <li>radio-connection_status - state of connection</li>
+        <li>mower_stats-charging_cycles - number of charging cycles</li>
+        <li>mower_stats-collisions - number of collisions</li>
+        <li>mower_stats-cutting_time - cutting time in hours</li>
+        <li>mower_stats-running_time - running time in hours (including cutting time)</li>
+        <li>mower_timer-mower_timer - (tbd.)</li>
+        <li>mower_timer-mower_timer_timestamp - (tbd.)</li>
+        <li>mower_type-base_software_up_to_date - latest software (0/1)</li>
+        <li>mower_type-device_type - device type </li>
+        <li>mower_type-device_variant - device variant</li>
+        <li>mower_type-mainboard_version - mainboard version</li>
+        <li>mower_type-mmi_version - mmi version</li>
+        <li>mower_type-serial_number - serial number</li>
         <li>radio-quality - percentage of the radio quality</li>
         <li>radio-state - radio state (bad/poor/good/undefined)</li>
+        <li>scheduling-schedules_event_1_end_at - ending time of schedule 1</li>
+        <li>scheduling-schedules_event_1_id - ID of schedule 1</li>
+        <li>scheduling-schedules_event_1_start_at - starting time of schedule 1</li> 
+        <li>scheduling-schedules_event_1_weekly - weekdays of schedule 1(comma-separated)</li>
+        <li>...more readings for additional schedules (if defined)</li>
+        <li>scheduling-schedules_events_count - number of pre-defined schedules</li>
+	<li>startpoint-1-enabled - starpoint 1 enabled (0/1)</li>
+        <li>...more readings for additional startpoints</li>
         <li>state - state of the mower
             <ul>
                 <li>paused</li>
@@ -1513,45 +1539,216 @@ sub SetPredefinedStartPoints {
                 <li>ok_cutting_timer_overridden</li>
                 <li>parked_autotimer</li>
                 <li>parked_daily_limit_reached</li>
+                <li>hibernate - winter mode)</li>
             </ul>
         </li>
+        <li>winter_mode - status of winter mode (awake/hibernate)</li>    
     </ul>
     <br><br>
     <b>Readings (model = watering_computer)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>ambient_temperature-temperature - ambient temperature in Celsius</li>
+        <li>battery-disposable_battery_status - healthyness of the battery (ok/low/replace_now/out_of_operation/no_battery/unknown)</li>
+	<li>battery-level - energy level of battery in percent</li>
+        <li>device_info-category - category of device (mower/watering_computer/sensor/etc.)</li>
+        <li>device_info-connection_status - connection status (online/offline/unknown)</li>
+        <li>device_info-last_time_online - timestamp of last radio contact</li>
+        <li>device_info-manufacturer - manufacturer</li>
+        <li>device_info-product - product type</li>
+        <li>device_info-serial_number - serial number</li>
+        <li>device_info-sgtin - tbd.</li>
+        <li>device_info-version - firmware version</li>
+        <li>error-error - error message (tbd.)</li>
+        <li>error-valve_error_1_severity - (tbd.)</li>
+        <li>error-valve_error_1_type - (tbd.)</li>
+        <li>error-valve_error_1_valve_id - id of valve with error</li>
+        <li>firmware-firmware_available_version - new available firmware (only if available)</li>
+        <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - firmware status </li>
+        <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
+        <li>firmware-inclusion_status - inclusion status</li>        
+        <li>manualButtonTime - watering time for manual button on device in minutes</li>
+        <li>radio-quality - percentage of the radio quality</li>
+        <li>radio-state - radio state (bad/poor/good/undefined)</li>   
+        <li>scheduling-scheduled_watering_end - next schedule ending time</li>
+        <li>scheduling-scheduled_watering_next_start - next schedule starting time</li>
+        <li>scheduling-schedules_event_1_valve_1_end_at - ending time of schedule 1</li>
+        <li>scheduling-schedules_event_1_valve_1_id - ID of schedule 1</li>
+        <li>scheduling-schedules_event_1_valve_1_start_at - starting time of schedule 1</li>
+        <li>scheduling-schedules_event_1_valve_1_weekly - weekdays of schedule 1</li>
+        <li>scheduling-schedules_events_count - number of pre-defined schedules</li>
+        <li>scheduling-schedules_paused_until - date/time until schedule is paused (2038-01-18T00:00:00.000Z is defined as permanently by Gardena cloud) </li>
+        <li>state - state of device</li>
+           <ul>
+               <li>closed - valve closed, no schedules available</li>
+               <li>closed. schedule permanently paused - valve closed, schedule disabled</li>
+               <li>closed. next watering: YYYY-MM-DD HH:MM - valve closed, next scheduled start at YYYY-MM-DDTHH:MM:00.000Z</li>
+               <li>watering. n minutes remaining. - watering, n minutes remaining (depending on manual button time or on pre-defined schedule)</li>
+               <li>offline - device is disabled/not connected</li>
+               <li>hibernate - winter mode)</li>
+           </ul>
+	<li>watering-watering_timer_1_duration - duration of current watering in seconds</li>
+        <li>watering-watering_timer_1_irrigation_left - remaining watering time in minutes</li>
+        <li>watering-watering_timer_1_state - state of schedule</li>
+        <li>watering-watering_timer_1_valve_id - valve id of schedule</li>
+        <li>winter_mode - status of winter mode (awake/hibernate)</li>        
     </ul>
     <br><br>
     <b>Readings (model = ic24)</b>
+        <li>device_info-category - category of device (mower/watering_computer/sensor/etc.)</li>
+        <li>device_info-connection_status - connection status (online/offline/unknown)</li>
+        <li>device_info-last_time_online - timestamp of last radio contact</li>
+        <li>device_info-manufacturer - manufacturer</li>
+        <li>device_info-product - product type</li>
+        <li>device_info-serial_number - serial number</li>
+        <li>device_info-sgtin - tbd.</li>
+        <li>device_info-version - firmware version</li>
+        <li>error-error - error message (tbd.)</li>
+        <li>error-valve_error_0_severity - (tbd.)</li>
+        <li>error-valve_error_0_type - (tbd.)</li>
+        <li>error-valve_error_0_valve_id - id of valve with error</li>
+        <li>...more error readings<li>
+        <li>firmware-firmware_available_version - new available firmware (only if available)</li>
+        <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - firmware status </li>
+        <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
+        <li>firmware-inclusion_status - inclusion status</li>        
+        <li>ic24-valves_connected - connected valves (comma separated)</li>
+        <li>ic24-valves_master_config - master valve (only if defined in Gardena app)</li>
+        <li>radio-quality - percentage of the radio quality</li>
+        <li>radio-state - radio state (bad/poor/good/undefined)</li>   
+        <li>scheduling-scheduled_watering_end - next schedule ending time</li>
+        <li>scheduling-scheduled_watering_end_1 - next schedule ending time for valve 1</li>
+        <li>...more readings for valves 2-6</li>
+        <li>scheduling-scheduled_watering_next_start - next schedule starting time</li>
+        <li>scheduling-scheduled_watering_next_start_1 - next schedule starting time for valve 1</li>
+        <li>...more readings for valves 2-6</li>
+        <li>scheduling-schedules_event_1_valve_1_end_at - ending time of schedule 1</li>
+        <li>scheduling-schedules_event_1_valve_1_id - ID of schedule 1</li>
+        <li>scheduling-schedules_event_1_valve_1_start_at - starting time of schedule 1</li>
+        <li>scheduling-schedules_event_1_valve_1_weekly - weekdays of schedule 1</li>
+        <li>scheduling-schedules_events_count - number of pre-defined schedules</li>
+        <li>...more readings for further schedules/valves</li>
+        <li>scheduling-schedules_paused_until_1 - date/time until schedule is paused (2038-01-18T00:00:00.000Z is defined as permanently by Gardena cloud) </li>
+        <li>...more readings for valves 2-6</li>
+        <li>state - state of device</li>
+           <ul>
+               <li>closed - valve closed, no schedules available</li>
+               <li>closed. schedule permanently paused - valve closed, all schedules disabled/paused</li>
+               <li>closed. next watering: YYYY-MM-DD HH:MM - valve closed, next scheduled start at YYYY-MM-DDTHH:MM:00.000Z</li>
+               <li>watering. n minutes remaining. - watering, n minutes remaining. If more than one schedule is active, the longer remaining time is shown.</li>
+               <li>offline - device is disabled/not connected</li>
+           </ul>
+        <li>valve-valve_name_1 - individual name for valve 1</li>
+        <li>...more readings for valves 2-6 (if installed)</li>
+	<li>watering-watering_timer_1_duration - duration of current watering in seconds</li>
+        <li>watering-watering_timer_1_irrigation_left - remaining watering time in minutes</li>
+        <li>watering-watering_timer_1_state - state of schedule</li>
+        <li>watering-watering_timer_1_valve_id - valve id of schedule</li>
+        <li>...more readings for further valves/schedules</li>
+        <li>winter_mode - status of winter mode (awake/hibernate)</li>   
+    <br><br>
+    <b>Readings (model = sensor)</b>
     <ul>
-        <li>[tbd.]</li>
+	<li>ambient_temperature-frost_warning - frost warning</li>
+        <li>ambient_temperature-temperature - ambient temperature in Celsius</li>
+        <li>battery-disposable_battery_status - healthyness of the battery (ok/low/replace_now/out_of_operation/no_battery/unknown)</li>
+	<li>battery-level - energy level of battery in percent</li>
+        <li>device_info-category - category of device (mower/watering_computer/sensor/etc.)</li>
+        <li>device_info-connection_status - connection status (online/offline/unknown)</li>
+        <li>device_info-last_time_online - timestamp of last radio contact</li>
+        <li>device_info-manufacturer - manufacturer</li>
+        <li>device_info-product - product type</li>
+        <li>device_info-serial_number - serial number</li>
+        <li>device_info-sgtin - tbd.</li>
+        <li>device_info-version - firmware version</li>
+        <li>firmware-firmware_available_version - new available firmware (only if available)</li>
+        <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - firmware status </li>
+        <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
+        <li>firmware-inclusion_status - inclusion status</li>
+	<li>humidity-humidity - humidity in percent</li>
+        <li>light-light - brightness in lux</li>
+        <li>radio-quality - percentage of the radio quality</li>
+        <li>radio-state - radio state (bad/poor/good/undefined)</li>
+        <li>soil_temperature-temperature - soil temperature in Celsius</li>
+        <li>state - state of sensor (temperature (T:), humidity (H:), brightness/light (L:)</li>
+        <li>winter_mode - status of winter mode (awake/hibernate)</li>
     </ul>
     <br><br>
     <b>Readings (model = sensor)</b>
     <ul>
-        <li>[tbd.]</li>
+	<li>ambient_temperature-frost_warning - frost warning</li>
+        <li>ambient_temperature-temperature - ambient temperature in Celsius</li>
+        <li>battery-disposable_battery_status - healthyness of the battery (ok/low/replace_now/out_of_operation/no_battery/unknown)</li>
+	<li>battery-level - energy level of battery in percent</li>
+        <li>device_info-category - category of device (mower/watering_computer/sensor/etc.)</li>
+        <li>device_info-connection_status - connection status (online/offline/unknown)</li>
+        <li>device_info-last_time_online - timestamp of last radio contact</li>
+        <li>device_info-manufacturer - manufacturer</li>
+        <li>device_info-product - product type</li>
+        <li>device_info-serial_number - serial number</li>
+        <li>device_info-sgtin - tbd.</li>
+        <li>device_info-version - firmware version</li>
+        <li>firmware-firmware_available_version - new available firmware (only if available)</li>
+        <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - firmware status </li>
+        <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
+        <li>firmware-inclusion_status - inclusion status</li>
+	<li>humidity-humidity - humidity in percent</li>
+        <li>light-light - brightness in lux</li>
+        <li>radio-quality - percentage of the radio quality</li>
+        <li>radio-state - radio state (bad/poor/good/undefined)</li>
+        <li>soil_temperature-temperature - soil temperature in Celsius</li>
+        <li>state - state of sensor (temperature (T:), humidity (H:), brightness/light (L:)|offline|hibernate)</li>
+        <li>winter_mode - status of winter mode (awake/hibernate)</li>
     </ul>
     <br><br>
     <b>Readings (model = sensor2)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>"sensor2" does not measure brightness or ambient temperature, and it has another reading for frost warning. Other than that, it seems to be more or less identical to "sensor".</li>
+        <br>
+        <li>battery-disposable_battery_status - healthyness of the battery (ok/low/replace_now/out_of_operation/no_battery/unknown)</li>
+	<li>battery-level - energy level of battery in percent</li>
+        <li>device_info-category - category of device (mower/watering_computer/sensor/etc.)</li>
+        <li>device_info-connection_status - connection status (online/offline/unknown)</li>
+        <li>device_info-last_time_online - timestamp of last radio contact</li>
+        <li>device_info-manufacturer - manufacturer</li>
+        <li>device_info-product - product type</li>
+        <li>device_info-serial_number - serial number</li>
+        <li>device_info-sgtin - tbd.</li>
+        <li>device_info-version - firmware version</li>
+        <li>firmware-firmware_available_version - new available firmware (only if available)</li>
+        <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - firmware status </li>
+        <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
+        <li>firmware-inclusion_status - inclusion status</li>
+	<li>humidity-humidity - humidity in percent</li>
+        <li>radio-quality - percentage of the radio quality</li>
+        <li>radio-state - radio state (bad/poor/good/undefined)</li>
+        <li>soil_model-model_definition - tbd.</li>
+        <li>soil_model-model_status - tbd.</li>
+        <li>soil_temperature-frost-warning - frost warning</li>
+        <li>soil_temperature-temperature - soil temperature in Celsius</li>
+        <li>state - state of sensor (temperature (T:), humidity (H:)|offline|hibernate)</li>
+        <li>winter_mode - status of winter mode (awake/hibernate)</li>
     </ul>
     <br><br>
     <b>Readings (model = power)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>(tbd.)</li>
     </ul>
     <br><br>
     <b>Readings (model = electronic_pressure_pump)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>(tbd.)</li>
     </ul>
     <br><br>
     <a name="GardenaSmartDeviceattributes"></a>
     <b>Attribute</b>
     <ul>
         <li>IODev - Name of GardenaSmartBridge device</li>
-        <li>extendedState 0|1 - [tbd.]</li>
+        <li>extendedState 0|1 - (tbd.)</li>
         <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - model of
             GardenaSmartDevice</li>
         <li>readingValueLanguage en|de - Reading language enlish or german (default: english, if global language is not
@@ -1619,12 +1816,12 @@ sub SetPredefinedStartPoints {
     <br><br>
     <b>set (model = power)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>(tbd.)</li>
     </ul>
     <br><br>
     <b>set (model = electronic_pressure_pump)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>(tbd.)</li>
     </ul>
 </ul>
 
@@ -1638,42 +1835,44 @@ sub SetPredefinedStartPoints {
     Zusammen mit dem Device GardenaSmartBridge stellt dieses Fhem-Modul die Kommunikation zwischen der GardenaCloud und
     Fhem her.
     <br><br>
-    Wenn das GardenaSmartBridge Device erzeugt wurde, werden verbundene Geräte automatisch erkannt und in Fhem angelegt.
+    Wenn das GardenaSmartBridge Device erzeugt wurde, werden verbundene Ger&auml;te automatisch erkannt und in Fhem angelegt.
     <br>
-    Von nun an können die eingebundenen Geräte gesteuert werden. Änderungen in der App werden mit den Readings und dem
+    Von nun an k&ouml;nnen die eingebundenen Ger&auml;te gesteuert werden. &auml;nderungen in der App werden mit den Readings und dem
     Status synchronisiert.
     <br><br>
-    Bekannte Gardena-Geräte umfassen Rasenmäher, Smart Water Control, Irrigation Control, Smart Sensoren,
-    Steckdosen-Adapter und Pumpe. Zeitpläne können über fhem pausiert/aktiviert werden, das Anlegen oder Löschen erfolgt
-    derzeit nur über die App.
+    Bekannte Gardena-Ger&auml;te umfassen Rasenm&auml;her, Smart Water Control, Irrigation Control, Smart Sensoren,
+    Steckdosen-Adapter und Pumpe. Zeitpl&auml;ne k&ouml;nnen &uuml;ber fhem pausiert/aktiviert werden, das Anlegen oder L&ouml;schen erfolgt
+    derzeit nur &uuml;ber die App oder deren Web-Frontend.
     <a name="GardenaSmartDevicereadings"></a>
 </ul>
 <br>
 <ul>
-    <b>Readings (model = mower)</b>
+    <b>Readings (model = mower/M&auml;her)</b>
     <ul>
-        <li>battery-charging - Ladeindikator (0/1) oder mit neuerer Firmware (false/true)</li>
+        <li>Readings basieren auf dem Modell Sileno, andere Modelle haben abweichende/zus&auml;tzliche Readings abh&auml;ngig von ihren Funktionen (tbd.)</li>
+        <br>
+        <li>battery-charging - Ladeindikator (0/1)</li>
         <li>battery-level - Ladezustand der Batterie in Prozent</li>
         <li>battery-rechargeable_battery_status - Zustand der Batterie (Ausser Betrieb/Kritischer Batteriestand,
-            wechseln Sie jetzt/Niedrig/oK)</li>
+            wechseln Sie jetzt/Niedrig/oK), nicht bei allen Modellen</li>
+        <li>device_info-connection_status - Verbindungs-Status (online/offline/unknown)
         <li>device_info-category - Eigenschaft des Ger&auml;tes (M&auml;her/Bew&auml;sserungscomputer/Bodensensor)</li>
         <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
         <li>device_info-manufacturer - Hersteller</li>
         <li>device_info-product - Produkttyp</li>
         <li>device_info-serial_number - Seriennummer</li>
-        <li>device_info-sgtin - </li>
+        <li>device_info-sgtin - (tbd.)</li>
         <li>device_info-version - Firmware Version</li>
         <li>firmware-firmware_command - Firmware Kommando (Nichts zu tun/Firmwareupload
             unterbrochen/Firmwareupload/nicht unterst&uuml;tzt)</li>
         <li>firmware-firmware_status - Firmware Status </li>
-        <li>firmware-firmware_update_start - Firmwareupdate (0/1) oder mit neuerer Firmware (false/true)</li>
         <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
         <li>firmware-inclusion_status - Einbindungsstatus</li>
-        <li>internal_temperature-temperature - Interne Ger&auml;te Temperatur</li>
+        <li>internal_temperature-temperature - Interne Ger&auml;te Temperatur, nicht bei allen Modellen</li>
         <li>mower-error - Aktuelle Fehler Meldung
             <ul>
                 <li>Kein Fehler</li>
-                <li>Au&szlig;erhalb des Arbeitsbereichs</li>
+                <li>Ausserhalb des Arbeitsbereichs</li>
                 <li>Kein Schleifensignal</li>
                 <li>Falsches Schleifensignal</li>
                 <li>Problem Schleifensensor, vorne</li>
@@ -1686,8 +1885,8 @@ sub SetPredefinedStartPoints {
                 <li>Angehoben</li>
                 <li>Eingeklemmt in Ladestation</li>
                 <li>Ladestation blockiert</li>
-                <li>Problem Sto&szlig;sensor hinten</li>
-                <li>Problem Sto&szlig;sensor vorne</li>
+                <li>Problem Stosssensor hinten</li>
+                <li>Problem Stosssensor vorne</li>
                 <li>Radmotor rechts blockiert</li>
                 <li>Radmotor links blockiert</li>
                 <li>Problem Antrieb, rechts</li>
@@ -1714,13 +1913,12 @@ sub SetPredefinedStartPoints {
                 <li>Alarm! M&auml;her gestoppt</li>
                 <li>Alarm! M&auml;her angehoben</li>
                 <li>Alarm! M&auml;her gekippt</li>
-                <li>Verbindung geändert</li>
+                <li>Verbindung ge&auml;ndert</li>
                 <li>Verbindung nicht ge&auml;ndert</li>
                 <li>COM board nicht verf&uuml;gbar</li>
                 <li>Rutscht</li>
             </ul>
         </li>
-        <li>mower-manual_operation - Manueller Betrieb (0/1) oder mit neuerer Firmware (false/true)</li>
         <li>mower-override_end_time - Zeitpunkt wann der manuelle Betrieb beendet ist</li>
         <li>mower-source_for_next_start - Grund f&uuml;r den n&auml;chsten Start
             <ul>
@@ -1733,11 +1931,31 @@ sub SetPredefinedStartPoints {
             </ul>
         </li>
         <li>mower-status - M&auml;her Status (siehe state)</li>
+        <li>mower-timestamp_last_error_code - Zeitpunkt des letzten Fehlers</li>
         <li>mower-timestamp_next_start - Zeitpunkt des n&auml;chsten geplanten Starts</li>
-        <li>radio-connection_status - Status der Funkverbindung</li>
+        <li>mower_stats-charging_cycles - Anzahl Ladezyklen</li>
+        <li>mower_stats-collisions - Anzahl Zusammenst&ouml;sse</li>
+        <li>mower_stats-cutting_time - Schnittzeit in Stunden</li>
+        <li>mower_stats-running_time - Laufzeit in Stunden (inkl. Schnittzeit)</li>
+        <li>mower_timer-mower_timer - (tbd.)</li>
+        <li>mower_timer-mower_timer_timestamp - (tbd.)</li>
+        <li>mower_type-base_software_up_to_date - Software aktuell (0/1)</li>
+        <li>mower_type-device_type - Ger&auml;tetyp </li>
+        <li>mower_type-device_variant - Ger&auml;tevariante</li>
+        <li>mower_type-mainboard_version - Mainboard-Version</li>
+        <li>mower_type-mmi_version - MMI-Version</li>
+        <li>mower_type-serial_number - Seriennummer</li> 
         <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
-        <li>radio-state - radio state (schlecht/schwach/gut/Undefiniert)</li>
-        <li>state - Staus des M&auml;hers
+        <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>
+        <li>scheduling-schedules_event_1_end_at - Endzeit des Zeitplans 1</li>
+        <li>scheduling-schedules_event_1_id - ID des Zeitplans 1</li>
+        <li>scheduling-schedules_event_1_start_at - Startzeit des Zeitplans 1</li> 
+        <li>scheduling-schedules_event_1_weekly - Wochentage des Zeitplans 1 (kommagetrennt)</li>
+        <li>...weitere Readings f&uuml;r zus&auml;tzliche Zeitpl&auml;ne (falls angelegt)</li>
+        <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
+	<li>startpoint-1-enabled - starpoint 1 enabled (0/1)</li>
+        <li>...weitere Readings f&uuml;r zus&auml;tzliche Startpunkte (falls angelegt)</li>
+        <li>state - Status des M&auml;hers
             <ul>
                 <li>Pausiert</li>
                 <li>M&auml;hen</li>
@@ -1757,38 +1975,183 @@ sub SetPredefinedStartPoints {
                 <li>Manuelles M&auml;hen</li>
                 <li>Geparkt durch SensorControl</li>
                 <li>Abgeschlossen</li>
+                <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
             </ul>
-        </li>
+        <li>winter_mode - Status Winterschlaf (awake/hibernate)</li> 
     </ul>
     <br><br>
-    <b>Readings (model = watering_computer)</b>
+    <b>Readings (model = watering_computer/Bew&auml;sserungscomputer)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>ambient_temperature-temperature - Umgebungstemperatur in Celsius</li>
+        <li>battery-disposable_battery_status - Batteriezustand</li>
+	<li>battery-level - Ladezustand der Batterie in Prozent</li>
+        <li>device_info-category - Art des Ger&auml;ts</li>
+        <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
+        <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
+        <li>device_info-manufacturer - Hersteller</li>
+        <li>device_info-product - Produkttyp</li>
+        <li>device_info-serial_number - Seriennummer</li>
+        <li>device_info-sgtin - (tbd.)</li>
+        <li>device_info-version - Firmware Version</li>
+        <li>error-error - Fehlermeldung (tbd.)</li>
+        <li>error-valve_error_1_severity - (tbd.)</li>
+        <li>error-valve_error_1_type - (tbd.)</li>
+        <li>error-valve_error_1_valve_id - ID des fehlerhaften Ventils</li>
+        <li>firmware-firmware_available_version - Neue Firmware (nur wenn verf&uuml;gbar)</li>
+        <li>firmware-firmware_command - Firmware-Kommando (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - Firmware Status </li>
+        <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
+        <li>firmware-inclusion_status - Einbindungsstatus</li>        
+        <li>manualButtonTime - Bew&auml;sserungszeit f&uuml;r den Ger&auml;te-Knopf in Minuten</li>
+        <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
+        <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>   
+        <li>scheduling-scheduled_watering_end - Endzeit des n&auml;chsten Zeitplans</li>
+        <li>scheduling-scheduled_watering_next_start - Startzeit des n&auml;chsten Zeitplans</li>
+        <li>scheduling-schedules_event_1_valve_1_end_at - Endzeit von Zeitplan 1</li>
+        <li>scheduling-schedules_event_1_valve_1_id - ID von Zeitplan 1</li>
+        <li>scheduling-schedules_event_1_valve_1_start_at - Startzeit von Zeitplan 1</li>
+        <li>scheduling-schedules_event_1_valve_1_weekly - Wochentage von Zeitplan 1</li>
+        <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
+        <li>scheduling-schedules_paused_until - Datum/Uhrzeit, bis wann Zeitplan pausiert ist (2038-01-18T00:00:00.000Z wird von Gardena-Cloud als dauerhaft angesehen) </li>
+        <li>state - Status des Ger&auml;ts</li>
+           <ul>
+               <li>geschossen - Ventil geschlossen, keine Zeitpl&auml;ne definiert</li>
+               <li>geschlossen. Zeitplan dauerhaft pausiert - Ventil geschlossen, Zeitplan dauerhaft pausiert</li>
+               <li>geschlossen. N&auml;chste Bew&auml;sserung: YYYY-MM-DD HH:MM - Ventil geschlossen, n&auml;chster Zeitplan-Start YYYY-MM-DDTHH:MM:00.000Z</li>
+               <li>will be irrigated n minutes remaining. - watering, n minutes remaining (depending on manual button time or on pre-defined schedule)</li>
+               <li>offline - Ger&auml;t ist ausgeschaltet/hat keine Verbindung</li>
+               <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
+           </ul>
+	<li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
+        <li>watering-watering_timer_1_irrigation_left - Verbleibende Bew&auml;sserungszeit in Minuten</li>
+        <li>watering-watering_timer_1_state - Status des Zeitplans</li>
+        <li>watering-watering_timer_1_valve_id - Ventil-ID des Zeitplans</li>
+        <li>winter_mode - Status Winterschlaf (awake/hibernate)</li>        
     </ul>
     <br><br>
     <b>Readings (model = ic24)</b>
-    <ul>
-        <li>[tbd.]</li>
+      <ul>
+        <li>device_info-category - Art des Ger&auml;ts</li>
+        <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
+        <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
+        <li>device_info-manufacturer - Hersteller</li>
+        <li>device_info-product - Produkttyp</li>
+        <li>device_info-serial_number - Seriennummer</li>
+        <li>device_info-sgtin - (tbd.)</li>
+        <li>device_info-version - Firmware Version</li>
+        <li>error-error - Fehlermeldung (tbd.)</li>
+        <li>error-valve_error_0_severity - (tbd.)</li>
+        <li>error-valve_error_0_type - (tbd.)</li>
+        <li>error-valve_error_0_valve_id - ID des fehlerhaften Ventils</li>
+        <li>...ggf. weitere Error-Readings<li>
+        <li>firmware-firmware_available_version - Neue Firmware (nur wenn verf&uuml;gbar)</li>
+        <li>firmware-firmware_command - Firmware-Kommando (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - Firmware Status </li>
+        <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
+        <li>firmware-inclusion_status - Einbindungsstatus</li>        
+        <li>ic24-valves_connected - Verbundene Ventile (ID, kommagetrennt)</li>
+        <li>ic24-valves_master_config - Masterventil (nur, wenn in Gardena-App definiert)</li>
+        <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
+        <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>   
+        <li>scheduling-scheduled_watering_end - Endzeit des n&auml;chsten Zeitplans</li>
+        <li>scheduling-scheduled_watering_end_1 - Endzeit des n&auml;chsten Zeitplans f&uuml;r Ventil 1</li>
+        <li>...weitere Readings f&uuml;r Ventile 2-6</li>
+        <li>scheduling-scheduled_watering_next_start - Startzeit des n&auml;chsten Zeitplans</li>
+        <li>scheduling-scheduled_watering_next_start_1 - Startzeit des n&auml;chsten Zeitplans f&uuml;r Ventil 1</li>
+        <li>...weitere Readings f&uuml;r Ventile 2-6</li>
+        <li>scheduling-schedules_event_1_valve_n_end_at - Endzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_1_valve_n_id - ID des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_1_valve_n_start_at - Startzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_1_valve_n_weekly - Wochentage des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
+        <li>...weitere Readings f&uuml;r zus&auml;tzliche Zeitpl&auml;ne/Ventile</li>
+        <li>scheduling-schedules_paused_until_1 - Datum/Uhrzeit, bis wann Zeitplan pausiert ist (2038-01-18T00:00:00.000Z wird von Gardena-Cloud als dauerhaft angesehen) </li>
+        <li>...weitere Readings f&uuml;r Ventile 2-6</li>
+        <li>state - Status des Ger&auml;ts</li>
+           <ul>
+               <li>geschossen - Ventil geschlossen, keine Zeitpl&auml;ne definiert</li>
+               <li>geschlossen. Zeitplan dauerhaft pausiert - Ventil geschlossen, Zeitplan dauerhaft pausiert</li>
+               <li>geschlossen. N&auml;chste Bew&auml;sserung: YYYY-MM-DD HH:MM - Ventil geschlossen, n&auml;chster Zeitplan-Start YYYY-MM-DDTHH:MM:00.000Z</li>
+               <li>wird bew&auml;ssert. n Minuten verbleibend - Bew&auml;sserung aktiv, n Minuten verbleibend (wenn 2 Ventile ge&ouml;ffnet sind, wird die l&auml;ngere Dauer angezeigt)</li>
+               <li>offline - Ger&auml;t ist ausgeschaltet/hat keine Verbindung</li>
+               <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
+           </ul>
+        <li>valve-valve_name_1 - Eigener Name f&uuml;r Ventil 1</li>
+        <li>...weitere Readings f&uuml;r Ventile 2-6 (if installed)</li>
+	<li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
+        <li>watering-watering_timer_1_irrigation_left - Verbleibende Dauer der aktuellen Bew&auml;sserung in Minuten</li>
+        <li>watering-watering_timer_1_state - Status des Timers</li>
+        <li>watering-watering_timer_1_valve_id - Ventil-ID des Timers</li>
+        <li>...weitere Readings f&uuml;r weitere Ventile/Zeitpl&auml;ne</li>
+        <li>winter_mode - Status Winterschlaf (awake/hibernate)</li>
     </ul>
     <br><br>
     <b>Readings (model = sensor)</b>
     <ul>
-        <li>[tbd.]</li>
+	<li>ambient_temperature-frost_warning - Frostwarnung</li>
+        <li>ambient_temperature-temperature - Umgebungstemperatur in Celsius</li>
+        <li>battery-disposable_battery_status - Batteriezustand</li>
+	<li>battery-level - Ladezustand der Batterie in Prozent</li>
+        <li>device_info-category - Art des Ger&auml;ts</li>
+        <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
+        <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
+        <li>device_info-manufacturer - Hersteller</li>
+        <li>device_info-product - Produkttyp</li>
+        <li>device_info-serial_number - Seriennummer</li>
+        <li>device_info-sgtin - (tbd.)</li>
+        <li>device_info-version - Firmware Version</li>
+        <li>firmware-firmware_available_version - Neue Firmware (nur wenn verf&uuml;gbar)</li>
+        <li>firmware-firmware_command - Firmware-Kommando (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - Firmware Status </li>
+        <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
+        <li>firmware-inclusion_status - Einbindungsstatus</li>
+	<li>humidity-humidity - Feuchtigkeit in Prozent</li>
+        <li>light-light - Helligkeit in Lux</li>
+        <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
+        <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>
+        <li>soil_temperature-temperature - Erd-Temperatur in Celsius</li>
+        <li>state - Status (Temperatur (T:), Feuchtigkeit (H:), Helligkeit (L:)|offline|Winterschlaf)</li>
+        <li>winter_mode - Status Winterschlaf (awake/hibernate)</li>
     </ul>
     <br><br>
     <b>Readings (model = sensor2)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>"sensor2" hat keine Helligkeitsmessung oder Umgebungstemperatur, und es legt die Frost-Warnung in einem anderen Reading ab. Ansonsten ist er mehr oder weniger identisch zum "sensor".</li>
+        <br>
+        <li>battery-disposable_battery_status - Batteriezustand</li>
+	<li>battery-level - Ladezustand der Batterie in Prozent</li>
+        <li>device_info-category - Art des Ger&auml;ts</li>
+        <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
+        <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
+        <li>device_info-manufacturer - Hersteller</li>
+        <li>device_info-product - Produkttyp</li>
+        <li>device_info-serial_number - Seriennummer</li>
+        <li>device_info-sgtin - (tbd.)</li>
+        <li>device_info-version - Firmware Version</li>
+        <li>firmware-firmware_available_version - Neue Firmware (nur wenn verf&uuml;gbar)</li>
+        <li>firmware-firmware_command - Firmware-Kommando (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - Firmware Status </li>
+        <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
+        <li>firmware-inclusion_status - Einbindungsstatus</li>
+	<li>humidity-humidity - Feuchtigkeit in Prozent</li>
+        <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
+        <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>
+        <li>soil_model-model_definition - (tbd.)</li>
+        <li>soil_model-model_status - (tbd.)</li>
+        <li>soil_temperature-frost-warning - Frostwarnung</li>
+        <li>soil_temperature-temperature - Erd-Temperatur in Celsius</li>
+        <li>state - Status (Temperatur (T:), Feuchtigkeit (H:), Helligkeit (L:)|offline|Winterschlaf)</li>
+        <li>winter_mode - Status Winterschlaf (awake/hibernate)</li>
     </ul>
     <br><br>
     <b>Readings (model = power)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>(tbd.)</li>
     </ul>
     <br><br>
     <b>Readings (model = electronic_pressure_pump)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>(tbd.)</li>
     </ul>
     <br><br>
     <a name="GardenaSmartDeviceattributes"></a>
@@ -1805,76 +2168,77 @@ sub SetPredefinedStartPoints {
     <a name="GardenaSmartDeviceset"></a>
     <b>set (model = mower)</b>
     <ul>
-        <li>parkUntilFurtherNotice - Parken des Mähers und Aussetzen des Zeitplans</li>
-        <li>parkUntilNextTimer - Parken bis zum nächsten Start nach Zeitplan</li>
-        <li>startOverrideTimer n - Manuelles Mähen für n Minuten (z.B. 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
+        <li>parkUntilFurtherNotice - Parken des M&auml;hers und Aussetzen des Zeitplans</li>
+        <li>parkUntilNextTimer - Parken bis zum n&auml;chsten Start nach Zeitplan</li>
+        <li>startOverrideTimer n - Manuelles M&auml;hen f&uuml;r n Minuten (z.B. 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
         <li>startResumeSchedule - Zeitplan wieder aktivieren</li>
         <li>startPoint enable|disable 1|2|3 - Aktiviert oder deaktiviert einen vordefinierten Startbereich</li>
         <ul>
             <li>set NAME startpoint enable 1</li>
             <li>set NAME startpoint disable 3 enable 1</li>
         </ul>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = watering_computer)</b>
     <ul>
-        <li>cancelOverride - (Manuelle) Bewässerung stoppen</li>
-        <li>manualButtonTime n - Bewässerungsdauer für manuellen Knopf auf n Minuten setzen (0 schaltet den Knopf aus)
+        <li>cancelOverride - (Manuelle) Bew&auml;sserung stoppen</li>
+        <li>manualButtonTime n - Bew&auml;sserungsdauer f&uuml;r manuellen Knopf auf n Minuten setzen (0 schaltet den Knopf aus)
         </li>
-        <li>manualOverride n - Manuelle Bewässerung für n Minuten</li>
+        <li>manualOverride n - Manuelle Bew&auml;sserung f&uuml;r n Minuten</li>
         <li>resumeSchedule - Zeitplan wieder aktivieren</li>
-        <li>stopSchedule n - Zeitplan anhalten für n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als
+        <li>stopSchedule n - Zeitplan anhalten f&uuml;r n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als
             "dauerhaft" interpretiert)</li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = ic24)</b>
     <ul>
-        <li>cancelOverrideValve1 - (Manuelle) Bewässerung an Ventil 1 stoppen </li>
-        <li>cancelOverrideValve2 - (Manuelle) Bewässerung an Ventil 2 stoppen </li>
-        <li>cancelOverrideValve3 - (Manuelle) Bewässerung an Ventil 3 stoppen </li>
-        <li>cancelOverrideValve4 - (Manuelle) Bewässerung an Ventil 4 stoppen </li>
-        <li>cancelOverrideValve5 - (Manuelle) Bewässerung an Ventil 5 stoppen </li>
-        <li>cancelOverrideValve6 - (Manuelle) Bewässerung an Ventil 6 stoppen </li>
-        <li>closeAllValves - Alle Ventile schließen</li>
-        <li>manualDurationValve1 n - Ventil 1 für n Minuten öffnen</li>
-        <li>manualDurationValve2 n - Ventil 2 für n Minuten öffnen</li>
-        <li>manualDurationValve3 n - Ventil 3 für n Minuten öffnen</li>
-        <li>manualDurationValve4 n - Ventil 4 für n Minuten öffnen</li>
-        <li>manualDurationValve5 n - Ventil 5 für n Minuten öffnen</li>
-        <li>manualDurationValve6 n - Ventil 6 für n Minuten öffnen</li>
-        <li>resumeScheduleValve n - Zeitplan für Ventil n wieder aktivieren</li>
-        <li>stopScheduleValve n m - Zeitplan für Ventil n anhalten für m Stunden (Default: 2038-01-18T00:00:00.000Z,
+        <li>cancelOverrideValve1 - (Manuelle) Bew&auml;sserung an Ventil 1 stoppen </li>
+        <li>cancelOverrideValve2 - (Manuelle) Bew&auml;sserung an Ventil 2 stoppen </li>
+        <li>cancelOverrideValve3 - (Manuelle) Bew&auml;sserung an Ventil 3 stoppen </li>
+        <li>cancelOverrideValve4 - (Manuelle) Bew&auml;sserung an Ventil 4 stoppen </li>
+        <li>cancelOverrideValve5 - (Manuelle) Bew&auml;sserung an Ventil 5 stoppen </li>
+        <li>cancelOverrideValve6 - (Manuelle) Bew&auml;sserung an Ventil 6 stoppen </li>
+        <li>closeAllValves - Alle Ventile schliessen</li>
+        <li>manualDurationValve1 n - Ventil 1 f&uuml;r n Minuten &ouml;ffnen</li>
+        <li>manualDurationValve2 n - Ventil 2 f&uuml;r n Minuten &ouml;ffnen</li>
+        <li>manualDurationValve3 n - Ventil 3 f&uuml;r n Minuten &ouml;ffnen</li>
+        <li>manualDurationValve4 n - Ventil 4 f&uuml;r n Minuten &ouml;ffnen</li>
+        <li>manualDurationValve5 n - Ventil 5 f&uuml;r n Minuten &ouml;ffnen</li>
+        <li>manualDurationValve6 n - Ventil 6 f&uuml;r n Minuten &ouml;ffnen</li>
+        <li>resumeScheduleValve n - Zeitplan f&uuml;r Ventil n wieder aktivieren</li>
+        <li>stopScheduleValve n m - Zeitplan f&uuml;r Ventil n anhalten f&uuml;r m Stunden (Default: 2038-01-18T00:00:00.000Z,
             durch Gardena-App als "dauerhaft" interpretiert)</li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = sensor)</b>
     <ul>
-        <li>refresh temperature|humidity|light - Sensorwert für Temperatur, Feuchtigkeit oder Helligkeit aktualisieren
+        <li>refresh temperature|humidity|light - Sensorwert f&uuml;r Temperatur, Feuchtigkeit oder Helligkeit aktualisieren
         </li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = sensor2)</b>
     <ul>
-        <li>refresh temperature|humidity - Sensorwert für Temperatur oder Feuchtigkeit aktualisieren</li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Gerät aufwecken</li>
+        <li>refresh temperature|humidity - Sensorwert f&uuml;r Temperatur oder Feuchtigkeit aktualisieren</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = power)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>(tbd.)</li>
     </ul>
     <br><br>
     <b>set (model = electronic_pressure_pump)</b>
     <ul>
-        <li>[tbd.]</li>
+        <li>(tbd.)</li>
     </ul>
 </ul>
 
 =end html_DE
+
 
 =for :application/json;q=META.json 74_GardenaSmartDevice.pm
 {
