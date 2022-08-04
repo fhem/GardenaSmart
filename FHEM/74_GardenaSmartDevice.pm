@@ -846,12 +846,13 @@ sub WriteReadings {
                                         scalar( @{$decode_json->{scheduled_events} } ) );
         my $valve_id =1; my $event_id = 0; # ic24 [1..6] | wc, pump [1]
         ## valcid zahlen.  readings mit valvid aber
-        # my @soll = ();
-        # for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
-        #   while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
-        #     push @soll, $v; # cloud hat  SOLL
-        #   }
-        # }
+        my @soll = ();
+        for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
+          while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
+            push @soll, $v if $r eq 'id'; # cloud hat  SOLL
+          }
+        }
+
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
           $valve_id = $event_schedules->{valve_id} if ( exists($event_schedules->{valve_id} ) ); #ic24
           $event_id++; # event id
@@ -1056,7 +1057,7 @@ sub setState {
         if (scalar(@opened_valves) > 0){
           ## valve 1 will be ir.. 23 minutes remaining
           for (@valves_connected){
-            $state_string .= sprintf(RigReadingsValue($hash,'valve').' '.$_.' '.(RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.') .'</br>'), (ReadingsVal( $name, 'watering-watering_timer_'.$_.'_duration', 0 )/60));
+            $state_string .= sprintf(RigReadingsValue($hash,'valve').' '.$_.' '.(RigReadingsValue($hash, 'watering. %.f minutes left') .'</br>'), (ReadingsVal( $name, 'watering-watering_timer_'.$_.'_duration', 0 )/60));
           } # /for
         } else {
           $state_string .= RigReadingsValue($hash, 'closed');
@@ -1073,7 +1074,7 @@ sub setState {
         Log3 $name, 5, "[DEBUG] - Offene Ventile :".scalar(@opened_valves)." laengste bewaesserung: $longest_duration . hat Zeitplan: $has_schedule Naechster Zeitplan: $nearst_irrigation";
         $state_string = scalar(@opened_valves) > 0
           # offen
-          ? sprintf( (RigReadingsValue($hash, 'will be irrigated %.f minutes remaining.')), $longest_duration/60) 
+          ? sprintf( (RigReadingsValue($hash, 'watering. %.f minutes left')), $longest_duration/60) 
           # zu
           :
             ( $has_schedule 
