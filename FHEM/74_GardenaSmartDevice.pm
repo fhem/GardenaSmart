@@ -725,6 +725,10 @@ sub WriteReadings {
                     . $propertie->{name} ne 'humidity-humidity'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'light-light'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
+                    . $propertie->{name} ne 'ic24-valves_connected'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
+                    . $propertie->{name} ne 'ic24-valves_master_config'
                     && ref( $propertie->{value} ) ne "HASH" );
 
                 readingsBulkUpdateIfChanged(
