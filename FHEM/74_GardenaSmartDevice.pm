@@ -846,11 +846,12 @@ sub WriteReadings {
                                         scalar( @{$decode_json->{scheduled_events} } ) );
         my $valve_id =1; my $event_id = 0; # ic24 [1..6] | wc, pump [1]
         ## valcid zahlen.  readings mit valvid aber
-        for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
-          while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
-            push $cloud $v; # cloud hat  SOLL
-          }
-        }
+        # my @soll = ();
+        # for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
+        #   while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
+        #     push @soll, $v; # cloud hat  SOLL
+        #   }
+        # }
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
           $valve_id = $event_schedules->{valve_id} if ( exists($event_schedules->{valve_id} ) ); #ic24
           $event_id++; # event id
