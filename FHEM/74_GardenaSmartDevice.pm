@@ -1416,14 +1416,15 @@ sub SetPredefinedStartPoints {
 <br>
 <ul>
     <b>Readings (model = mower)</b>
+    <br><br>
+    Readings are based on Sileno, other models might have different/additional readings depending on their functions (tbd.)
+    <br><br>
     <ul>
-        <li>Readings are based on Sileno, other models might have different/additional readings depending on their functions (tbd.)</li>
-        <br>
         <li>battery-charging - Indicator if battery is charged (0/1)</li>
         <li>battery-level - load percentage of battery</li>
         <li>battery-rechargeable_battery_status - healthyness of the battery (out_of_operation/replace_now/low/ok), not all models</li>
         <li>device_info-category - category of device (mower/watering_computer)</li>
-        <li>device_info-connection_status - connection status (online/offline/unknown)
+        <li>device_info-connection_status - connection status (online/offline/unknown)</li>
         <li>device_info-last_time_online - timestamp of last radio contact</li>
         <li>device_info-manufacturer - manufacturer</li>
         <li>device_info-product - product type</li>
@@ -1558,7 +1559,7 @@ sub SetPredefinedStartPoints {
         <li>device_info-manufacturer - manufacturer</li>
         <li>device_info-product - product type</li>
         <li>device_info-serial_number - serial number</li>
-        <li>device_info-sgtin - tbd.</li>
+        <li>device_info-sgtin - (tbd.)</li>
         <li>device_info-version - firmware version</li>
         <li>error-error - error message (tbd.)</li>
         <li>error-valve_error_1_severity - (tbd.)</li>
@@ -1580,15 +1581,16 @@ sub SetPredefinedStartPoints {
         <li>scheduling-schedules_event_1_valve_1_weekly - weekdays of schedule 1</li>
         <li>scheduling-schedules_events_count - number of pre-defined schedules</li>
         <li>scheduling-schedules_paused_until - date/time until schedule is paused (2038-01-18T00:00:00.000Z is defined as permanently by Gardena cloud) </li>
-        <li>state - state of device</li>
+        <li>state - state of device
            <ul>
                <li>closed - valve closed, no schedules available</li>
                <li>closed. schedule permanently paused - valve closed, schedule disabled</li>
                <li>closed. next watering: YYYY-MM-DD HH:MM - valve closed, next scheduled start at YYYY-MM-DDTHH:MM:00.000Z</li>
-               <li>watering. n minutes remaining. - watering, n minutes remaining (depending on manual button time or on pre-defined schedule)</li>
+               <li>watering. n minutes left. - watering, n minutes remaining (depending on manual button time or on pre-defined schedule)</li>
                <li>offline - device is disabled/not connected</li>
                <li>hibernate - winter mode)</li>
            </ul>
+        </li>
 	<li>watering-watering_timer_1_duration - duration of current watering in seconds</li>
         <li>watering-watering_timer_1_irrigation_left - remaining watering time in minutes</li>
         <li>watering-watering_timer_1_state - state of schedule</li>
@@ -1597,6 +1599,7 @@ sub SetPredefinedStartPoints {
     </ul>
     <br><br>
     <b>Readings (model = ic24)</b>
+    <ul>
         <li>device_info-category - category of device (mower/watering_computer/sensor/etc.)</li>
         <li>device_info-connection_status - connection status (online/offline/unknown)</li>
         <li>device_info-last_time_online - timestamp of last radio contact</li>
@@ -1633,14 +1636,15 @@ sub SetPredefinedStartPoints {
         <li>...more readings for further schedules/valves</li>
         <li>scheduling-schedules_paused_until_1 - date/time until schedule is paused (2038-01-18T00:00:00.000Z is defined as permanently by Gardena cloud) </li>
         <li>...more readings for valves 2-6</li>
-        <li>state - state of device</li>
+        <li>state - state of device
            <ul>
                <li>closed - valve closed, no schedules available</li>
                <li>closed. schedule permanently paused - valve closed, all schedules disabled/paused</li>
                <li>closed. next watering: YYYY-MM-DD HH:MM - valve closed, next scheduled start at YYYY-MM-DDTHH:MM:00.000Z</li>
-               <li>watering. n minutes remaining. - watering, n minutes remaining. If more than one schedule is active, the longer remaining time is shown.</li>
+               <li>watering. n minutes left. - watering, n minutes remaining. If more than one schedule is active, the longer remaining time is shown.</li>
                <li>offline - device is disabled/not connected</li>
            </ul>
+        </li>
         <li>valve-valve_name_1 - individual name for valve 1</li>
         <li>...more readings for valves 2-6 (if installed)</li>
 	<li>watering-watering_timer_1_duration - duration of current watering in seconds</li>
@@ -1648,35 +1652,8 @@ sub SetPredefinedStartPoints {
         <li>watering-watering_timer_1_state - state of schedule</li>
         <li>watering-watering_timer_1_valve_id - valve id of schedule</li>
         <li>...more readings for further valves/schedules</li>
-        <li>winter_mode - status of winter mode (awake/hibernate)</li>   
-    <br><br>
-    <b>Readings (model = sensor)</b>
-    <ul>
-	<li>ambient_temperature-frost_warning - frost warning</li>
-        <li>ambient_temperature-temperature - ambient temperature in Celsius</li>
-        <li>battery-disposable_battery_status - healthyness of the battery (ok/low/replace_now/out_of_operation/no_battery/unknown)</li>
-	<li>battery-level - energy level of battery in percent</li>
-        <li>device_info-category - category of device (mower/watering_computer/sensor/etc.)</li>
-        <li>device_info-connection_status - connection status (online/offline/unknown)</li>
-        <li>device_info-last_time_online - timestamp of last radio contact</li>
-        <li>device_info-manufacturer - manufacturer</li>
-        <li>device_info-product - product type</li>
-        <li>device_info-serial_number - serial number</li>
-        <li>device_info-sgtin - tbd.</li>
-        <li>device_info-version - firmware version</li>
-        <li>firmware-firmware_available_version - new available firmware (only if available)</li>
-        <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
-        <li>firmware-firmware_status - firmware status </li>
-        <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
-        <li>firmware-inclusion_status - inclusion status</li>
-	<li>humidity-humidity - humidity in percent</li>
-        <li>light-light - brightness in lux</li>
-        <li>radio-quality - percentage of the radio quality</li>
-        <li>radio-state - radio state (bad/poor/good/undefined)</li>
-        <li>soil_temperature-temperature - soil temperature in Celsius</li>
-        <li>state - state of sensor (temperature (T:), humidity (H:), brightness/light (L:)</li>
         <li>winter_mode - status of winter mode (awake/hibernate)</li>
-    </ul>
+    </ul>   
     <br><br>
     <b>Readings (model = sensor)</b>
     <ul>
@@ -1707,9 +1684,10 @@ sub SetPredefinedStartPoints {
     </ul>
     <br><br>
     <b>Readings (model = sensor2)</b>
+    <br><br>
+    "sensor2" does not measure brightness or ambient temperature, and it has another reading for frost warning. Other than that, it seems to be more or less identical to "sensor".
+    <br><br>
     <ul>
-        <li>"sensor2" does not measure brightness or ambient temperature, and it has another reading for frost warning. Other than that, it seems to be more or less identical to "sensor".</li>
-        <br>
         <li>battery-disposable_battery_status - healthyness of the battery (ok/low/replace_now/out_of_operation/no_battery/unknown)</li>
 	<li>battery-level - energy level of battery in percent</li>
         <li>device_info-category - category of device (mower/watering_computer/sensor/etc.)</li>
@@ -1745,9 +1723,9 @@ sub SetPredefinedStartPoints {
     <ul>
         <li>(tbd.)</li>
     </ul>
-    <br><br>
+    <br><br><br>
     <a name="GardenaSmartDeviceattributes"></a>
-    <b>Attribute</b>
+    <b>Attribute (all models)</b>
     <ul>
         <li>IODev - Name of GardenaSmartBridge device</li>
         <li>extendedState 0|1 - (tbd.)</li>
@@ -1756,7 +1734,7 @@ sub SetPredefinedStartPoints {
         <li>readingValueLanguage en|de - Reading language enlish or german (default: english, if global language is not
             set to german)</li>
     </ul>
-    <br><br>
+    <br><br><br>
     <a name="GardenaSmartDeviceset"></a>
     <b>set (model = mower)</b>
     <ul>
@@ -1850,9 +1828,10 @@ sub SetPredefinedStartPoints {
 <br>
 <ul>
     <b>Readings (model = mower/M&auml;her)</b>
+    <br><br>
+    Readings basieren auf dem Modell Sileno, andere Modelle haben abweichende/zus&auml;tzliche Readings abh&auml;ngig von ihren Funktionen (tbd.)
+    <br><br>
     <ul>
-        <li>Readings basieren auf dem Modell Sileno, andere Modelle haben abweichende/zus&auml;tzliche Readings abh&auml;ngig von ihren Funktionen (tbd.)</li>
-        <br>
         <li>battery-charging - Ladeindikator (0/1)</li>
         <li>battery-level - Ladezustand der Batterie in Prozent</li>
         <li>battery-rechargeable_battery_status - Zustand der Batterie (Ausser Betrieb/Kritischer Batteriestand,
@@ -1979,6 +1958,7 @@ sub SetPredefinedStartPoints {
                 <li>Abgeschlossen</li>
                 <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
             </ul>
+        </li>
         <li>winter_mode - Status Winterschlaf (awake/hibernate)</li> 
     </ul>
     <br><br>
@@ -2015,7 +1995,7 @@ sub SetPredefinedStartPoints {
         <li>scheduling-schedules_event_1_valve_1_weekly - Wochentage von Zeitplan 1</li>
         <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
         <li>scheduling-schedules_paused_until - Datum/Uhrzeit, bis wann Zeitplan pausiert ist (2038-01-18T00:00:00.000Z wird von Gardena-Cloud als dauerhaft angesehen) </li>
-        <li>state - Status des Ger&auml;ts</li>
+        <li>state - Status des Ger&auml;ts
            <ul>
                <li>geschossen - Ventil geschlossen, keine Zeitpl&auml;ne definiert</li>
                <li>geschlossen. Zeitplan dauerhaft pausiert - Ventil geschlossen, Zeitplan dauerhaft pausiert</li>
@@ -2024,6 +2004,7 @@ sub SetPredefinedStartPoints {
                <li>offline - Ger&auml;t ist ausgeschaltet/hat keine Verbindung</li>
                <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
            </ul>
+        </li>
 	<li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
         <li>watering-watering_timer_1_irrigation_left - Verbleibende Bew&auml;sserungszeit in Minuten</li>
         <li>watering-watering_timer_1_state - Status des Zeitplans</li>
@@ -2045,7 +2026,7 @@ sub SetPredefinedStartPoints {
         <li>error-valve_error_0_severity - (tbd.)</li>
         <li>error-valve_error_0_type - (tbd.)</li>
         <li>error-valve_error_0_valve_id - ID des fehlerhaften Ventils</li>
-        <li>...ggf. weitere Error-Readings<li>
+        <li>...ggf. weitere Error-Readings</li>
         <li>firmware-firmware_available_version - Neue Firmware (nur wenn verf&uuml;gbar)</li>
         <li>firmware-firmware_command - Firmware-Kommando (idle/firmware_cancel/firmware_upload/unsupported)</li>
         <li>firmware-firmware_status - Firmware Status </li>
@@ -2069,7 +2050,7 @@ sub SetPredefinedStartPoints {
         <li>...weitere Readings f&uuml;r zus&auml;tzliche Zeitpl&auml;ne/Ventile</li>
         <li>scheduling-schedules_paused_until_1 - Datum/Uhrzeit, bis wann Zeitplan pausiert ist (2038-01-18T00:00:00.000Z wird von Gardena-Cloud als dauerhaft angesehen) </li>
         <li>...weitere Readings f&uuml;r Ventile 2-6</li>
-        <li>state - Status des Ger&auml;ts</li>
+        <li>state - Status des Ger&auml;ts
            <ul>
                <li>geschossen - Ventil geschlossen, keine Zeitpl&auml;ne definiert</li>
                <li>geschlossen. Zeitplan dauerhaft pausiert - Ventil geschlossen, Zeitplan dauerhaft pausiert</li>
@@ -2078,6 +2059,7 @@ sub SetPredefinedStartPoints {
                <li>offline - Ger&auml;t ist ausgeschaltet/hat keine Verbindung</li>
                <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
            </ul>
+        </li>
         <li>valve-valve_name_1 - Eigener Name f&uuml;r Ventil 1</li>
         <li>...weitere Readings f&uuml;r Ventile 2-6 (if installed)</li>
 	<li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
@@ -2117,9 +2099,10 @@ sub SetPredefinedStartPoints {
     </ul>
     <br><br>
     <b>Readings (model = sensor2)</b>
+    <br><br>
+    "sensor2" hat keine Helligkeitsmessung oder Umgebungstemperatur, und es legt die Frost-Warnung in einem anderen Reading ab. Ansonsten ist er mehr oder weniger identisch zum "sensor".
+    <br><br>
     <ul>
-        <li>"sensor2" hat keine Helligkeitsmessung oder Umgebungstemperatur, und es legt die Frost-Warnung in einem anderen Reading ab. Ansonsten ist er mehr oder weniger identisch zum "sensor".</li>
-        <br>
         <li>battery-disposable_battery_status - Batteriezustand</li>
 	<li>battery-level - Ladezustand der Batterie in Prozent</li>
         <li>device_info-category - Art des Ger&auml;ts</li>
@@ -2155,9 +2138,9 @@ sub SetPredefinedStartPoints {
     <ul>
         <li>(tbd.)</li>
     </ul>
-    <br><br>
+    <br><br><br>
     <a name="GardenaSmartDeviceattributes"></a>
-    <b>Attribute</b>
+    <b>Attribute (alle Modelle)</b>
     <ul>
         <li>IODev - Name des GardenaSmartBridge Devices</li>
         <li>extendedState 0|1 - [tbd.]</li>
@@ -2166,7 +2149,7 @@ sub SetPredefinedStartPoints {
         <li>readingValueLanguage en|de - Sprache der Readings englisch oder deutsch (default: englisch, es sei denn,
             Deutsch ist als globale Sprache gesetzt)</li>
     </ul>
-    <br><br>
+    <br><br><br>
     <a name="GardenaSmartDeviceset"></a>
     <b>set (model = mower)</b>
     <ul>
