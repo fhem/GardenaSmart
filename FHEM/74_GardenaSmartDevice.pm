@@ -844,7 +844,7 @@ sub WriteReadings {
         && AttrVal( $name, 'model', 'unknown' ) !~ /sensor.?/ ) {
         readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
                                         scalar( @{$decode_json->{scheduled_events} } ) );
-        my $valve_id =1; my $event_id = 1; # ic24 [1..6] | wc, pump [1]
+        my $valve_id =1; my $event_id = 0; # ic24 [1..6] | wc, pump [1]
         
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
           $valve_id = $event_schedules->{valve_id} if ( exists($event_schedules->{valve_id} ) ); #ic24
