@@ -845,13 +845,60 @@ sub WriteReadings {
         readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
                                         scalar( @{$decode_json->{scheduled_events} } ) );
         my $valve_id =1; my $event_id = 0; # ic24 [1..6] | wc, pump [1]
-        ## valcid zahlen.  readings mit valvid aber
-        my @soll = ();
-        for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
-          while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
+
+        ##
+        # validiere schedules
+        my @soll = ();my @ist=();
+        for my $cloud_schedules ( @{ $decode_json->{scheduled_events} } ) {
+          while ( my ( $r, $v ) = each  %{ $cloud_schedules } ) {
             push @soll, $v if $r eq 'id'; # cloud hat  SOLL
           }
         }
+
+
+use Data::Dumper;
+        foreach my $dev_schedules ( sort keys %{ $hash->{READINGS} } ) {
+          my $dev_reading = ReadingsVal( $name, $dev_schedules, "error" );
+          push @ist, $dev_reading if $dev_schedules =~ /.*_id/; # push reading _id
+          push @ist, $1 if $dev_schedules =~ /.*_(\d)_id/; # push readigs d from x_id
+          
+          Log3 $name, 5, "[DEBUG] - Key ist : $dev_schedules ";
+          Log3 $name, 5, "[DDDDD] - ID FOUND $dev_reading" if $dev_schedules =~ /.*_id/; # cloud hat  SOLL
+        } 
+        Log3 $name, 5, "[OOOU] Cloud ".Dumper(@soll) . "- Ist:". Dumper(@ist);
+
+        ## delete only if cloud != (ist/2)
+        if (scalar(@soll) != scalar(@ist/2)
+         && scalar(@soll) > 0
+         && scalar(@ist) > 0){
+
+          while(my $element = shift(@soll)) {
+            my $schedule_step_int = 0;
+
+            foreach my $sist (@ist) {
+              my $step = scalar(@ist) > 1 ? 2:1;
+              if ($element eq $sist){
+                # splice(@ist, $schedule_step_int, 1); # more than 2 items del them, otherwise 1
+                splice(@ist, $schedule_step_int, $step); # more than 2 items del them, otherwise 1
+                #$schedule_step_int++;
+              }
+              # $schedule_step_int++;
+              $schedule_step_int += $step;
+            }
+          }
+        }
+        Log3 $name, 5, "[REST] ". Dumper(@ist);
+        if (scalar(@ist) > 0){
+          while (my $old_schedule_id = shift(@ist)) {
+            if (length($old_schedule_id) == 1) {
+              foreach (keys %{$hash->{READINGS}}) {
+                delete $hash->{READINGS}->{$_} if($_ =~ /scheduling-schedules_event_$old_schedule_id.*/);
+                }
+            }# fi
+            Log3 $name, 5, "[DEBUG] - $name : deletereading scheduling-schedules_event_$old_schedule_id.*"  if length($old_schedule_id) == 1;
+          }
+        }
+        #### /validiere schedules
 
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
           $valve_id = $event_schedules->{valve_id} if ( exists($event_schedules->{valve_id} ) ); #ic24
