@@ -848,7 +848,7 @@ sub WriteReadings {
 
         ##
         # validiere schedules
-        my @soll = ();my @ist=();
+        my @soll = ();my @ist=(); my @tmp_ist=();
         for my $cloud_schedules ( @{ $decode_json->{scheduled_events} } ) {
           while ( my ( $r, $v ) = each  %{ $cloud_schedules } ) {
             push @soll, $v if $r eq 'id'; # cloud hat  SOLL
@@ -862,27 +862,31 @@ use Data::Dumper;
           push @ist, $dev_reading if $dev_schedules =~ /.*_id/; # push reading _id
           push @ist, $1 if $dev_schedules =~ /.*_(\d)_id/; # push readigs d from x_id
           
-          Log3 $name, 5, "[DEBUG] - Key ist : $dev_schedules ";
-          Log3 $name, 5, "[DDDDD] - ID FOUND $dev_reading" if $dev_schedules =~ /.*_id/; # cloud hat  SOLL
+          Log3 $name, 5, "[DEBUG] $name - Key ist : $dev_schedules ";
+          Log3 $name, 5, "[DDDDD] $name - ID FOUND $dev_reading" if $dev_schedules =~ /.*_id/; # cloud hat  SOLL
         } 
         Log3 $name, 5, "[OOOU] Cloud ".Dumper(@soll) . "- Ist:". Dumper(@ist);
 
         ## delete only if cloud != (ist/2)
-        if (scalar(@soll) != scalar(@ist/2)
+        if ((scalar(@soll) != scalar(@ist/2)
          && scalar(@soll) > 0
-         && scalar(@ist) > 0){
-
+         && scalar(@ist) > 0)
+         || (scalar(@ist) eq 2 && scalar(@soll) eq 1 )){
+          @tmp_ist = @ist;
           while(my $element = shift(@soll)) {
             my $schedule_step_int = 0;
 
-            foreach my $sist (@ist) {
+            foreach my $sist (@tmp_ist) {
               my $step = scalar(@ist) > 1 ? 2:1;
+              #print "step laenge $step \n";
+
+              print "check $element  =  $sist\n";
               if ($element eq $sist){
-                # splice(@ist, $schedule_step_int, 1); # more than 2 items del them, otherwise 1
+                #splice(@ist, $schedule_step_int, 1); # more than 2 items del them, otherwise 1
                 splice(@ist, $schedule_step_int, $step); # more than 2 items del them, otherwise 1
                 #$schedule_step_int++;
               }
-              # $schedule_step_int++;
+              #$schedule_step_int++;
               $schedule_step_int += $step;
             }
           }
