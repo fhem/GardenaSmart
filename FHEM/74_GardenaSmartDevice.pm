@@ -708,7 +708,7 @@ sub WriteReadings {
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name},
-                      (defined ($propertie->{value} ) eq '') ? RigReadingsValue( $hash, 'n/a') : RigReadingsValue( $hash, $propertie->{value} )
+                      (defined ($propertie->{value} ) eq '') ? RigReadingsValue( $hash, 'n/a') : "".RigReadingsValue( $hash, $propertie->{value} ) # cast all data to string with ""
                   )
                   if ( exists( $propertie->{value} ) 
                     && $decode_json->{abilities}[$abilities]{name} . '-'
@@ -735,7 +735,7 @@ sub WriteReadings {
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name},
-                    RigReadingsValue( $hash, $propertie->{value} )
+                    "".RigReadingsValue( $hash, $propertie->{value} )  # cast all data to string with ""
                   )
                   if (
                     defined( $propertie->{value} )
@@ -762,7 +762,7 @@ sub WriteReadings {
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name}
                       . '_timestamp',
-                    Time::Piece->strptime(
+                    "".Time::Piece->strptime(
                         RigReadingsValue( $hash, $propertie->{timestamp} ),
                         "%Y-%m-%d %H:%M:%S" )->strftime('%s')
 
