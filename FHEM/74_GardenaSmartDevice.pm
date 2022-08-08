@@ -859,8 +859,8 @@ sub WriteReadings {
 use Data::Dumper;
         foreach my $dev_schedules ( sort keys %{ $hash->{READINGS} } ) {
           my $dev_reading = ReadingsVal( $name, $dev_schedules, "error" );
-          push @ist, $dev_reading if $dev_schedules =~ /.*_id/; # push reading _id
-          push @ist, $1 if $dev_schedules =~ /.*_(\d)_id/; # push readigs d from x_id
+          push @ist, $dev_reading if $dev_schedules =~ /schedule.*_id/; # push reading _id
+          push @ist, $1 if $dev_schedules =~ /schedule.*_(\d)_id/; # push readigs d from x_id
           
           Log3 $name, 5, "[DEBUG] $name - Key ist : $dev_schedules ";
           Log3 $name, 5, "[DDDDD] $name - ID FOUND $dev_reading" if $dev_schedules =~ /.*_id/; # cloud hat  SOLL
@@ -892,7 +892,9 @@ use Data::Dumper;
           }
         }
         Log3 $name, 5, "[REST] ". Dumper(@ist);
-        if (scalar(@ist) > 0){
+        # delete only if count soll != count ist. cos the will be overwritten 
+        if (scalar(@ist) > 0
+          && scalar(@soll) != scalar(@ist/2) ){
           while (my $old_schedule_id = shift(@ist)) {
             if (length($old_schedule_id) == 1) {
               foreach (keys %{$hash->{READINGS}}) {

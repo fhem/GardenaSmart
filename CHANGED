@@ -1,1 +1,1 @@
-    [fix] - cast all propertie as string - fixed bulkupdateifchanged
+    [fix] - removed "valveid" from reading
