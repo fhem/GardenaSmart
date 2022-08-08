@@ -877,7 +877,7 @@ use Data::Dumper;
             my $schedule_step_int = 0;
 
             foreach my $sist (@tmp_ist) {
-              my $step = scalar(@ist) > 1 ? 2:1;
+              my $step = scalar(@tmp_ist) > 1 ? 2:1;
               #print "step laenge $step \n";
 
               print "check $element  =  $sist\n";
@@ -911,13 +911,13 @@ use Data::Dumper;
           while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
             readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_'
                                               . $event_id
-                                              . ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '') 
+                                              #. ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '') 
                                               . '_'
                                               . $r,
                                               $v) if (ref($v) ne 'HASH' );
             readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_'
                                               . $event_id
-                                              . ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '')
+                                              #. ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '')
                                               . '_'
                                               . $v->{type},
                                               join(',', @ { $v->{weekdays}}) ) if (ref($v) eq 'HASH' );

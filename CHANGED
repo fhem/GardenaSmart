@@ -1,1 +1,1 @@
-    [fix] - delete unused schedules
+    [fix] - cast all propertie as string - fixed bulkupdateifchanged
