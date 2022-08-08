@@ -1781,7 +1781,6 @@ sub SetPredefinedStartPoints {
     <b>Attribute (all models)</b>
     <ul>
         <li>IODev - Name of GardenaSmartBridge device</li>
-        <li>extendedState 0|1 - (tbd.)</li>
         <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - model of
             GardenaSmartDevice</li>
         <li>readingValueLanguage en|de - Reading language enlish or german (default: english, if global language is not
@@ -2196,7 +2195,6 @@ sub SetPredefinedStartPoints {
     <b>Attribute (alle Modelle)</b>
     <ul>
         <li>IODev - Name des GardenaSmartBridge Devices</li>
-        <li>extendedState 0|1 - [tbd.]</li>
         <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - Modell des
             GardenaSmartDevice</li>
         <li>readingValueLanguage en|de - Sprache der Readings englisch oder deutsch (default: englisch, es sei denn,
@@ -2295,7 +2293,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.5.6",
+  "version": "v2.5.7",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
