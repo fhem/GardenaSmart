@@ -883,7 +883,7 @@ sub WriteReadings {
             }
           }
         }
-        Log3 $name, 5, "[DEBUG] $name - Schedule - Rest  ". Dumper(@ist);
+        #Log3 $name, 5, "[DEBUG] $name - Schedule - Rest  ". Dumper(@ist);
         # delete only if count soll != count ist. cos the will be overwritten 
         if (scalar(@ist) > 0
           && scalar(@soll) != scalar(@ist/2) ){
