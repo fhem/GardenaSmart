@@ -855,17 +855,15 @@ sub WriteReadings {
           }
         }
 
-
-use Data::Dumper;
         foreach my $dev_schedules ( sort keys %{ $hash->{READINGS} } ) {
           my $dev_reading = ReadingsVal( $name, $dev_schedules, "error" );
           push @ist, $dev_reading if $dev_schedules =~ /schedule.*\d_id/; # push reading _id
           push @ist, $1 if $dev_schedules =~ /schedule.*_(\d)_id/; # push readigs d from x_id
           
-          Log3 $name, 5, "[DEBUG] $name - Key ist : $dev_schedules ";
-          Log3 $name, 5, "[DDDDD] $name - ID FOUND $dev_reading" if $dev_schedules =~ /schedule.*_\d_id/; # cloud hat  SOLL
+          Log3 $name, 5, "[DEBUG] $name - Schedule - Key ist : $dev_schedules ";
+          Log3 $name, 5, "[DEBUG] $name - Schedule - ID FOUND $dev_reading" if $dev_schedules =~ /schedule.*_\d_id/; # cloud hat  SOLL
         } 
-        Log3 $name, 5, "[OOOU] Cloud ".Dumper(@soll) . "- Ist:". Dumper(@ist);
+        #Log3 $name, 5, "[DEBUG] Cloud:".Dumper(@soll) . "- Internal:". Dumper(@ist);
 
         ## delete only if cloud != (ist/2)
         if ((scalar(@soll) != scalar(@ist/2)
@@ -878,20 +876,14 @@ use Data::Dumper;
 
             foreach my $sist (@tmp_ist) {
               my $step = scalar(@tmp_ist) > 1 ? 2:1;
-              #print "step laenge $step \n";
-
-              print "check $element  =  $sist\n";
               if ($element eq $sist){
-                #splice(@ist, $schedule_step_int, 1); # more than 2 items del them, otherwise 1
                 splice(@ist, $schedule_step_int, $step); # more than 2 items del them, otherwise 1
-                #$schedule_step_int++;
               }
-              #$schedule_step_int++;
               $schedule_step_int += $step;
             }
           }
         }
-        Log3 $name, 5, "[REST] ". Dumper(@ist);
+        Log3 $name, 5, "[DEBUG] $name - Schedule - Rest  ". Dumper(@ist);
         # delete only if count soll != count ist. cos the will be overwritten 
         if (scalar(@ist) > 0
           && scalar(@soll) != scalar(@ist/2) ){
