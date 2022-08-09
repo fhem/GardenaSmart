@@ -863,7 +863,7 @@ use Data::Dumper;
           push @ist, $1 if $dev_schedules =~ /schedule.*_(\d)_id/; # push readigs d from x_id
           
           Log3 $name, 5, "[DEBUG] $name - Key ist : $dev_schedules ";
-          Log3 $name, 5, "[DDDDD] $name - ID FOUND $dev_reading" if $dev_schedules =~ /schedule.*_id/; # cloud hat  SOLL
+          Log3 $name, 5, "[DDDDD] $name - ID FOUND $dev_reading" if $dev_schedules =~ /schedule.*_\d_id/; # cloud hat  SOLL
         } 
         Log3 $name, 5, "[OOOU] Cloud ".Dumper(@soll) . "- Ist:". Dumper(@ist);
 
