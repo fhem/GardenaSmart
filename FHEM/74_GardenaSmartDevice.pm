@@ -859,7 +859,7 @@ sub WriteReadings {
 use Data::Dumper;
         foreach my $dev_schedules ( sort keys %{ $hash->{READINGS} } ) {
           my $dev_reading = ReadingsVal( $name, $dev_schedules, "error" );
-          push @ist, $dev_reading if $dev_schedules =~ /schedule.*_id/; # push reading _id
+          push @ist, $dev_reading if $dev_schedules =~ /schedule.*\d_id/; # push reading _id
           push @ist, $1 if $dev_schedules =~ /schedule.*_(\d)_id/; # push readigs d from x_id
           
           Log3 $name, 5, "[DEBUG] $name - Key ist : $dev_schedules ";
