@@ -571,7 +571,7 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
 
         $list .=
-'closeAllValves:noArg resetvalveerrors:noArg stopScheduleValve:select,'.ReadingsVal( $name, 'ic24-valves_connected', '1' ).' resumeScheduleValve:select,'.ReadingsVal( $name, 'ic24-valves_connected', '1' )
+'closeAllValves:noArg resetValveErrors:noArg stopScheduleValve:select,'.ReadingsVal( $name, 'ic24-valves_connected', '1' ).' resumeScheduleValve:select,'.ReadingsVal( $name, 'ic24-valves_connected', '1' )
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
         
         foreach my $valve (split(',', ReadingsVal( $name, 'ic24-valves_connected', '1'))) {
@@ -1821,7 +1821,7 @@ sub SetPredefinedStartPoints {
         <li>manualDurationValve4 n - open valve 4 for n minutes</li>
         <li>manualDurationValve5 n - open valve 5 for n minutes</li>
         <li>manualDurationValve6 n - open valve 6 for n minutes</li>
-        <li>resetvalveerrors n - reset valve errormessage</li>
+        <li>resetValveErrors n - reset valve errormessage</li>
         <li>resumeScheduleValve n - (re)start irrigation schedule for valve n</li>
         <li>stopScheduleValve n m - stop irrigation schedule for valve n  (Default: 2038-01-18T00:00:00.000Z, Gardena
             App reads it as "permanently")</li>
@@ -2237,7 +2237,7 @@ sub SetPredefinedStartPoints {
         <li>manualDurationValve4 n - Ventil 4 f&uuml;r n Minuten &ouml;ffnen</li>
         <li>manualDurationValve5 n - Ventil 5 f&uuml;r n Minuten &ouml;ffnen</li>
         <li>manualDurationValve6 n - Ventil 6 f&uuml;r n Minuten &ouml;ffnen</li>
-        <li>resetvalveerrors n - Ventilfehler zur&uuml;cksetzen</li>
+        <li>resetValveErrors n - Ventilfehler zur&uuml;cksetzen</li>
         <li>resumeScheduleValve n - Zeitplan f&uuml;r Ventil n wieder aktivieren</li>
         <li>stopScheduleValve n m - Zeitplan f&uuml;r Ventil n anhalten f&uuml;r m Stunden (Default: 2038-01-18T00:00:00.000Z,
             durch Gardena-App als "dauerhaft" interpretiert)</li>
