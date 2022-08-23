@@ -2272,13 +2272,20 @@ sub SetPredefinedStartPoints {
     <br><br>
     <b>set (model = watering_computer)</b>
     <ul>
-      <li><a id="GardenaSmartDevice-set-cancelOverride"></a>cancelOverride - (Manuelle) Bew&auml;sserung stoppen</li>
-      <li><a id="GardenaSmartDevice-set-manualButtonTime"></a>manualButtonTime n - Bew&auml;sserungsdauer f&uuml;r manuellen Knopf auf n Minuten setzen (0 schaltet den Knopf aus)</li>
-      <li><a id="GardenaSmartDevice-set-manualOverride"></a>manualOverride n - Manuelle Bew&auml;sserung f&uuml;r n Minuten</li>
-      <li><a id="GardenaSmartDevice-set-resetvalveerrors"></a>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
-      <li><a id="GardenaSmartDevice-set-resumeschedule"></a>resumeSchedule - Zeitplan wieder aktivieren</li>
-      <li><a id="GardenaSmartDevice-set-stopschedule"></a>stopSchedule n - Zeitplan anhalten f&uuml;r n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als "dauerhaft" interpretiert)</li>
-      <li><a id="GardenaSmartDevice-set-winter_mode"></a>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+    <a id="cancelOverride"></a>
+      <li>cancelOverride - (Manuelle) Bew&auml;sserung stoppen</li>
+    <a id="GardenaSmartDevice-set-manualButtonTime"></a>
+      <li>manualButtonTime n - Bew&auml;sserungsdauer f&uuml;r manuellen Knopf auf n Minuten setzen (0 schaltet den Knopf aus)</li>
+    <a id="GardenaSmartDevice-set-manualOverride"></a>
+      <li>manualOverride n - Manuelle Bew&auml;sserung f&uuml;r n Minuten</li>
+    <a id="resetvalveerrors"></a>
+      <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
+    <a id="GardenaSmartDevice-set-resumeschedule"></a>
+      <li>resumeSchedule - Zeitplan wieder aktivieren</li>
+    <a id="GardenaSmartDevice-set-stopschedule"></a>
+      <li>stopSchedule n - Zeitplan anhalten f&uuml;r n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als "dauerhaft" interpretiert)</li>
+    <a id="GardenaSmartDevice-set-winter_mode"></a>
+      <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = ic24)</b>
