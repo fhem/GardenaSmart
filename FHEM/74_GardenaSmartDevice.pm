@@ -1445,7 +1445,7 @@ sub SetPredefinedStartPoints {
 =item summary_DE Modul zur Steuerung von GardenaSmartger&auml;ten
 =begin html
 
-<a name="GardenaSmartDevice"></a>
+<a id="GardenaSmartDevice"></a>
 <h3>GardenaSmartDevice</h3>
 <ul> 
     In combination with Fhem device <b>GardenaSmartBridge</b> this Fhem module enables communication between GardenaCloud and
@@ -1458,7 +1458,7 @@ sub SetPredefinedStartPoints {
     <br><br>
     So far, known devices are mower, smart water control, irrigation control, smart sensors, power plug and pressure
     pump. Schedules can be disabled/enabled via fhem, defining or deleting them must be done via Gardena App or its web interface.<br>
-    <a name="GardenaSmartDevicereadings"></a>
+    <a id="GardenaSmartDevicereadings"></a>
 </ul>
 <br>
 <ul>
@@ -1771,7 +1771,7 @@ sub SetPredefinedStartPoints {
         <li>(tbd.)</li>
     </ul>
     <br><br><br>
-    <a name="GardenaSmartDeviceattributes"></a>
+    <a id="GardenaSmartDeviceattributes"></a>
     <b>Attribute (all models)</b>
     <ul>
         <li>IODev - Name of GardenaSmartBridge device</li>
@@ -1781,7 +1781,7 @@ sub SetPredefinedStartPoints {
             set to german)</li>
     </ul>
     <br><br><br>
-    <a name="GardenaSmartDeviceset"></a>
+    <a id="GardenaSmartDeviceset"></a>
     <b>set (model = mower)</b>
     <ul>
         <li>parkUntilFurtherNotice - park mower and disable schedule</li>
@@ -1857,7 +1857,7 @@ sub SetPredefinedStartPoints {
 
 =begin html_DE
 
-<a name="GardenaSmartDevice"></a>
+<a id="GardenaSmartDevice"></a>
 <h3>GardenaSmartDevice</h3>
 <ul>
     Zusammen mit dem Device GardenaSmartBridge stellt dieses Fhem-Modul die Kommunikation zwischen der GardenaCloud und
@@ -1871,7 +1871,7 @@ sub SetPredefinedStartPoints {
     Bekannte Gardena-Ger&auml;te umfassen Rasenm&auml;her, Smart Water Control, Irrigation Control, Smart Sensoren,
     Steckdosen-Adapter und Pumpe. Zeitpl&auml;ne k&ouml;nnen &uuml;ber fhem pausiert/aktiviert werden, das Anlegen oder L&ouml;schen erfolgt
     derzeit nur &uuml;ber die App oder deren Web-Frontend.
-    <a name="GardenaSmartDevicereadings"></a>
+    <a id="GardenaSmartDevicereadings"></a>
 </ul>
 <br>
 <ul>
@@ -2247,7 +2247,7 @@ sub SetPredefinedStartPoints {
 
     </ul>
     <br><br><br>
-    <a name="GardenaSmartDeviceattributes"></a>
+    <a id="GardenaSmartDeviceattributes"></a>
     <b>Attribute (alle Modelle)</b>
     <ul>
       <li>IODev - Name des GardenaSmartBridge Devices</li>
@@ -2255,7 +2255,7 @@ sub SetPredefinedStartPoints {
       <li>readingValueLanguage en|de - Sprache der Readings englisch oder deutsch (default: englisch, es sei denn, Deutsch ist als globale Sprache gesetzt)</li>
     </ul>
     <br><br><br>
-    <a name="GardenaSmartDeviceset"></a>
+    <a id="GardenaSmartDeviceset"></a>
     <b>set (model = mower)</b>
     <ul>
       <li>parkUntilFurtherNotice - Parken des M&auml;hers und Aussetzen des Zeitplans</li>
@@ -2330,7 +2330,9 @@ sub SetPredefinedStartPoints {
     <ul>
       <li><a id="GardenaSmartDevice-ic24_set-manualOverride"></a>manualOverride n - Bew&auml;sserungdauer in Minuten</li>
       <li><a id="GardenaSmartDevice_ic24-set-cancelOverride"></a>cancelOverride - (Manuelle) Bew&auml;sserung stoppen</li>
-      <li><a id="GardenaSmartDevice_ic24-set-operating_mode"></a>operating_mode -Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
+      <a id="GardenaSmartDevice_ic24-set-operating_mode">
+        <li>operating_mode -Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
+      </a>
       <li><a id="GardenaSmartDevice_ic24-set-leakage_detection"></a>leakage_detection - Steuert die Lekage-Erkennung.</br> Hierdurch wird eine Pumpenabschaltung erreicht, sollte die Pumpe unkontrollierten Wasserverlust feststellen.  watering|washing_machine|domestic_water_supply|off</li>
       <li><a id="GardenaSmartDevice_ic24-set-turn_on_pressure"></a>turn_on_pressure - Einschaltdruck 2.0 - 3.0 Steuert den Einschaltdruck in Scheduled und Automatic Mode. Fällt der Druck bei der Bewässerung unter diese wert, startet die Pumpe, ist der Wert dauerhaft über diesem Wert und es finden kein Durchfluss statt, geht die Pumpe in Standby</li>
       <li><a id="GardenaSmartDevice_ic24-set-resetvalveerrors"></a>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
