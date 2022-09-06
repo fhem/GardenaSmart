@@ -1460,6 +1460,59 @@ sub SetPredefinedStartPoints {
     pump. Schedules can be disabled/enabled via fhem, defining or deleting them must be done via Gardena App or its web interface.<br>
 </ul>
 <br>
+<div style="display: none">
+  <a id="GardenaSmartDevice-set"></a>
+  <li><a id="GardenaSmartDevice-set-parkUntilFurtherNotice">parkUntilFurtherNotice</a> - park mower and disable schedule</li>
+  <li><a id="GardenaSmartDevice-set-parkUntilNextTimer">parkUntilNextTimer</a> - park mower until next schedule</li>
+  <li><a id="GardenaSmartDevice-set-startOverrideTimer">startOverrideTimer</a> n - manual mowing for n minutes (e.g. 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
+  <li><a id="GardenaSmartDevice-set-startResumeSchedule">startResumeSchedule</a> - enable schedule</li>
+  <li><a id="GardenaSmartDevice-set-startpoint">startpoint</a> enable|disable 1|2|3 - nable or disable pre-defined starting points
+    <ul>
+      <li>set NAME startpoint enable 1</li>
+      <li>set NAME startpoint disable 3 enable 1</li>
+    </ul>
+  </li>
+  <!-- WC, PUMPE, SENSOR(2) -->
+  <li><a id="GardenaSmartDevice-set-cancelOverride">cancelOverride</a> - stop (manual) watering</li>
+  <li><a id="GardenaSmartDevice-set-manualButtonTime">manualButtonTime</a> n - set watering time for manual button (0 disables button)</li>
+  <li><a id="GardenaSmartDevice-set-manualOverride">manualOverride</a> n - manual watering for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-resetValveErrors">resetValveErrors</a> - Vreset valve errormessage</li>
+  <li><a id="GardenaSmartDevice-set-resumeSchedule">resumeSchedule</a> - enable schedule</li>
+  <li><a id="GardenaSmartDevice-set-stopSchedule">stopSchedule</a> n - disable schedule for n hours (Default: 2038-01-18T00:00:00.000Z, Gardena App reads it as
+            "permanently")</li>
+   
+  <li><a id="GardenaSmartDevice-set-operating_mode">operating_mode</a> -Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
+  <li><a id="GardenaSmartDevice-set-leakage_detection">leakage_detection</a> - Steuert die Lekage-Erkennung.</br> Hierdurch wird eine Pumpenabschaltung erreicht, sollte die Pumpe unkontrollierten Wasserverlust feststellen.  watering|washing_machine|domestic_water_supply|off</li>
+  <li><a id="GardenaSmartDevice-set-turn_on_pressure">turn_on_pressure</a> - Einschaltdruck 2.0 - 3.0 Steuert den Einschaltdruck in Scheduled und Automatic Mode. Fällt der Druck bei der Bewässerung unter diese wert, startet die Pumpe, ist der Wert dauerhaft über diesem Wert und es finden kein Durchfluss statt, geht die Pumpe in Standby</li>
+      
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve1">cancelOverrideValve1</a> - stop (manual) watering for valve 1</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve2">cancelOverrideValve2</a> - stop (manual) watering for valve 2</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve3">cancelOverrideValve3</a> - stop (manual) watering for valve 3</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve4">cancelOverrideValve4</a> - stop (manual) watering for valve 4</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve5">cancelOverrideValve5</a> - stop (manual) watering for valve 5</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve6">cancelOverrideValve6</a> - stop (manual) watering for valve 6</li>
+  <li><a id="GardenaSmartDevice-set-closeAllValves">closeAllValves</a> - close all valves</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve1">manualDurationValve1</a> n - open valve 1 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve2">manualDurationValve2</a> n - open valve 2 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve3">manualDurationValve3</a> n - open valve 3 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve4">manualDurationValve4</a> n - open valve 4 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve5">manualDurationValve5</a> n - open valve 5 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve6">manualDurationValve6</a> n - open valve 6 for n minutes</li> 
+  <li><a id="GardenaSmartDevice-set-resumeScheduleValve">resumeScheduleValve</a> n - (re)start irrigation schedule for valve n</li>
+  <li><a id="GardenaSmartDevice-set-stopScheduleValve">stopScheduleValve</a> n m - stop irrigation schedule for valve n  (Default: 2038-01-18T00:00:00.000Z, Gardena
+            App reads it as "permanently")</li>
+  <!-- ALL -->
+  <li><a id="GardenaSmartDevice-set-winter_mode">winter_mode</a> awake|hibernate -  disable or enable winter mode</li>
+  <!-- SENSOR -->
+  <li><a id="GardenaSmartDevice-set-refresh">refresh</a> temperature|humidity|light*
+  <br>
+    refresh sensor reading for temperature, humidity or daylight
+    <br>*only Sensor type 1
+  </li>
+
+  
+
+</div>
     <a id="GardenaSmartDevice-readings"></a>
 <ul>
     <b>Readings (model = mower)</b>
@@ -1805,7 +1858,7 @@ sub SetPredefinedStartPoints {
         <li>resumeSchedule - enable schedule</li>
         <li>stopSchedule n - disable schedule for n hours (Default: 2038-01-18T00:00:00.000Z, Gardena App reads it as
             "permanently")</li>
-        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+        <li>winter_mode awake|hibernate - disable or enable winter mode</li>
     </ul>
     <br><br>
     <b>set (model = ic24)</b>
