@@ -737,7 +737,7 @@ sub ErrorHandling {
         my $i = 0;
         for my $dev_settings ( @{ $devJson->{settings} } ) {
             $output .= "[" . $i++ . "]id: $dev_settings->{id} \n";
-            $output .= "name: $dev_settings->{name} ";
+            $output .= "name: $dev_settings->{name} \n";
             if (   ref( $dev_settings->{value} ) eq 'ARRAY'
                 || ref( $dev_settings->{value} ) eq 'HASH' )
             {
@@ -753,16 +753,7 @@ sub ErrorHandling {
 
         for my $dev_settings ( @{ $devJson->{abilities} } ) {
             $output .= "[" . $i++ . "]id: $dev_settings->{id} \n";
-            $output .= "name: $dev_settings->{name} ";
-
-            if (   ref( $dev_settings->{value} ) eq 'ARRAY'
-                || ref( $dev_settings->{value} ) eq 'HASH' )
-            {
-                $output .= 'N/A \n';
-            }
-            else {
-                $output .= "value: $dev_settings->{value} \n";
-            }
+            $output .= "name: $dev_settings->{name} \n";
         }
 
         $hash->{helper}{debug_device_output} = $output;
