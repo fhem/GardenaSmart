@@ -563,7 +563,7 @@ sub Set {
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
 
         $list .=
-'manualOverride:slider,1,1,59 cancelOverride:noArg resumeSchedule:noArg stopSchedule manualButtonTime:slider,0,2,100'
+'manualOverride:slider,1,1,59 cancelOverride:noArg resumeSchedule:noArg stopSchedule manualButtonTime:slider,0,2,100 resetValveErrors:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
 
@@ -1065,7 +1065,7 @@ sub setState {
         ## add to opened ventils, if watering active
         push @opened_valves, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
         ## set error type (pumpe required)
-        $error_type = ReadingsVal( $name, 'error-valve_error_'.$_.'_type', 'ok' ) if (ReadingsVal( $name, 'error-valve_error_'.$_.'_type', 'ok' ) ne 'ok');
+        $error_type = ReadingsVal( $name, 'error-valve_error_'.$_.'_type', 'error' ) if (ReadingsVal( $name, 'error-valve_error_'.$_.'_type', 'error' ) ne 'ok');
         ## find longest irrigation duration 
         $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_irrigation_left", 0 ) if ( 
               ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
@@ -1291,6 +1291,7 @@ sub ReadingLangGerman {
         'pump_not_filled'                => 'Pumpe nicht gefüllt',
         'clean_fine_filter'              => 'Filter reinigen',
         'concurrent_limit_reached'       => 'Grenze gleichzeitig geöffneter Ventile erreicht',
+        'low_battery_prevents_starting'  => 'Niedrieger Batteriestand verhindert Bewässerung',
     );
 
     if (
@@ -1444,7 +1445,7 @@ sub SetPredefinedStartPoints {
 =item summary_DE Modul zur Steuerung von GardenaSmartger&auml;ten
 =begin html
 
-<a name="GardenaSmartDevice"></a>
+<a id="GardenaSmartDevice"></a>
 <h3>GardenaSmartDevice</h3>
 <ul> 
     In combination with Fhem device <b>GardenaSmartBridge</b> this Fhem module enables communication between GardenaCloud and
@@ -1457,9 +1458,62 @@ sub SetPredefinedStartPoints {
     <br><br>
     So far, known devices are mower, smart water control, irrigation control, smart sensors, power plug and pressure
     pump. Schedules can be disabled/enabled via fhem, defining or deleting them must be done via Gardena App or its web interface.<br>
-    <a name="GardenaSmartDevicereadings"></a>
 </ul>
 <br>
+<div style="display: none">
+  <a id="GardenaSmartDevice-set"></a>
+  <li><a id="GardenaSmartDevice-set-parkUntilFurtherNotice">parkUntilFurtherNotice</a> - park mower and disable schedule</li>
+  <li><a id="GardenaSmartDevice-set-parkUntilNextTimer">parkUntilNextTimer</a> - park mower until next schedule</li>
+  <li><a id="GardenaSmartDevice-set-startOverrideTimer">startOverrideTimer</a> n - manual mowing for n minutes (e.g. 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
+  <li><a id="GardenaSmartDevice-set-startResumeSchedule">startResumeSchedule</a> - enable schedule</li>
+  <li><a id="GardenaSmartDevice-set-startpoint">startpoint</a> enable|disable 1|2|3 - nable or disable pre-defined starting points
+    <ul>
+      <li>set NAME startpoint enable 1</li>
+      <li>set NAME startpoint disable 3 enable 1</li>
+    </ul>
+  </li>
+  <!-- WC, PUMPE, SENSOR(2) -->
+  <li><a id="GardenaSmartDevice-set-cancelOverride">cancelOverride</a> - stop (manual) watering</li>
+  <li><a id="GardenaSmartDevice-set-manualButtonTime">manualButtonTime</a> n - set watering time for manual button (0 disables button)</li>
+  <li><a id="GardenaSmartDevice-set-manualOverride">manualOverride</a> n - manual watering for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-resetValveErrors">resetValveErrors</a> - Vreset valve errormessage</li>
+  <li><a id="GardenaSmartDevice-set-resumeSchedule">resumeSchedule</a> - enable schedule</li>
+  <li><a id="GardenaSmartDevice-set-stopSchedule">stopSchedule</a> n - disable schedule for n hours (Default: 2038-01-18T00:00:00.000Z, Gardena App reads it as
+            "permanently")</li>
+   
+  <li><a id="GardenaSmartDevice-set-operating_mode">operating_mode</a> -Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
+  <li><a id="GardenaSmartDevice-set-leakage_detection">leakage_detection</a> - Steuert die Lekage-Erkennung.</br> Hierdurch wird eine Pumpenabschaltung erreicht, sollte die Pumpe unkontrollierten Wasserverlust feststellen.  watering|washing_machine|domestic_water_supply|off</li>
+  <li><a id="GardenaSmartDevice-set-turn_on_pressure">turn_on_pressure</a> - Einschaltdruck 2.0 - 3.0 Steuert den Einschaltdruck in Scheduled und Automatic Mode. Fällt der Druck bei der Bewässerung unter diese wert, startet die Pumpe, ist der Wert dauerhaft über diesem Wert und es finden kein Durchfluss statt, geht die Pumpe in Standby</li>
+      
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve1">cancelOverrideValve1</a> - stop (manual) watering for valve 1</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve2">cancelOverrideValve2</a> - stop (manual) watering for valve 2</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve3">cancelOverrideValve3</a> - stop (manual) watering for valve 3</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve4">cancelOverrideValve4</a> - stop (manual) watering for valve 4</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve5">cancelOverrideValve5</a> - stop (manual) watering for valve 5</li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve6">cancelOverrideValve6</a> - stop (manual) watering for valve 6</li>
+  <li><a id="GardenaSmartDevice-set-closeAllValves">closeAllValves</a> - close all valves</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve1">manualDurationValve1</a> n - open valve 1 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve2">manualDurationValve2</a> n - open valve 2 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve3">manualDurationValve3</a> n - open valve 3 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve4">manualDurationValve4</a> n - open valve 4 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve5">manualDurationValve5</a> n - open valve 5 for n minutes</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve6">manualDurationValve6</a> n - open valve 6 for n minutes</li> 
+  <li><a id="GardenaSmartDevice-set-resumeScheduleValve">resumeScheduleValve</a> n - (re)start irrigation schedule for valve n</li>
+  <li><a id="GardenaSmartDevice-set-stopScheduleValve">stopScheduleValve</a> n m - stop irrigation schedule for valve n  (Default: 2038-01-18T00:00:00.000Z, Gardena
+            App reads it as "permanently")</li>
+  <!-- ALL -->
+  <li><a id="GardenaSmartDevice-set-winter_mode">winter_mode</a> awake|hibernate -  disable or enable winter mode</li>
+  <!-- SENSOR -->
+  <li><a id="GardenaSmartDevice-set-refresh">refresh</a> temperature|humidity|light*
+  <br>
+    refresh sensor reading for temperature, humidity or daylight
+    <br>*only Sensor type 1
+  </li>
+
+  
+
+</div>
+    <a id="GardenaSmartDevice-readings"></a>
 <ul>
     <b>Readings (model = mower)</b>
     <br><br>
@@ -1560,10 +1614,10 @@ sub SetPredefinedStartPoints {
         <li>mower_type-serial_number - serial number</li>
         <li>radio-quality - percentage of the radio quality</li>
         <li>radio-state - radio state (bad/poor/good/undefined)</li>
-        <li>scheduling-schedules_event_1_end_at - ending time of schedule 1</li>
-        <li>scheduling-schedules_event_1_id - ID of schedule 1</li>
-        <li>scheduling-schedules_event_1_start_at - starting time of schedule 1</li> 
-        <li>scheduling-schedules_event_1_weekly - weekdays of schedule 1(comma-separated)</li>
+        <li>scheduling-schedules_event_n_end_at - ending time of schedule 1</li>
+        <li>scheduling-schedules_event_n_id - ID of schedule 1</li>
+        <li>scheduling-schedules_event_n_start_at - starting time of schedule 1</li> 
+        <li>scheduling-schedules_event_n_weekly - weekdays of schedule 1(comma-separated)</li>
         <li>...more readings for additional schedules (if defined)</li>
         <li>scheduling-schedules_events_count - number of pre-defined schedules</li>
 	<li>startpoint-1-enabled - starpoint 1 enabled (0/1)</li>
@@ -1621,10 +1675,10 @@ sub SetPredefinedStartPoints {
         <li>radio-state - radio state (bad/poor/good/undefined)</li>   
         <li>scheduling-scheduled_watering_end - next schedule ending time</li>
         <li>scheduling-scheduled_watering_next_start - next schedule starting time</li>
-        <li>scheduling-schedules_event_1_valve_1_end_at - ending time of schedule 1</li>
-        <li>scheduling-schedules_event_1_valve_1_id - ID of schedule 1</li>
-        <li>scheduling-schedules_event_1_valve_1_start_at - starting time of schedule 1</li>
-        <li>scheduling-schedules_event_1_valve_1_weekly - weekdays of schedule 1</li>
+        <li>scheduling-schedules_event_n_valve_1_end_at - ending time of schedule 1</li>
+        <li>scheduling-schedules_event_n_valve_1_id - ID of schedule 1</li>
+        <li>scheduling-schedules_event_n_valve_1_start_at - starting time of schedule 1</li>
+        <li>scheduling-schedules_event_n_valve_1_weekly - weekdays of schedule 1</li>
         <li>scheduling-schedules_events_count - number of pre-defined schedules</li>
         <li>scheduling-schedules_paused_until - date/time until schedule is paused (2038-01-18T00:00:00.000Z is defined as permanently by Gardena cloud) </li>
         <li>state - state of device
@@ -1658,7 +1712,7 @@ sub SetPredefinedStartPoints {
         <li>error-valve_error_0_severity - (tbd.)</li>
         <li>error-valve_error_0_type - (tbd.)</li>
         <li>error-valve_error_0_valve_id - id of valve with error</li>
-        <li>...more error readings<li>
+        <li>...more error readings</li>
         <li>firmware-firmware_available_version - new available firmware (only if available)</li>
         <li>firmware-firmware_command - firmware command (idle/firmware_cancel/firmware_upload/unsupported)</li>
         <li>firmware-firmware_status - firmware status </li>
@@ -1674,10 +1728,10 @@ sub SetPredefinedStartPoints {
         <li>scheduling-scheduled_watering_next_start - next schedule starting time</li>
         <li>scheduling-scheduled_watering_next_start_1 - next schedule starting time for valve 1</li>
         <li>...more readings for valves 2-6</li>
-        <li>scheduling-schedules_event_1_valve_1_end_at - ending time of schedule 1</li>
-        <li>scheduling-schedules_event_1_valve_1_id - ID of schedule 1</li>
-        <li>scheduling-schedules_event_1_valve_1_start_at - starting time of schedule 1</li>
-        <li>scheduling-schedules_event_1_valve_1_weekly - weekdays of schedule 1</li>
+        <li>scheduling-schedules_event_n_valve_1_end_at - ending time of schedule 1</li>
+        <li>scheduling-schedules_event_n_valve_1_id - ID of schedule 1</li>
+        <li>scheduling-schedules_event_n_valve_1_start_at - starting time of schedule 1</li>
+        <li>scheduling-schedules_event_n_valve_1_weekly - weekdays of schedule 1</li>
         <li>scheduling-schedules_events_count - number of pre-defined schedules</li>
         <li>...more readings for further schedules/valves</li>
         <li>scheduling-schedules_paused_until_1 - date/time until schedule is paused (2038-01-18T00:00:00.000Z is defined as permanently by Gardena cloud) </li>
@@ -1770,7 +1824,7 @@ sub SetPredefinedStartPoints {
         <li>(tbd.)</li>
     </ul>
     <br><br><br>
-    <a name="GardenaSmartDeviceattributes"></a>
+    <a id="GardenaSmartDevice-attr"></a>
     <b>Attribute (all models)</b>
     <ul>
         <li>IODev - Name of GardenaSmartBridge device</li>
@@ -1780,7 +1834,7 @@ sub SetPredefinedStartPoints {
             set to german)</li>
     </ul>
     <br><br><br>
-    <a name="GardenaSmartDeviceset"></a>
+    <a id="GardenaSmartDevice-set"></a>
     <b>set (model = mower)</b>
     <ul>
         <li>parkUntilFurtherNotice - park mower and disable schedule</li>
@@ -1800,10 +1854,11 @@ sub SetPredefinedStartPoints {
         <li>cancelOverride - stop (manual) watering</li>
         <li>manualButtonTime n - set watering time for manual button (0 disables button)</li>
         <li>manualOverride n - manual watering for n minutes</li>
+        <li>resetValveErrors - reset valve errormessage</li>
         <li>resumeSchedule - enable schedule</li>
         <li>stopSchedule n - disable schedule for n hours (Default: 2038-01-18T00:00:00.000Z, Gardena App reads it as
             "permanently")</li>
-        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+        <li>winter_mode awake|hibernate - disable or enable winter mode</li>
     </ul>
     <br><br>
     <b>set (model = ic24)</b>
@@ -1821,7 +1876,7 @@ sub SetPredefinedStartPoints {
         <li>manualDurationValve4 n - open valve 4 for n minutes</li>
         <li>manualDurationValve5 n - open valve 5 for n minutes</li>
         <li>manualDurationValve6 n - open valve 6 for n minutes</li>
-        <li>resetValveErrors n - reset valve errormessage</li>
+        <li>resetValveErrors - reset valve errormessage</li>
         <li>resumeScheduleValve n - (re)start irrigation schedule for valve n</li>
         <li>stopScheduleValve n m - stop irrigation schedule for valve n  (Default: 2038-01-18T00:00:00.000Z, Gardena
             App reads it as "permanently")</li>
@@ -1855,7 +1910,8 @@ sub SetPredefinedStartPoints {
 
 =begin html_DE
 
-<a name="GardenaSmartDevice"></a>
+
+<a id="GardenaSmartDevice"></a>
 <h3>GardenaSmartDevice</h3>
 <ul>
     Zusammen mit dem Device GardenaSmartBridge stellt dieses Fhem-Modul die Kommunikation zwischen der GardenaCloud und
@@ -1869,9 +1925,60 @@ sub SetPredefinedStartPoints {
     Bekannte Gardena-Ger&auml;te umfassen Rasenm&auml;her, Smart Water Control, Irrigation Control, Smart Sensoren,
     Steckdosen-Adapter und Pumpe. Zeitpl&auml;ne k&ouml;nnen &uuml;ber fhem pausiert/aktiviert werden, das Anlegen oder L&ouml;schen erfolgt
     derzeit nur &uuml;ber die App oder deren Web-Frontend.
-    <a name="GardenaSmartDevicereadings"></a>
 </ul>
+<div style="display: none">
+  <a id="GardenaSmartDevice-set"></a>
+  <li><a id="GardenaSmartDevice-set-parkUntilFurtherNotice">parkUntilFurtherNotice</a> - Parken des M&auml;hers und Aussetzen des Zeitplans</li>
+  <li><a id="GardenaSmartDevice-set-parkUntilNextTimer">parkUntilNextTimer</a> - Parken bis zum n&auml;chsten Start nach Zeitplan</li>
+  <li><a id="GardenaSmartDevice-set-startOverrideTimer">startOverrideTimer</a> n - Manuelles M&auml;hen f&uuml;r n Minuten (z.B. 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
+  <li><a id="GardenaSmartDevice-set-startResumeSchedule">startResumeSchedule</a> - Zeitplan wieder aktivieren</li>
+  <li><a id="GardenaSmartDevice-set-startpoint">startpoint</a> enable|disable 1|2|3 - Aktiviert oder deaktiviert einen vordefinierten Startbereich
+    <ul>
+      <li>set NAME startpoint enable 1</li>
+      <li>set NAME startpoint disable 3 enable 1</li>
+    </ul>
+  </li>
+  <!-- WC, PUMPE, SENSOR(2) -->
+  <li><a id="GardenaSmartDevice-set-cancelOverride">cancelOverride</a> - (Manuelle) Bew&auml;sserung stoppen</li>
+  <li><a id="GardenaSmartDevice-set-manualButtonTime">manualButtonTime</a> n - Bew&auml;sserungsdauer f&uuml;r manuellen Knopf auf n Minuten setzen (0 schaltet den Knopf aus)</li>
+  <li><a id="GardenaSmartDevice-set-manualOverride">manualOverride</a> n - Manuelle Bew&auml;sserung f&uuml;r n Minuten</li>
+  <li><a id="GardenaSmartDevice-set-resetValveErrors">resetValveErrors</a> - Ventilfehler zur&uuml;cksetzen</li>
+  <li><a id="GardenaSmartDevice-set-resumeSchedule">resumeSchedule</a> - Zeitplan wieder aktivieren</li>
+  <li><a id="GardenaSmartDevice-set-stopSchedule">stopSchedule</a> n - Zeitplan anhalten f&uuml;r n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als "dauerhaft" interpretiert)</li>
+   
+  <li><a id="GardenaSmartDevice-set-operating_mode">operating_mode</a> -Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
+  <li><a id="GardenaSmartDevice-set-leakage_detection">leakage_detection</a> - Steuert die Lekage-Erkennung.</br> Hierdurch wird eine Pumpenabschaltung erreicht, sollte die Pumpe unkontrollierten Wasserverlust feststellen.  watering|washing_machine|domestic_water_supply|off</li>
+  <li><a id="GardenaSmartDevice-set-turn_on_pressure">turn_on_pressure</a> - Einschaltdruck 2.0 - 3.0 Steuert den Einschaltdruck in Scheduled und Automatic Mode. Fällt der Druck bei der Bewässerung unter diese wert, startet die Pumpe, ist der Wert dauerhaft über diesem Wert und es finden kein Durchfluss statt, geht die Pumpe in Standby</li>
+      
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve1">cancelOverrideValve1</a> - (Manuelle) Bew&auml;sserung an Ventil 1 stoppen </li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve2">cancelOverrideValve2</a> - (Manuelle) Bew&auml;sserung an Ventil 2 stoppen </li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve3">cancelOverrideValve3</a> - (Manuelle) Bew&auml;sserung an Ventil 3 stoppen </li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve4">cancelOverrideValve4</a> - (Manuelle) Bew&auml;sserung an Ventil 4 stoppen </li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve5">cancelOverrideValve5</a> - (Manuelle) Bew&auml;sserung an Ventil 5 stoppen </li>
+  <li><a id="GardenaSmartDevice-set-cancelOverrideValve6">cancelOverrideValve6</a> - (Manuelle) Bew&auml;sserung an Ventil 6 stoppen </li>
+  <li><a id="GardenaSmartDevice-set-closeAllValves">closeAllValves</a> - Alle Ventile schliessen</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve1">manualDurationValve1</a> n - Ventil 1 f&uuml;r n Minuten &ouml;ffnen</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve2">manualDurationValve2</a> n - Ventil 2 f&uuml;r n Minuten &ouml;ffnen</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve3">manualDurationValve3</a> n - Ventil 3 f&uuml;r n Minuten &ouml;ffnen</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve4">manualDurationValve4</a> n - Ventil 4 f&uuml;r n Minuten &ouml;ffnen</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve5">manualDurationValve5</a> n - Ventil 5 f&uuml;r n Minuten &ouml;ffnen</li>
+  <li><a id="GardenaSmartDevice-set-manualDurationValve6">manualDurationValve6</a> n - Ventil 6 f&uuml;r n Minuten &ouml;ffnen</li> 
+  <li><a id="GardenaSmartDevice-set-resumeScheduleValve">resumeScheduleValve</a> n - Zeitplan f&uuml;r Ventil n wieder aktivieren</li>
+  <li><a id="GardenaSmartDevice-set-stopScheduleValve">stopScheduleValve</a> n m - Zeitplan f&uuml;r Ventil n anhalten f&uuml;r m Stunden (Default: 2038-01-18T00:00:00.000Z durch Gardena-App als "dauerhaft" interpretiert)</li>
+  <!-- ALL -->
+  <li><a id="GardenaSmartDevice-set-winter_mode">winter_mode</a> awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+  <!-- SENSOR -->
+  <li><a id="GardenaSmartDevice-set-refresh">refresh</a> temperature|humidity|light*
+  <br>
+    Wert f&uuml;r Temperatur, Feuchtigkeit oder Helligkeit aktualisieren
+    <br>*nur bei Sensor type 1 verf&uuml;gbar
+  </li>
+
+  
+
+</div>
 <br>
+<a id="GardenaSmartDevice-readings"></a>
 <ul>
     <b>Readings (model = mower/M&auml;her)</b>
     <br><br>
@@ -1882,7 +1989,7 @@ sub SetPredefinedStartPoints {
         <li>battery-level - Ladezustand der Batterie in Prozent</li>
         <li>battery-rechargeable_battery_status - Zustand der Batterie (Ausser Betrieb/Kritischer Batteriestand,
             wechseln Sie jetzt/Niedrig/oK), nicht bei allen Modellen</li>
-        <li>device_info-connection_status - Verbindungs-Status (online/offline/unknown)
+        <li>device_info-connection_status - Verbindungs-Status (online/offline/unknown)</li>
         <li>device_info-category - Eigenschaft des Ger&auml;tes (M&auml;her/Bew&auml;sserungscomputer/Bodensensor)</li>
         <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
         <li>device_info-manufacturer - Hersteller</li>
@@ -1974,13 +2081,13 @@ sub SetPredefinedStartPoints {
         <li>mower_type-serial_number - Seriennummer</li> 
         <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
         <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>
-        <li>scheduling-schedules_event_1_end_at - Endzeit des Zeitplans 1</li>
-        <li>scheduling-schedules_event_1_id - ID des Zeitplans 1</li>
-        <li>scheduling-schedules_event_1_start_at - Startzeit des Zeitplans 1</li> 
-        <li>scheduling-schedules_event_1_weekly - Wochentage des Zeitplans 1 (kommagetrennt)</li>
+        <li>scheduling-schedules_event_n_end_at - Endzeit des Zeitplans 1</li>
+        <li>scheduling-schedules_event_n_id - ID des Zeitplans 1</li>
+        <li>scheduling-schedules_event_n_start_at - Startzeit des Zeitplans 1</li> 
+        <li>scheduling-schedules_event_n_weekly - Wochentage des Zeitplans 1 (kommagetrennt)</li>
         <li>...weitere Readings f&uuml;r zus&auml;tzliche Zeitpl&auml;ne (falls angelegt)</li>
         <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
-	<li>startpoint-1-enabled - starpoint 1 enabled (0/1)</li>
+	    <li>startpoint-1-enabled - starpoint 1 enabled (0/1)</li>
         <li>...weitere Readings f&uuml;r zus&auml;tzliche Startpunkte (falls angelegt)</li>
         <li>state - Status des M&auml;hers
             <ul>
@@ -2012,7 +2119,7 @@ sub SetPredefinedStartPoints {
     <ul>
         <li>ambient_temperature-temperature - Umgebungstemperatur in Celsius</li>
         <li>battery-disposable_battery_status - Batteriezustand</li>
-	<li>battery-level - Ladezustand der Batterie in Prozent</li>
+	    <li>battery-level - Ladezustand der Batterie in Prozent</li>
         <li>device_info-category - Art des Ger&auml;ts</li>
         <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
         <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
@@ -2035,10 +2142,10 @@ sub SetPredefinedStartPoints {
         <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>   
         <li>scheduling-scheduled_watering_end - Endzeit des n&auml;chsten Zeitplans</li>
         <li>scheduling-scheduled_watering_next_start - Startzeit des n&auml;chsten Zeitplans</li>
-        <li>scheduling-schedules_event_1_valve_1_end_at - Endzeit von Zeitplan 1</li>
-        <li>scheduling-schedules_event_1_valve_1_id - ID von Zeitplan 1</li>
-        <li>scheduling-schedules_event_1_valve_1_start_at - Startzeit von Zeitplan 1</li>
-        <li>scheduling-schedules_event_1_valve_1_weekly - Wochentage von Zeitplan 1</li>
+        <li>scheduling-schedules_event_n_valve_1_end_at - Endzeit von Zeitplan 1</li>
+        <li>scheduling-schedules_event_n_valve_1_id - ID von Zeitplan 1</li>
+        <li>scheduling-schedules_event_n_valve_1_start_at - Startzeit von Zeitplan 1</li>
+        <li>scheduling-schedules_event_n_valve_1_weekly - Wochentage von Zeitplan 1</li>
         <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
         <li>scheduling-schedules_paused_until - Datum/Uhrzeit, bis wann Zeitplan pausiert ist (2038-01-18T00:00:00.000Z wird von Gardena-Cloud als dauerhaft angesehen) </li>
         <li>state - Status des Ger&auml;ts
@@ -2051,7 +2158,7 @@ sub SetPredefinedStartPoints {
                <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
            </ul>
         </li>
-	<li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
+	    <li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
         <li>watering-watering_timer_1_irrigation_left - Verbleibende Bew&auml;sserungszeit in Minuten</li>
         <li>watering-watering_timer_1_state - Status des Zeitplans</li>
         <li>watering-watering_timer_1_valve_id - Ventil-ID des Zeitplans</li>
@@ -2088,10 +2195,10 @@ sub SetPredefinedStartPoints {
         <li>scheduling-scheduled_watering_next_start - Startzeit des n&auml;chsten Zeitplans</li>
         <li>scheduling-scheduled_watering_next_start_1 - Startzeit des n&auml;chsten Zeitplans f&uuml;r Ventil 1</li>
         <li>...weitere Readings f&uuml;r Ventile 2-6</li>
-        <li>scheduling-schedules_event_1_valve_n_end_at - Endzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
-        <li>scheduling-schedules_event_1_valve_n_id - ID des ersten definierten Zeitplans f&uuml;r Ventil n</li>
-        <li>scheduling-schedules_event_1_valve_n_start_at - Startzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
-        <li>scheduling-schedules_event_1_valve_n_weekly - Wochentage des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_n_end_at - Endzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_n_id - ID des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_n_start_at - Startzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_n_weekly - Wochentage des ersten definierten Zeitplans f&uuml;r Ventil n</li>
         <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
         <li>...weitere Readings f&uuml;r zus&auml;tzliche Zeitpl&auml;ne/Ventile</li>
         <li>scheduling-schedules_paused_until_1 - Datum/Uhrzeit, bis wann Zeitplan pausiert ist (2038-01-18T00:00:00.000Z wird von Gardena-Cloud als dauerhaft angesehen) </li>
@@ -2108,7 +2215,7 @@ sub SetPredefinedStartPoints {
         </li>
         <li>valve-valve_name_1 - Eigener Name f&uuml;r Ventil 1</li>
         <li>...weitere Readings f&uuml;r Ventile 2-6 (if installed)</li>
-	<li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
+	      <li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
         <li>watering-watering_timer_1_irrigation_left - Verbleibende Dauer der aktuellen Bew&auml;sserung in Minuten</li>
         <li>watering-watering_timer_1_state - Status des Timers</li>
         <li>watering-watering_timer_1_valve_id - Ventil-ID des Timers</li>
@@ -2118,10 +2225,10 @@ sub SetPredefinedStartPoints {
     <br><br>
     <b>Readings (model = sensor)</b>
     <ul>
-	<li>ambient_temperature-frost_warning - Frostwarnung</li>
+	    <li>ambient_temperature-frost_warning - Frostwarnung</li>
         <li>ambient_temperature-temperature - Umgebungstemperatur in Celsius</li>
         <li>battery-disposable_battery_status - Batteriezustand</li>
-	<li>battery-level - Ladezustand der Batterie in Prozent</li>
+	    <li>battery-level - Ladezustand der Batterie in Prozent</li>
         <li>device_info-category - Art des Ger&auml;ts</li>
         <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
         <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
@@ -2135,7 +2242,7 @@ sub SetPredefinedStartPoints {
         <li>firmware-firmware_status - Firmware Status </li>
         <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
         <li>firmware-inclusion_status - Einbindungsstatus</li>
-	<li>humidity-humidity - Feuchtigkeit in Prozent</li>
+	    <li>humidity-humidity - Feuchtigkeit in Prozent</li>
         <li>light-light - Helligkeit in Lux</li>
         <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
         <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>
@@ -2150,7 +2257,7 @@ sub SetPredefinedStartPoints {
     <br><br>
     <ul>
         <li>battery-disposable_battery_status - Batteriezustand</li>
-	<li>battery-level - Ladezustand der Batterie in Prozent</li>
+        <li>battery-level - Ladezustand der Batterie in Prozent</li>
         <li>device_info-category - Art des Ger&auml;ts</li>
         <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
         <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
@@ -2164,7 +2271,7 @@ sub SetPredefinedStartPoints {
         <li>firmware-firmware_status - Firmware Status </li>
         <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
         <li>firmware-inclusion_status - Einbindungsstatus</li>
-	<li>humidity-humidity - Feuchtigkeit in Prozent</li>
+	    <li>humidity-humidity - Feuchtigkeit in Prozent</li>
         <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
         <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>
         <li>soil_model-model_definition - (tbd.)</li>
@@ -2177,25 +2284,82 @@ sub SetPredefinedStartPoints {
     <br><br>
     <b>Readings (model = power)</b>
     <ul>
-        <li>(tbd.)</li>
+      <li>(tbd.)</li>
     </ul>
     <br><br>
     <b>Readings (model = electronic_pressure_pump)</b>
     <ul>
-        <li>(tbd.)</li>
+      <li>error-error - Fehlermeldung (tbd.)</li>
+      <li>error-valve_error_1_severity - (tbd.)</li>
+      <li>error-valve_error_1_type - (tbd.)</li>
+      <li>error-valve_error_1_valve_id - ID des fehlerhaften Ventils</li>
+      <li>firmware-firmware_available_version - Neue Firmware (nur wenn verf&uuml;gbar)</li>
+      <li>firmware-firmware_command - Firmware-Kommando (idle/firmware_cancel/firmware_upload/unsupported)</li>
+      <li>firmware-firmware_status - Firmware Status </li>
+      <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
+      <li>firmware-inclusion_status - Einbindungsstatus</li>    
+      <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
+      <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>  
+
+      <li>scheduling-schedules_event_n__end_at - Endzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+      <li>scheduling-schedules_event_n_id - ID des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+      <li>scheduling-schedules_event_n_start_at - Startzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+      <li>scheduling-schedules_event_n_weekly - Wochentage des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+      <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
+      <li>...weitere Readings f&uuml;r zus&auml;tzliche Zeitpl&auml;ne/Ventile</li>
+      <li>scheduling-schedules_paused_until_1 - Datum/Uhrzeit, bis wann Zeitplan pausiert ist (2038-01-18T00:00:00.000Z wird von Gardena-Cloud als dauerhaft angesehen) </li>
+        
+      <li>state - Status des Ger&auml;ts
+         <ul>
+             <li>geschossen - Ventil geschlossen, keine Zeitpl&auml;ne definiert</li>
+             <li>geschlossen. Zeitplan dauerhaft pausiert - Ventil geschlossen, Zeitplan dauerhaft pausiert</li>
+             <li>geschlossen. N&auml;chste Bew&auml;sserung: YYYY-MM-DD HH:MM - Ventil geschlossen, n&auml;chster Zeitplan-Start YYYY-MM-DDTHH:MM:00.000Z</li>
+             <li>wird bew&auml;ssert. n Minuten verbleibend - Bew&auml;sserung aktiv, n Minuten verbleibend (wenn 2 Ventile ge&ouml;ffnet sind, wird die l&auml;ngere Dauer angezeigt)</li>
+             <li>offline - Ger&auml;t ist ausgeschaltet/hat keine Verbindung</li>
+             <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
+         </ul>
+      </li>
+      
+      <li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
+      <li>watering-watering_timer_1_irrigation_left - Verbleibende Dauer der aktuellen Bew&auml;sserung in Minuten</li>
+      <li>watering-watering_timer_1_state - Status des Timers</li>
+      <li>watering-watering_timer_1_valve_id - Ventil-ID des Timers</li>
+      <li>winter_mode - Status Winterschlaf (awake/hibernate)</li>
+      <li><strong>Flussmengen und Lekage-Erkennung</strong></li>
+      <li>flow-dripping_alert sixty</li>
+      <li>flow-flow_rate - FLussrate (600)</li>
+      <li>flow-flow_since_last_reset 13</li>
+      <li>flow-flow_total 20</li>
+      <li>leakage_detection - Status der Lekage-Konfiguration</li>
+      
+      <li><strong>Status des Ger&auml;tes Temperataur und Druck-Einstellungen</strong></li>
+      <li>outlet_pressure-outlet_pressure - </li>
+      <li>outlet_pressure-outlet_pressure_max 5.8</li>
+      <li>outlet_temperature-frost_warning - Frostwarnung</li>
+      <li>outlet_temperature-temperature - Außentemperatur</li>
+      <li>outlet_temperature-temperature_max - tbd. 100</li>
+      <li>outlet_temperature-temperature_min - tbd. 0</li>
+      
+      <li><strong>Pumpen-Konfiguration</strong></li>
+      <li>operating_mode  - Modus der Pumpe</li>
+      
+      <li><strong>Pumpenstatus aktuell</strong></li>
+      <li>pump-mode - Modus der Pumpe</li>
+      <li>pump-operating_mode – Pumpenmodus automatic|scheduled</li>
+      <li>pump-pump_on_off - Pumpenzustand on|off</li>
+      <li>pump-pump_state - tbd</li>
+      <li>pump-turn_on_pressure - Einschaltdruck 2.0 - 3.0</li>
+
     </ul>
     <br><br><br>
-    <a name="GardenaSmartDeviceattributes"></a>
+</ul> 
     <b>Attribute (alle Modelle)</b>
     <ul>
-        <li>IODev - Name des GardenaSmartBridge Devices</li>
-        <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - Modell des
-            GardenaSmartDevice</li>
-        <li>readingValueLanguage en|de - Sprache der Readings englisch oder deutsch (default: englisch, es sei denn,
-            Deutsch ist als globale Sprache gesetzt)</li>
+      <li>IODev - Name des GardenaSmartBridge Devices</li>
+      <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - Modell des GardenaSmartDevice</li>
+      <li>readingValueLanguage en|de - Sprache der Readings englisch oder deutsch (default: englisch, es sei denn, Deutsch ist als globale Sprache gesetzt)</li>
     </ul>
-    <br><br><br>
-    <a name="GardenaSmartDeviceset"></a>
+    <br><br><br> 
     <b>set (model = mower)</b>
     <ul>
         <li>parkUntilFurtherNotice - Parken des M&auml;hers und Aussetzen des Zeitplans</li>
@@ -2203,26 +2367,25 @@ sub SetPredefinedStartPoints {
         <li>startOverrideTimer n - Manuelles M&auml;hen f&uuml;r n Minuten (z.B. 60 = 1h, 1440 = 24h, 4320 = 72h)</li>
         <li>startResumeSchedule - Zeitplan wieder aktivieren</li>
         <li>startPoint enable|disable 1|2|3 - Aktiviert oder deaktiviert einen vordefinierten Startbereich</li>
-        <ul>
-            <li>set NAME startpoint enable 1</li>
-            <li>set NAME startpoint disable 3 enable 1</li>
-        </ul>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+      <ul>
+        <li>set NAME startpoint enable 1</li>
+        <li>set NAME startpoint disable 3 enable 1</li>
+      </ul>
+      <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
-    <b>set (model = watering_computer)</b>
+    <b>set (model = watering_computer)</b> 
     <ul>
         <li>cancelOverride - (Manuelle) Bew&auml;sserung stoppen</li>
-        <li>manualButtonTime n - Bew&auml;sserungsdauer f&uuml;r manuellen Knopf auf n Minuten setzen (0 schaltet den Knopf aus)
-        </li>
+        <li>manualButtonTime n - Bew&auml;sserungsdauer f&uuml;r manuellen Knopf auf n Minuten setzen (0 schaltet den Knopf aus)</li>
         <li>manualOverride n - Manuelle Bew&auml;sserung f&uuml;r n Minuten</li>
+        <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
         <li>resumeSchedule - Zeitplan wieder aktivieren</li>
-        <li>stopSchedule n - Zeitplan anhalten f&uuml;r n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als
-            "dauerhaft" interpretiert)</li>
+        <li>stopSchedule n - Zeitplan anhalten f&uuml;r n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als "dauerhaft" interpretiert)</li>
         <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
-    <b>set (model = ic24)</b>
+    <b>set (model = ic24)</b> 
     <ul>
         <li>cancelOverrideValve1 - (Manuelle) Bew&auml;sserung an Ventil 1 stoppen </li>
         <li>cancelOverrideValve2 - (Manuelle) Bew&auml;sserung an Ventil 2 stoppen </li>
@@ -2237,17 +2400,15 @@ sub SetPredefinedStartPoints {
         <li>manualDurationValve4 n - Ventil 4 f&uuml;r n Minuten &ouml;ffnen</li>
         <li>manualDurationValve5 n - Ventil 5 f&uuml;r n Minuten &ouml;ffnen</li>
         <li>manualDurationValve6 n - Ventil 6 f&uuml;r n Minuten &ouml;ffnen</li>
-        <li>resetValveErrors n - Ventilfehler zur&uuml;cksetzen</li>
+        <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
         <li>resumeScheduleValve n - Zeitplan f&uuml;r Ventil n wieder aktivieren</li>
-        <li>stopScheduleValve n m - Zeitplan f&uuml;r Ventil n anhalten f&uuml;r m Stunden (Default: 2038-01-18T00:00:00.000Z,
-            durch Gardena-App als "dauerhaft" interpretiert)</li>
+        <li>stopScheduleValve n m - Zeitplan f&uuml;r Ventil n anhalten f&uuml;r m Stunden (Default: 2038-01-18T00:00:00.000Z durch Gardena-App als "dauerhaft" interpretiert)</li>
         <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = sensor)</b>
     <ul>
-        <li>refresh temperature|humidity|light - Sensorwert f&uuml;r Temperatur, Feuchtigkeit oder Helligkeit aktualisieren
-        </li>
+        <li>refresh temperature|humidity|light - Sensorwert f&uuml;r Temperatur, Feuchtigkeit oder Helligkeit aktualisieren</li>
         <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
@@ -2264,9 +2425,15 @@ sub SetPredefinedStartPoints {
     <br><br>
     <b>set (model = electronic_pressure_pump)</b>
     <ul>
-        <li>(tbd.)</li>
+        <li>manualOverride n - Bew&auml;sserungdauer in Minuten</li>
+        <li>cancelOverride - (Manuelle) Bew&auml;sserung stoppen</li>
+        <li>operating_mode -Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
+        <li>leakage_detection - Steuert die Lekage-Erkennung.</br> Hierdurch wird eine Pumpenabschaltung erreicht, sollte die Pumpe unkontrollierten Wasserverlust feststellen.  watering|washing_machine|domestic_water_supply|off</li>
+        <li>turn_on_pressure - Einschaltdruck 2.0 - 3.0 Steuert den Einschaltdruck in Scheduled und Automatic Mode. Fällt der Druck bei der Bewässerung unter diese wert, startet die Pumpe, ist der Wert dauerhaft über diesem Wert und es finden kein Durchfluss statt, geht die Pumpe in Standby</li>
+        <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
+        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
-</ul>
+
 
 =end html_DE
 
