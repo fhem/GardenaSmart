@@ -1481,10 +1481,10 @@ sub SetPredefinedStartPoints {
   <li><a id="GardenaSmartDevice-set-stopSchedule">stopSchedule</a> n - disable schedule for n hours (Default: 2038-01-18T00:00:00.000Z, Gardena App reads it as
             "permanently")</li>
    
-  <li><a id="GardenaSmartDevice-set-operating_mode">operating_mode</a> - Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
-  <li><a id="GardenaSmartDevice-set-leakage_detection">leakage_detection</a> - Steuert die Lekage-Erkennung.</br> Hierdurch wird eine Pumpenabschaltung erreicht, sollte die Pumpe unkontrollierten Wasserverlust feststellen.  watering|washing_machine|domestic_water_supply|off</li>
-  <li><a id="GardenaSmartDevice-set-turn_on_pressure">turn_on_pressure</a> - Einschaltdruck 2.0 - 3.0 Steuert den Einschaltdruck in Scheduled und Automatic Mode. Fällt der Druck bei der Bewässerung unter diese wert, startet die Pumpe, ist der Wert dauerhaft über diesem Wert und es finden kein Durchfluss statt, geht die Pumpe in Standby</li>
-      
+  <li><a id="GardenaSmartDevice-set-operating_mode">operating_mode</a> - Managing operation mode. Timed operation is used in combination with schedules or "manualOverride". Automatic operation leaves pump active and activates irrigation depending on start-up pressure.   automatic|scheduled </li>
+  <li><a id="GardenaSmartDevice-set-leakage_detection">leakage_detection</a> - Manages leakage detection.</br> Pump will be deactivated if it detects irregular loss of water. watering|washing_machine|domestic_water_supply|off</li>
+  <li><a id="GardenaSmartDevice-set-turn_on_pressure">turn_on_pressure</a> - Start-up pressure 2.0 - 3.0 Manages start-up pressure in scheduled and automatic mode. If pressure falls below this setting, pump will start. If pressure stays above this setting and there isn't any water flow, pump will activate standby.</li>
+       
   <li><a id="GardenaSmartDevice-set-cancelOverrideValve1">cancelOverrideValve1</a> - stop (manual) watering for valve 1</li>
   <li><a id="GardenaSmartDevice-set-cancelOverrideValve2">cancelOverrideValve2</a> - stop (manual) watering for valve 2</li>
   <li><a id="GardenaSmartDevice-set-cancelOverrideValve3">cancelOverrideValve3</a> - stop (manual) watering for valve 3</li>
