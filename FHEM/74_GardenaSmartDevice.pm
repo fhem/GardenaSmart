@@ -1476,15 +1476,15 @@ sub SetPredefinedStartPoints {
   <li><a id="GardenaSmartDevice-set-cancelOverride">cancelOverride</a> - stop (manual) watering</li>
   <li><a id="GardenaSmartDevice-set-manualButtonTime">manualButtonTime</a> n - set watering time for manual button (0 disables button)</li>
   <li><a id="GardenaSmartDevice-set-manualOverride">manualOverride</a> n - manual watering for n minutes</li>
-  <li><a id="GardenaSmartDevice-set-resetValveErrors">resetValveErrors</a> - Vreset valve errormessage</li>
+  <li><a id="GardenaSmartDevice-set-resetValveErrors">resetValveErrors</a> - reset valve errormessage</li>
   <li><a id="GardenaSmartDevice-set-resumeSchedule">resumeSchedule</a> - enable schedule</li>
   <li><a id="GardenaSmartDevice-set-stopSchedule">stopSchedule</a> n - disable schedule for n hours (Default: 2038-01-18T00:00:00.000Z, Gardena App reads it as
             "permanently")</li>
    
-  <li><a id="GardenaSmartDevice-set-operating_mode">operating_mode</a> -Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
-  <li><a id="GardenaSmartDevice-set-leakage_detection">leakage_detection</a> - Steuert die Lekage-Erkennung.</br> Hierdurch wird eine Pumpenabschaltung erreicht, sollte die Pumpe unkontrollierten Wasserverlust feststellen.  watering|washing_machine|domestic_water_supply|off</li>
-  <li><a id="GardenaSmartDevice-set-turn_on_pressure">turn_on_pressure</a> - Einschaltdruck 2.0 - 3.0 Steuert den Einschaltdruck in Scheduled und Automatic Mode. Fällt der Druck bei der Bewässerung unter diese wert, startet die Pumpe, ist der Wert dauerhaft über diesem Wert und es finden kein Durchfluss statt, geht die Pumpe in Standby</li>
-      
+  <li><a id="GardenaSmartDevice-set-operating_mode">operating_mode</a> - Managing operation mode. Timed operation is used in combination with schedules or "manualOverride". Automatic operation leaves pump active and activates irrigation depending on start-up pressure.   automatic|scheduled </li>
+  <li><a id="GardenaSmartDevice-set-leakage_detection">leakage_detection</a> - Manages leakage detection.</br> Pump will be deactivated if it detects irregular loss of water. watering|washing_machine|domestic_water_supply|off</li>
+  <li><a id="GardenaSmartDevice-set-turn_on_pressure">turn_on_pressure</a> - Start-up pressure 2.0 - 3.0 Manages start-up pressure in scheduled and automatic mode. If pressure falls below this setting, pump will start. If pressure stays above this setting and there isn't any water flow, pump will activate standby.</li>
+       
   <li><a id="GardenaSmartDevice-set-cancelOverrideValve1">cancelOverrideValve1</a> - stop (manual) watering for valve 1</li>
   <li><a id="GardenaSmartDevice-set-cancelOverrideValve2">cancelOverrideValve2</a> - stop (manual) watering for valve 2</li>
   <li><a id="GardenaSmartDevice-set-cancelOverrideValve3">cancelOverrideValve3</a> - stop (manual) watering for valve 3</li>
@@ -1502,7 +1502,7 @@ sub SetPredefinedStartPoints {
   <li><a id="GardenaSmartDevice-set-stopScheduleValve">stopScheduleValve</a> n m - stop irrigation schedule for valve n  (Default: 2038-01-18T00:00:00.000Z, Gardena
             App reads it as "permanently")</li>
   <!-- ALL -->
-  <li><a id="GardenaSmartDevice-set-winter_mode">winter_mode</a> awake|hibernate -  disable or enable winter mode</li>
+  <li><a id="GardenaSmartDevice-set-winter_mode">winter_mode</a> awake|hibernate -  enable or disable winter mode</li>
   <!-- SENSOR -->
   <li><a id="GardenaSmartDevice-set-refresh">refresh</a> temperature|humidity|light*
   <br>
@@ -1642,7 +1642,7 @@ sub SetPredefinedStartPoints {
                 <li>ok_cutting_timer_overridden</li>
                 <li>parked_autotimer</li>
                 <li>parked_daily_limit_reached</li>
-                <li>hibernate - winter mode)</li>
+                <li>hibernate - winter mode</li>
             </ul>
         </li>
         <li>winter_mode - status of winter mode (awake/hibernate)</li>    
@@ -1846,7 +1846,7 @@ sub SetPredefinedStartPoints {
             <li>set NAME startpoint enable 1</li>
             <li>set NAME startpoint disable 3 enable 1</li>
         </ul>
-        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+        <li>winter_mode hibernate|awake - enable or disable winter mode</li>
     </ul>
     <br><br>
     <b>set (model = watering_computer)</b>
@@ -1858,7 +1858,7 @@ sub SetPredefinedStartPoints {
         <li>resumeSchedule - enable schedule</li>
         <li>stopSchedule n - disable schedule for n hours (Default: 2038-01-18T00:00:00.000Z, Gardena App reads it as
             "permanently")</li>
-        <li>winter_mode awake|hibernate - disable or enable winter mode</li>
+        <li>winter_mode hibernate|awake - enable or disable winter mode</li>
     </ul>
     <br><br>
     <b>set (model = ic24)</b>
@@ -1880,19 +1880,19 @@ sub SetPredefinedStartPoints {
         <li>resumeScheduleValve n - (re)start irrigation schedule for valve n</li>
         <li>stopScheduleValve n m - stop irrigation schedule for valve n  (Default: 2038-01-18T00:00:00.000Z, Gardena
             App reads it as "permanently")</li>
-        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+        <li>winter_mode hibernate|awake - enable or disable winter mode</li>
     </ul>
     <br><br>
     <b>set (model = sensor)</b>
     <ul>
         <li>refresh temperature|humidity|light - refresh sensor reading for temperature, humidity or daylight</li>
-        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+        <li>winter_mode hibernate|awake - enable or disable winter mode</li>
     </ul>
     <br><br>
     <b>set (model = sensor2)</b>
     <ul>
         <li>refresh temperature|humidity - refresh sensor reading for temperature or humidity</li>
-        <li>winter_mode awake|hibernate - Disable or enable winter mode</li>
+        <li>winter_mode hibernate|awake - enable or disable winter mode</li>
     </ul>
     <br><br>
     <b>set (model = power)</b>
@@ -2341,7 +2341,7 @@ sub SetPredefinedStartPoints {
       <li>outlet_temperature-temperature_min - tbd. 0</li>
       
       <li><strong>Pumpen-Konfiguration</strong></li>
-      <li>operating_mode  - Modus der Pumpe</li>
+      <li>operating_mode - Modus der Pumpe</li>
       
       <li><strong>Pumpenstatus aktuell</strong></li>
       <li>pump-mode - Modus der Pumpe</li>
@@ -2371,7 +2371,7 @@ sub SetPredefinedStartPoints {
         <li>set NAME startpoint enable 1</li>
         <li>set NAME startpoint disable 3 enable 1</li>
       </ul>
-      <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+      <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = watering_computer)</b> 
@@ -2382,7 +2382,7 @@ sub SetPredefinedStartPoints {
         <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
         <li>resumeSchedule - Zeitplan wieder aktivieren</li>
         <li>stopSchedule n - Zeitplan anhalten f&uuml;r n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als "dauerhaft" interpretiert)</li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+        <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = ic24)</b> 
@@ -2403,19 +2403,19 @@ sub SetPredefinedStartPoints {
         <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
         <li>resumeScheduleValve n - Zeitplan f&uuml;r Ventil n wieder aktivieren</li>
         <li>stopScheduleValve n m - Zeitplan f&uuml;r Ventil n anhalten f&uuml;r m Stunden (Default: 2038-01-18T00:00:00.000Z durch Gardena-App als "dauerhaft" interpretiert)</li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+        <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = sensor)</b>
     <ul>
         <li>refresh temperature|humidity|light - Sensorwert f&uuml;r Temperatur, Feuchtigkeit oder Helligkeit aktualisieren</li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+        <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = sensor2)</b>
     <ul>
         <li>refresh temperature|humidity - Sensorwert f&uuml;r Temperatur oder Feuchtigkeit aktualisieren</li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+        <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
     <b>set (model = power)</b>
@@ -2427,11 +2427,11 @@ sub SetPredefinedStartPoints {
     <ul>
         <li>manualOverride n - Bew&auml;sserungdauer in Minuten</li>
         <li>cancelOverride - (Manuelle) Bew&auml;sserung stoppen</li>
-        <li>operating_mode -Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
+        <li>operating_mode - Steuert den Operation Mode. Zeitgesteuert wird in Kombination mit dem Wochenzeitplan oder mit "manualOverride" genutzt, automatisch bedeutet, dass die Pumpe immer aktiv ist und die Bewässerung abhängig vom Wert "Einschaltdruck" startet. automatic|scheduled </li>
         <li>leakage_detection - Steuert die Lekage-Erkennung.</br> Hierdurch wird eine Pumpenabschaltung erreicht, sollte die Pumpe unkontrollierten Wasserverlust feststellen.  watering|washing_machine|domestic_water_supply|off</li>
         <li>turn_on_pressure - Einschaltdruck 2.0 - 3.0 Steuert den Einschaltdruck in Scheduled und Automatic Mode. Fällt der Druck bei der Bewässerung unter diese wert, startet die Pumpe, ist der Wert dauerhaft über diesem Wert und es finden kein Durchfluss statt, geht die Pumpe in Standby</li>
         <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
-        <li>winter_mode awake|hibernate - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+        <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
 
 
