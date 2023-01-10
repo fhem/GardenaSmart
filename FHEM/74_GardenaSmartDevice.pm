@@ -150,7 +150,7 @@ BEGIN {
 GP_Export(
     qw(
       Initialize
-      )
+    )
 );
 
 sub Initialize {
@@ -197,21 +197,21 @@ sub Define {
     $hash->{helper}{eco_mode_id}               = '';
     $hash->{helper}{button_config_time_id}     = '';
     $hash->{helper}{winter_mode_id}            = '';
-    # Electroni Pressure Pump
-    $hash->{helper}{operating_mode_id}         = '';
-    $hash->{helper}{leakage_detection_id}      = '';
-    $hash->{helper}{turn_on_pressure_id}       = '';
 
+    # Electroni Pressure Pump
+    $hash->{helper}{operating_mode_id}    = '';
+    $hash->{helper}{leakage_detection_id} = '';
+    $hash->{helper}{turn_on_pressure_id}  = '';
 
     $hash->{helper}{_id} = '';
 
     # IrrigationControl valve control max 6
-    $hash->{helper}{schedules_paused_until_1_id}  = '';
-    $hash->{helper}{schedules_paused_until_2_id}  = '';
-    $hash->{helper}{schedules_paused_until_3_id}  = '';
-    $hash->{helper}{schedules_paused_until_4_id}  = '';
-    $hash->{helper}{schedules_paused_until_5_id}  = '';
-    $hash->{helper}{schedules_paused_until_6_id}  = '';
+    $hash->{helper}{schedules_paused_until_1_id} = '';
+    $hash->{helper}{schedules_paused_until_2_id} = '';
+    $hash->{helper}{schedules_paused_until_3_id} = '';
+    $hash->{helper}{schedules_paused_until_4_id} = '';
+    $hash->{helper}{schedules_paused_until_5_id} = '';
+    $hash->{helper}{schedules_paused_until_6_id} = '';
 
     CommandAttr( undef,
         "$name IODev $modules{GardenaSmartBridge}{defptr}{BRIDGE}->{NAME}" )
@@ -287,9 +287,11 @@ sub Set {
     my $service_id;
     my $mainboard_version =
       ReadingsVal( $name, 'mower_type-mainboard_version', 0.0 );
-    
-    my ($Sekunden, $Minuten, $Stunden, $Monatstag, $Monat,
-        $Jahr, $Wochentag, $Jahrestag, $Sommerzeit) = localtime(time);
+
+    my (
+        $Sekunden, $Minuten,   $Stunden,   $Monatstag, $Monat,
+        $Jahr,     $Wochentag, $Jahrestag, $Sommerzeit
+    ) = localtime(time);
 
     my $timezone_offset = $Sommerzeit ? 0 : ( Time::Piece->new )->tzoffset;
 
@@ -485,40 +487,45 @@ sub Set {
           . $hash->{DEVICEID} . '"}';
     }
     ### Watering_pressure_pump
-    elsif ( lc $cmd eq 'operating_mode') {
-      my $op_mode = $aArg->[0];
-      $payload = '"settings":{"name":"operating_mode",'
-                 .'"value":"'.$op_mode.'",'
-                 .'"device":"'
-                 . $hash->{DEVICEID}.'"}';
-      $abilities = 'watering_pressure_pump_settings';
-      $service_id = $hash->{helper}->{ 'operating_mode_id' };
+    elsif ( lc $cmd eq 'operating_mode' ) {
+        my $op_mode = $aArg->[0];
+        $payload =
+            '"settings":{"name":"operating_mode",'
+          . '"value":"'
+          . $op_mode . '",'
+          . '"device":"'
+          . $hash->{DEVICEID} . '"}';
+        $abilities  = 'watering_pressure_pump_settings';
+        $service_id = $hash->{helper}->{'operating_mode_id'};
     }
-    elsif ( lc $cmd eq 'leakage_detection') {
-      my $leakdetection_mode = $aArg->[0];
-      $payload = '"settings":{"name":"leakage_detection",'
-                 .'"value":"'.$leakdetection_mode.'",'
-                 .'"device":"'
-                 . $hash->{DEVICEID}.'"}';
-      $abilities = 'watering_pressure_pump_settings';
-      $service_id = $hash->{helper}->{ 'leakage_detection_id' };
+    elsif ( lc $cmd eq 'leakage_detection' ) {
+        my $leakdetection_mode = $aArg->[0];
+        $payload =
+            '"settings":{"name":"leakage_detection",'
+          . '"value":"'
+          . $leakdetection_mode . '",'
+          . '"device":"'
+          . $hash->{DEVICEID} . '"}';
+        $abilities  = 'watering_pressure_pump_settings';
+        $service_id = $hash->{helper}->{'leakage_detection_id'};
     }
-    elsif ( lc $cmd eq 'turn_on_pressure') {
-      my $turnonpressure = $aArg->[0];
-      $payload = '"settings":{"name":"turn_on_pressure",'
-                 .'"value":"'.$turnonpressure.'",'
-                 .'"device":"'
-                 . $hash->{DEVICEID}.'"}';
-      $abilities = 'watering_pressure_pump_settings';
-      $service_id = $hash->{helper}->{ 'turn_on_pressure_id' };
+    elsif ( lc $cmd eq 'turn_on_pressure' ) {
+        my $turnonpressure = $aArg->[0];
+        $payload =
+            '"settings":{"name":"turn_on_pressure",'
+          . '"value":"'
+          . $turnonpressure . '",'
+          . '"device":"'
+          . $hash->{DEVICEID} . '"}';
+        $abilities  = 'watering_pressure_pump_settings';
+        $service_id = $hash->{helper}->{'turn_on_pressure_id'};
     }
-    elsif ( lc $cmd eq 'resetvalveerrors') {
-      $payload = '"name":"reset_valve_errors",'
-                 .' "parameters": {}';
-      $abilities = 'error';
+    elsif ( lc $cmd eq 'resetvalveerrors' ) {
+        $payload   = '"name":"reset_valve_errors",' . ' "parameters": {}';
+        $abilities = 'error';
     }
 
-    ### Sensors 
+    ### Sensors
     elsif ( lc $cmd eq 'refresh' ) {
 
         my $sensname = $aArg->[0];
@@ -566,24 +573,32 @@ sub Set {
 'manualOverride:slider,1,1,59 cancelOverride:noArg resumeSchedule:noArg stopSchedule manualButtonTime:slider,0,2,100 resetValveErrors:noArg'
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
 
-
-        $list .= 'manualOverride:slider,1,1,90 cancelOverride:noArg operating_mode:automatic,scheduled leakage_detection:watering,washing_machine,domestic_water_supply,off turn_on_pressure:slider,2,0.2,3.0,1 resetValveErrors:noArg'
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' );
+        $list .=
+'manualOverride:slider,1,1,90 cancelOverride:noArg operating_mode:automatic,scheduled leakage_detection:watering,washing_machine,domestic_water_supply,off turn_on_pressure:slider,2,0.2,3.0,1 resetValveErrors:noArg'
+          if ( AttrVal( $name, 'model', 'unknown' ) eq
+            'electronic_pressure_pump' );
 
         $list .=
-'closeAllValves:noArg resetValveErrors:noArg stopScheduleValve:select,'.ReadingsVal( $name, 'ic24-valves_connected', '1' ).' resumeScheduleValve:select,'.ReadingsVal( $name, 'ic24-valves_connected', '1' )
+'closeAllValves:noArg resetValveErrors:noArg stopScheduleValve:select,'
+          . ReadingsVal( $name, 'ic24-valves_connected', '1' )
+          . ' resumeScheduleValve:select,'
+          . ReadingsVal( $name, 'ic24-valves_connected', '1' )
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
-        
-        foreach my $valve (split(',', ReadingsVal( $name, 'ic24-valves_connected', '1'))) {
-          $list .= ' manualDurationValve'.$valve.':slider,1,1,90 '
-            if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+
+        foreach my $valve (
+            split( ',', ReadingsVal( $name, 'ic24-valves_connected', '1' ) ) )
+        {
+            $list .= ' manualDurationValve' . $valve . ':slider,1,1,90 '
+              if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
         }
-        
-        foreach my $valve (split(',', ReadingsVal( $name, 'ic24-valves_connected', '1'))) {
-          $list .= ' cancelOverrideValve'.$valve.':noArg '
-            if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+
+        foreach my $valve (
+            split( ',', ReadingsVal( $name, 'ic24-valves_connected', '1' ) ) )
+        {
+            $list .= ' cancelOverrideValve' . $valve . ':noArg '
+              if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
         }
-        
+
         $list .= 'refresh:temperature,humidity'
           if ( AttrVal( $name, 'model', 'unknown' ) =~ /sensor.?/ );
 
@@ -660,10 +675,10 @@ sub WriteReadings {
     my $hash        = shift;
     my $decode_json = shift;
 
-    my $name      = $hash->{NAME};
-    my $abilities = scalar( @{ $decode_json->{abilities} } );
-    my $settings  = scalar( @{ $decode_json->{settings} } );
-    my $scheduled_events  = scalar( @{ $decode_json->{scheduled_events} } );
+    my $name             = $hash->{NAME};
+    my $abilities        = scalar( @{ $decode_json->{abilities} } );
+    my $settings         = scalar( @{ $decode_json->{settings} } );
+    my $scheduled_events = scalar( @{ $decode_json->{scheduled_events} } );
 
     readingsBeginUpdate($hash);
 
@@ -708,9 +723,13 @@ sub WriteReadings {
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name},
-                      (defined ($propertie->{value} ) eq '') ? RigReadingsValue( $hash, 'n/a') : "".RigReadingsValue( $hash, $propertie->{value} ) # cast all data to string with ""
+                    ( defined( $propertie->{value} ) eq '' )
+                    ? RigReadingsValue( $hash, 'n/a' )
+                    : ""
+                      . RigReadingsValue( $hash,
+                        $propertie->{value} )  # cast all data to string with ""
                   )
-                  if ( exists( $propertie->{value} ) 
+                  if ( exists( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'radio-quality'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
@@ -735,7 +754,9 @@ sub WriteReadings {
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name},
-                    "".RigReadingsValue( $hash, $propertie->{value} )  # cast all data to string with ""
+                    ""
+                      . RigReadingsValue( $hash,
+                        $propertie->{value} )  # cast all data to string with ""
                   )
                   if (
                     defined( $propertie->{value} )
@@ -762,7 +783,8 @@ sub WriteReadings {
                     $decode_json->{abilities}[$abilities]{name} . '-'
                       . $propertie->{name}
                       . '_timestamp',
-                    "".Time::Piece->strptime(
+                    ""
+                      . Time::Piece->strptime(
                         RigReadingsValue( $hash, $propertie->{timestamp} ),
                         "%Y-%m-%d %H:%M:%S" )->strftime('%s')
 
@@ -794,131 +816,176 @@ sub WriteReadings {
                     . $propertie->{name} eq 'ic24-valves_master_config' );
 
                 if ( ref( $propertie->{value} ) eq "HASH" ) {
-                    my $sub_state = 0; my $sub_value = 0;
+                    my $sub_state = 0;
+                    my $sub_value = 0;
                     while ( my ( $r, $v ) = each %{ $propertie->{value} } ) {
-                      if ( ref( $v ) ne "HASH" ) {
+                        if ( ref($v) ne "HASH" ) {
                             readingsBulkUpdateIfChanged(
-                              $hash,
-                              $decode_json->{abilities}[$abilities]{name} . '-'
-                                . $propertie->{name} . '_'
-                                . $r,
+                                $hash,
+                                $decode_json->{abilities}[$abilities]{name}
+                                  . '-'
+                                  . $propertie->{name} . '_'
+                                  . $r,
                                 RigReadingsValue( $hash, $v )
                             );
-                        } else {
-                          while ( my ( $i_r, $i_v ) = each %{ $v } ) {
-                            readingsBulkUpdateIfChanged(
-                              $hash,
-                              $decode_json->{abilities}[$abilities]{name} . '-'
-                              . $propertie->{name} . '_'
-                              . $r . '_' . $i_r,
-                              RigReadingsValue( $hash, $i_v )
-                            );
-                          }
+                        }
+                        else {
+                            while ( my ( $i_r, $i_v ) = each %{$v} ) {
+                                readingsBulkUpdateIfChanged(
+                                    $hash,
+                                    $decode_json->{abilities}[$abilities]{name}
+                                      . '-'
+                                      . $propertie->{name} . '_'
+                                      . $r . '_'
+                                      . $i_r,
+                                    RigReadingsValue( $hash, $i_v )
+                                );
+                            }
                         }
                     }
                 }
-                 # ic24 and other watering devices calc irrigation left in sec
-                 readingsBulkUpdateIfChanged(
+
+                # ic24 and other watering devices calc irrigation left in sec
+                readingsBulkUpdateIfChanged(
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
-                     . $propertie->{name} 
-                     . '_irrigation_left', 
-                      ( $propertie->{value}{duration} > 0 ) ? (Time::Piece::localtime->strptime(
-                        RigReadingsValue($hash, $propertie->{timestamp}), "%Y-%m-%d %H:%M:%S")
-                        + ($propertie->{value}{duration} + 3 ) - Time::Piece::localtime->new) : 0
+                      . $propertie->{name}
+                      . '_irrigation_left',
+                    ( $propertie->{value}{duration} > 0 )
+                    ? (
+                        Time::Piece::localtime->strptime(
+                            RigReadingsValue( $hash, $propertie->{timestamp} ),
+                            "%Y-%m-%d %H:%M:%S"
+                          ) +
+                          ( $propertie->{value}{duration} + 3 ) -
+                          Time::Piece::localtime->new
+                      )
+                    : 0
                   )
                   if ( defined( $propertie->{value} )
-                    && $decode_json->{abilities}[$abilities]{name} eq 'watering'
-                  );
+                    && $decode_json->{abilities}[$abilities]{name} eq
+                    'watering' );
             }
         }
 
         $abilities--;
     } while ( $abilities >= 0 );
 
-
-    if ( 
+    if (
         exists( $decode_json->{scheduled_events} )
-      #  && scalar ($decode_json->{scheduled_events} ) > 0
-        && ref ($decode_json->{scheduled_events}) eq 'ARRAY'
-        && AttrVal( $name, 'model', 'unknown' ) !~ /sensor.?/ ) {
-        readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_events_count',
-                                        scalar( @{$decode_json->{scheduled_events} } ) );
-        my $valve_id =1; my $event_id = 0; # ic24 [1..6] | wc, pump [1]
+
+        #  && scalar ($decode_json->{scheduled_events} ) > 0
+        && ref( $decode_json->{scheduled_events} ) eq 'ARRAY'
+        && AttrVal( $name, 'model', 'unknown' ) !~ /sensor.?/
+      )
+    {
+        readingsBulkUpdateIfChanged(
+            $hash,
+            'scheduling-schedules_events_count',
+            scalar( @{ $decode_json->{scheduled_events} } )
+        );
+        my $valve_id = 1;
+        my $event_id = 0;    # ic24 [1..6] | wc, pump [1]
 
         ##
         # validiere schedules
-        my @soll = ();my @ist=(); my @tmp_ist=();
+        my @soll    = ();
+        my @ist     = ();
+        my @tmp_ist = ();
         for my $cloud_schedules ( @{ $decode_json->{scheduled_events} } ) {
-          while ( my ( $r, $v ) = each  %{ $cloud_schedules } ) {
-            push @soll, $v if $r eq 'id'; # cloud hat  SOLL
-          }
+            while ( my ( $r, $v ) = each %{$cloud_schedules} ) {
+                push @soll, $v if $r eq 'id';    # cloud hat  SOLL
+            }
         }
 
         foreach my $dev_schedules ( sort keys %{ $hash->{READINGS} } ) {
-          my $dev_reading = ReadingsVal( $name, $dev_schedules, "error" );
-          push @ist, $dev_reading if $dev_schedules =~ /schedule.*\d_id/; # push reading _id
-          push @ist, $1 if $dev_schedules =~ /schedule.*_(\d)_id/; # push readigs d from x_id
-          
-          Log3 $name, 5, "[DEBUG] $name - Schedule - Key ist : $dev_schedules ";
-          Log3 $name, 5, "[DEBUG] $name - Schedule - ID FOUND $dev_reading" if $dev_schedules =~ /schedule.*_\d_id/; # cloud hat  SOLL
-        } 
-        #Log3 $name, 5, "[DEBUG] Cloud:".Dumper(@soll) . "- Internal:". Dumper(@ist);
+            my $dev_reading = ReadingsVal( $name, $dev_schedules, "error" );
+            push @ist, $dev_reading
+              if $dev_schedules =~ /schedule.*\d_id/;    # push reading _id
+            push @ist, $1
+              if $dev_schedules =~
+              /schedule.*_(\d)_id/;    # push readigs d from x_id
+
+            Log3 $name, 5,
+              "[DEBUG] $name - Schedule - Key ist : $dev_schedules ";
+            Log3 $name, 5, "[DEBUG] $name - Schedule - ID FOUND $dev_reading"
+              if $dev_schedules =~ /schedule.*_\d_id/;    # cloud hat  SOLL
+        }
+
+   #Log3 $name, 5, "[DEBUG] Cloud:".Dumper(@soll) . "- Internal:". Dumper(@ist);
 
         ## delete only if cloud != (ist/2)
-        if ((scalar(@soll) != scalar(@ist/2)
-         && scalar(@soll) > 0
-         && scalar(@ist) > 0)
-         || (scalar(@ist) eq 2 && scalar(@soll) eq 1 )){
-          @tmp_ist = @ist;
-          while(my $element = shift(@soll)) {
-            my $schedule_step_int = 0;
+        if (
+            (
+                   scalar(@soll) != scalar( @ist / 2 )
+                && scalar(@soll) > 0
+                && scalar(@ist) > 0
+            )
+            || ( scalar(@ist) eq 2 && scalar(@soll) eq 1 )
+          )
+        {
+            @tmp_ist = @ist;
+            while ( my $element = shift(@soll) ) {
+                my $schedule_step_int = 0;
 
-            foreach my $sist (@tmp_ist) {
-              my $step = scalar(@tmp_ist) > 1 ? 2:1;
-              if ($element eq $sist){
-                splice(@ist, $schedule_step_int, $step); # more than 2 items del them, otherwise 1
-              }
-              $schedule_step_int += $step;
-            }
-          }
-        }
-        #Log3 $name, 5, "[DEBUG] $name - Schedule - Rest  ". Dumper(@ist);
-        # delete only if count soll != count ist. cos the will be overwritten 
-        if (scalar(@ist) > 0
-          && scalar(@soll) != scalar(@ist/2) ){
-          while (my $old_schedule_id = shift(@ist)) {
-            if (length($old_schedule_id) == 1) {
-              foreach (keys %{$hash->{READINGS}}) {
-                delete $hash->{READINGS}->{$_} if($_ =~ /scheduling-schedules_event_$old_schedule_id.*/);
+                foreach my $sist (@tmp_ist) {
+                    my $step = scalar(@tmp_ist) > 1 ? 2 : 1;
+                    if ( $element eq $sist ) {
+                        splice( @ist, $schedule_step_int, $step )
+                          ;    # more than 2 items del them, otherwise 1
+                    }
+                    $schedule_step_int += $step;
                 }
-            }# fi
-            Log3 $name, 5, "[DEBUG] - $name : deletereading scheduling-schedules_event_$old_schedule_id.*"  if length($old_schedule_id) == 1;
-          }
+            }
+        }
+
+        #Log3 $name, 5, "[DEBUG] $name - Schedule - Rest  ". Dumper(@ist);
+        # delete only if count soll != count ist. cos the will be overwritten
+        if (   scalar(@ist) > 0
+            && scalar(@soll) != scalar( @ist / 2 ) )
+        {
+            while ( my $old_schedule_id = shift(@ist) ) {
+                if ( length($old_schedule_id) == 1 ) {
+                    foreach ( keys %{ $hash->{READINGS} } ) {
+                        delete $hash->{READINGS}->{$_}
+                          if ( $_ =~
+                            /scheduling-schedules_event_$old_schedule_id.*/ );
+                    }
+                }    # fi
+                Log3 $name, 5,
+"[DEBUG] - $name : deletereading scheduling-schedules_event_$old_schedule_id.*"
+                  if length($old_schedule_id) == 1;
+            }
         }
         #### /validiere schedules
 
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
-          $valve_id = $event_schedules->{valve_id} if ( exists($event_schedules->{valve_id} ) ); #ic24
-          $event_id++; # event id
-          
-          while ( my ( $r, $v ) = each  %{ $event_schedules } ) {
-            readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_'
-                                              . $event_id
-                                              #. ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '') 
-                                              . '_'
-                                              . $r,
-                                              $v) if (ref($v) ne 'HASH' );
-            readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_event_'
-                                              . $event_id
-                                              #. ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '')
-                                              . '_'
-                                              . $v->{type},
-                                              join(',', @ { $v->{weekdays}}) ) if (ref($v) eq 'HASH' );
-          };
-        };
-    
-    }; # fi scheduled_events
+            $valve_id = $event_schedules->{valve_id}
+              if ( exists( $event_schedules->{valve_id} ) );    #ic24
+            $event_id++;                                        # event id
+
+            while ( my ( $r, $v ) = each %{$event_schedules} ) {
+                readingsBulkUpdateIfChanged(
+                    $hash, 'scheduling-schedules_event_' . $event_id
+
+#. ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '')
+                      . '_'
+                      . $r,
+                    $v
+                ) if ( ref($v) ne 'HASH' );
+                readingsBulkUpdateIfChanged(
+                    $hash, 'scheduling-schedules_event_' . $event_id
+
+#. ( ReadingsVal($name,'error-valve_error_1_valve_id','') ne '' ? "_valve_$valve_id" : '')
+                      . '_'
+                      . $v->{type},
+                    join( ',', @{ $v->{weekdays} } )
+                ) if ( ref($v) eq 'HASH' );
+            }
+        }
+
+    }
+    ;    # fi scheduled_events
 
     my $winter_mode;
 
@@ -932,10 +999,12 @@ sub WriteReadings {
             && ( $decode_json->{settings}[$settings]{name} =~
                    /schedules_paused_until_?\d?$/
                 || $decode_json->{settings}[$settings]{name} eq 'eco_mode'
-                || $decode_json->{settings}[$settings]{name} eq 'winter_mode' 
-                || $decode_json->{settings}[$settings]{name} eq 'operating_mode' 
-                || $decode_json->{settings}[$settings]{name} eq 'leakage_detection' 
-                || $decode_json->{settings}[$settings]{name} eq 'turn_on_pressure' )
+                || $decode_json->{settings}[$settings]{name} eq 'winter_mode'
+                || $decode_json->{settings}[$settings]{name} eq 'operating_mode'
+                || $decode_json->{settings}[$settings]{name} eq
+                'leakage_detection'
+                || $decode_json->{settings}[$settings]{name} eq
+                'turn_on_pressure' )
           )
         {
             if ( $hash->{helper}
@@ -946,29 +1015,49 @@ sub WriteReadings {
                   { $decode_json->{settings}[$settings]{name} . '_id' } =
                   $decode_json->{settings}[$settings]{id};
             }
+
             # check watering controler single schedules pause until
-            if ( $decode_json->{settings}[$settings]{name} eq 'schedules_paused_until' ) {
-              readingsBulkUpdateIfChanged( $hash, 'scheduling-schedules_paused_until',
-                    $decode_json->{settings}[$settings]{value} );
+            if ( $decode_json->{settings}[$settings]{name} eq
+                'schedules_paused_until' )
+            {
+                readingsBulkUpdateIfChanged(
+                    $hash,
+                    'scheduling-schedules_paused_until',
+                    $decode_json->{settings}[$settings]{value}
+                );
             }
             #####
             #ic24 schedules pause until
-            if ($decode_json->{settings}[$settings]{name} =~ /schedules_paused_until_?(\d)?$/) {
-              #my $ventil = substr($decode_json->{settings}[$settings]{name}, -1); # => 1 - 6
-              # check if empty, clear scheduling-scheduled_watering_next_start_x
-              readingsBulkUpdateIfChanged( $hash, 'scheduling-'.$decode_json->{settings}[$settings]{name},
-                                  $decode_json->{settings}[$settings]{value} );
-              # CommandAttr( undef, $name . " scheduling-scheduled_watering_next_start_")  if ($decode_json->{settings}[$settings]{value} eq '' )
+            if ( $decode_json->{settings}[$settings]{name} =~
+                /schedules_paused_until_?(\d)?$/ )
+            {
+ #my $ventil = substr($decode_json->{settings}[$settings]{name}, -1); # => 1 - 6
+ # check if empty, clear scheduling-scheduled_watering_next_start_x
+                readingsBulkUpdateIfChanged(
+                    $hash,
+                    'scheduling-' . $decode_json->{settings}[$settings]{name},
+                    $decode_json->{settings}[$settings]{value}
+                );
+
+# CommandAttr( undef, $name . " scheduling-scheduled_watering_next_start_")  if ($decode_json->{settings}[$settings]{value} eq '' )
             }
-#TODO: Readings und Setter ?!
+
+            #TODO: Readings und Setter ?!
             # save electronid pressure pump settings as readings
-            if ( $decode_json->{settings}[$settings]{name} eq 'operating_mode' 
-                || $decode_json->{settings}[$settings]{name} eq 'leakage_detection' 
-                || $decode_json->{settings}[$settings]{name} eq 'turn_on_pressure' ) {
-                readingsBulkUpdateIfChanged( $hash, $decode_json->{settings}[$settings]{name},
-                    $decode_json->{settings}[$settings]{value} );
+            if (   $decode_json->{settings}[$settings]{name} eq 'operating_mode'
+                || $decode_json->{settings}[$settings]{name} eq
+                'leakage_detection'
+                || $decode_json->{settings}[$settings]{name} eq
+                'turn_on_pressure' )
+            {
+                readingsBulkUpdateIfChanged(
+                    $hash,
+                    $decode_json->{settings}[$settings]{name},
+                    $decode_json->{settings}[$settings]{value}
+                );
 
             }
+
             # save winter mode as reading
             if ( $decode_json->{settings}[$settings]{name} eq 'winter_mode' ) {
                 readingsBulkUpdateIfChanged( $hash, 'winter_mode',
@@ -977,15 +1066,18 @@ sub WriteReadings {
                 $winter_mode = $decode_json->{settings}[$settings]{value};
             }
         }
-        
-        if ( defined( $decode_json->{settings}[$settings]{name} ) 
-           && $decode_json->{settings}[$settings]{name} eq 'valve_names'
-           && ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY" ) { # or HASH ?
-            my @valves = @{$decode_json->{settings}[$settings]{value}};
-            foreach my $valve( @valves ) {
-              #Log3 $name, 4,  "GardenaSmartDevice ($name) valve_name $valve->{'name'}";
-              readingsBulkUpdateIfChanged( $hash, 'valve-valve_name_'.$valve->{"id"},
-                                           $valve->{"name"} );
+
+        if (   defined( $decode_json->{settings}[$settings]{name} )
+            && $decode_json->{settings}[$settings]{name} eq 'valve_names'
+            && ref( $decode_json->{settings}[$settings]{value} ) eq "ARRAY" )
+        {    # or HASH ?
+            my @valves = @{ $decode_json->{settings}[$settings]{value} };
+            foreach my $valve (@valves) {
+
+      #Log3 $name, 4,  "GardenaSmartDevice ($name) valve_name $valve->{'name'}";
+                readingsBulkUpdateIfChanged( $hash,
+                    'valve-valve_name_' . $valve->{"id"},
+                    $valve->{"name"} );
             }
         }
 
@@ -1051,98 +1143,221 @@ sub setState {
 
     # ic24 / wc / electronic pump
 
-    if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
-        ||  AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' 
-        ||  AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' ){
-      my @opened_valves; 
-      my $state_string = ''; my $nearst_irrigation = '2999-12-12 12:00';
-      my $has_schedule = 0; my $longest_duration = 0; my $processed_item = '';
-      my $error_type = 'ok';
-      my @valves_connected = AttrVal( $name, 'model', 'unknown' ) eq 'ic24' ? split(',', ReadingsVal( $name, 'ic24-valves_connected', '')) : '1';
+    if (   AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
+        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer'
+        || AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' )
+    {
+        my @opened_valves;
+        my $state_string      = '';
+        my $nearst_irrigation = '2999-12-12 12:00';
+        my $has_schedule      = 0;
+        my $longest_duration  = 0;
+        my $processed_item    = '';
+        my $error_type        = 'ok';
+        my @valves_connected =
+          AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
+          ? split( ',', ReadingsVal( $name, 'ic24-valves_connected', '' ) )
+          : '1';
 
-      $has_schedule = 1 if ( ReadingsVal($name, 'scheduling-schedules_events_count', '')  ne '' );
-      for (@valves_connected){ # valves 1 or 1..6 
-        ## add to opened ventils, if watering active
-        push @opened_valves, $_ if ( ( ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms ) ? $_ : 0 ) > 0 );
-        ## set error type (pumpe required)
-        $error_type = ReadingsVal( $name, 'error-valve_error_'.$_.'_type', 'error' ) if (ReadingsVal( $name, 'error-valve_error_'.$_.'_type', 'error' ) ne 'ok');
-        ## find longest irrigation duration 
-        $longest_duration = ReadingsVal( $name, "watering-watering_timer_".$_."_irrigation_left", 0 ) if ( 
-              ( ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) =~ m{\A[1-9]([0-9]+)?\z}xms 
-              && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > 0 
-              && ReadingsVal( $name, "watering-watering_timer_".$_."_duration", 0 ) > $longest_duration ) );
+        $has_schedule = 1
+          if ( ReadingsVal( $name, 'scheduling-schedules_events_count', '' ) ne
+            '' );
+        for (@valves_connected) {    # valves 1 or 1..6
+            ## add to opened ventils, if watering active
+            push @opened_valves,
+              $_
+              if (
+                (
+                    (
+                        ReadingsVal( $name,
+                            "watering-watering_timer_" . $_ . "_duration", 0 )
+                        =~ m{\A[1-9]([0-9]+)?\z}xms
+                    ) ? $_ : 0
+                ) > 0
+              );
+            ## set error type (pumpe required)
+            $error_type =
+              ReadingsVal( $name, 'error-valve_error_' . $_ . '_type', 'error' )
+              if (
+                ReadingsVal( $name, 'error-valve_error_' . $_ . '_type',
+                    'error' ) ne 'ok'
+              );
+            ## find longest irrigation duration
+            $longest_duration =
+              ReadingsVal( $name,
+                "watering-watering_timer_" . $_ . "_irrigation_left", 0 )
+              if (
+                (
+                    ReadingsVal( $name,
+                        "watering-watering_timer_" . $_ . "_duration", 0 ) =~
+                    m{\A[1-9]([0-9]+)?\z}xms
+                    && ReadingsVal( $name,
+                        "watering-watering_timer_" . $_ . "_duration", 0 ) > 0
+                    && ReadingsVal( $name,
+                        "watering-watering_timer_" . $_ . "_duration", 0 ) >
+                    $longest_duration
+                )
+              );
 
-        # y-m-d h:m
-        $processed_item = AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
-                              ? RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, '')) 
-                              : RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until', ''));
+            # y-m-d h:m
+            $processed_item =
+              AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
+              ? RigReadingsValue(
+                $hash,
+                ReadingsVal(
+                    $name, 'scheduling-schedules_paused_until_' . $_, ''
+                )
+              )
+              : RigReadingsValue( $hash,
+                ReadingsVal( $name, 'scheduling-schedules_paused_until', '' ) );
 
-        Log3 $name, 5, "[DEBUG] - process: $processed_item";
-        Log3 $name, 5, "[DEBUG] - next_start: ". ReadingsVal($name, 'scheduling-scheduled_watering_next_start', ''); # n/a  RigReadingsValue( $hash, 'n/a')
-        # $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
-          if ( ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') eq RigReadingsValue( $hash, 'n/a') )  { # non next start, schedules paused permanently or next schedule > 1 year; get nearst paused_until
-            Log3 $name, 5, "[DEBUG] - next_start: empty ";
-            Log3 $name, 5, "[DEBUG] - empty pro item ".Time::Piece->strptime( $processed_item, "%Y-%m-%d %H:%M:%S");
-            Log3 $name, 5, "[DEBUG] - empty nearst ".Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M:%S");
-            $nearst_irrigation = $processed_item
-               if ( Time::Piece->strptime( $processed_item, "%Y-%m-%d %H:%M:%S") 
-                      < Time::Piece->strptime( $nearst_irrigation, "%Y-%m-%d %H:%M:%S")
-                    && $has_schedule 
-                    && Time::Piece->strptime( $processed_item, "%Y-%m-%d %H:%M:%S") 
-                      > Time::Piece->new
-                  )
-          } else {
-             $nearst_irrigation = ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '');
-          }            
-        Log3 $name, 5, "[DEBUG] - choosed nearst: $nearst_irrigation";
+            Log3 $name, 5, "[DEBUG] - process: $processed_item";
+            Log3 $name, 5,
+              "[DEBUG] - next_start: "
+              . ReadingsVal( $name, 'scheduling-scheduled_watering_next_start',
+                '' );    # n/a  RigReadingsValue( $hash, 'n/a')
+             # $nearst_irrigation = RigReadingsValue($hash, ReadingsVal($name, 'scheduling-schedules_paused_until_'.$_, ''))
+            if (
+                ReadingsVal( $name, 'scheduling-scheduled_watering_next_start',
+                    '' ) eq RigReadingsValue( $hash, 'n/a' )
+              )
+            { # non next start, schedules paused permanently or next schedule > 1 year; get nearst paused_until
+                Log3 $name, 5, "[DEBUG] - next_start: empty ";
+                Log3 $name, 5,
+                  "[DEBUG] - empty pro item "
+                  . Time::Piece->strptime( $processed_item,
+                    "%Y-%m-%d %H:%M:%S" );
+                Log3 $name, 5,
+                  "[DEBUG] - empty nearst "
+                  . Time::Piece->strptime( $nearst_irrigation,
+                    "%Y-%m-%d %H:%M:%S" );
+                $nearst_irrigation = $processed_item
+                  if (
+                    Time::Piece->strptime( $processed_item,
+                        "%Y-%m-%d %H:%M:%S" ) <
+                    Time::Piece->strptime( $nearst_irrigation,
+                        "%Y-%m-%d %H:%M:%S" )
+                    && $has_schedule
+                    && Time::Piece->strptime( $processed_item,
+                        "%Y-%m-%d %H:%M:%S" ) > Time::Piece->new
+                  );
+            }
+            else {
+                $nearst_irrigation = ReadingsVal( $name,
+                    'scheduling-scheduled_watering_next_start', '' );
+            }
+            Log3 $name, 5, "[DEBUG] - choosed nearst: $nearst_irrigation";
 
-      } # for
-      # override state 4 extendedstates
-      if ( AttrVal( $name, "extendedState", 0 ) == 1) {
-        if (scalar(@opened_valves) > 0){
-          ## valve 1 will be ir.. 23 minutes remaining
-          for (@valves_connected){
-            $state_string .= sprintf(RigReadingsValue($hash,'valve').' '.$_.' '.(RigReadingsValue($hash, 'watering. %.f minutes left') .'</br>'), (ReadingsVal( $name, 'watering-watering_timer_'.$_.'_duration', 0 )/60));
-          } # /for
-        } else {
-          $state_string .= RigReadingsValue($hash, 'closed');
-        }
-        $state_string .= ($has_schedule) ? sprintf( RigReadingsValue($hash, 'next watering: %s'),  RigReadingsValue($hash, ReadingsVal($name, 'scheduling-scheduled_watering_next_start', ''))) : sprintf( RigReadingsValue($hash, 'paused until %s') , $nearst_irrigation); 
-        #TODO: Write state format for ventil 1-@valces_connected  -> map ?
-        CommandAttr( undef, $name . ' stateFormat 
+        }    # for
+             # override state 4 extendedstates
+        if ( AttrVal( $name, "extendedState", 0 ) == 1 ) {
+            if ( scalar(@opened_valves) > 0 ) {
+                ## valve 1 will be ir.. 23 minutes remaining
+                for (@valves_connected) {
+                    $state_string .= sprintf(
+                        RigReadingsValue( $hash, 'valve' ) . ' '
+                          . $_ . ' '
+                          . (
+                            RigReadingsValue( $hash,
+                                'watering. %.f minutes left' )
+                              . '</br>'
+                          ),
+                        (
+                            ReadingsVal( $name,
+                                'watering-watering_timer_' . $_ . '_duration',
+                                0 ) / 60
+                        )
+                    );
+                }    # /for
+            }
+            else {
+                $state_string .= RigReadingsValue( $hash, 'closed' );
+            }
+            $state_string .=
+              ($has_schedule)
+              ? sprintf(
+                RigReadingsValue( $hash, 'next watering: %s' ),
+                RigReadingsValue(
+                    $hash,
+                    ReadingsVal(
+                        $name, 'scheduling-scheduled_watering_next_start', ''
+                    )
+                )
+              )
+              : sprintf(
+                RigReadingsValue( $hash, 'paused until %s' ),
+                $nearst_irrigation
+              );
+
+            #TODO: Write state format for ventil 1-@valces_connected  -> map ?
+            CommandAttr(
+                undef, $name . ' stateFormat 
               {
 
               }
-            ' )
-            if ( AttrVal( $name, 'stateFormat', 'none' ) eq 'none' );
-      } else {
-        Log3 $name, 5, "[DEBUG] - Offene Ventile :".scalar(@opened_valves)." laengste bewaesserung: $longest_duration . hat Zeitplan: $has_schedule Naechster Zeitplan: $nearst_irrigation";
-        $state_string = scalar(@opened_valves) > 0
-          # offen
-          ? sprintf( (RigReadingsValue($hash, 'watering. %.f minutes left')), $longest_duration/60) 
-          # zu
-          :
-            ( $has_schedule 
-            && $nearst_irrigation ne '2999-12-12 12:00')
-            # zeitplan aktiv  
-              # ? ( $nearst_irrigation eq '2038-01-18 00:00')   sprintf( RigReadingsValue($hash, 'paused until %s') , $nearst_irrigation)
-              ? ( $nearst_irrigation eq RigReadingsValue( $hash, 'n/a') || $nearst_irrigation =~ '2038-01-18.*') 
-                # dauerhaft pausiert
-                ? sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash , 'schedule permanently paused'))  )
-                # naechster zeutplan
-                : (ReadingsVal($name, 'scheduling-scheduled_watering_next_start', '') eq RigReadingsValue($hash, 'n/a')) 
-                  ? sprintf( RigReadingsValue($hash, 'paused until %s') , $nearst_irrigation) 
-                  : sprintf( (RigReadingsValue($hash, 'closed') .'. '.RigReadingsValue($hash, 'next watering: %s')), $nearst_irrigation )
-            # zeitplan pausiert
-              : RigReadingsValue($hash, 'closed')
-        ;
-      # state offline | override
-      $state_string = 'offline' if ($online_state eq 'offline');
-      $state_string = ( $error_type ne 'ok' ) ? $error_type : $state_string;
+            '
+            ) if ( AttrVal( $name, 'stateFormat', 'none' ) eq 'none' );
+        }
+        else {
+            Log3 $name, 5,
+                "[DEBUG] - Offene Ventile :"
+              . scalar(@opened_valves)
+              . " laengste bewaesserung: $longest_duration . hat Zeitplan: $has_schedule Naechster Zeitplan: $nearst_irrigation";
+            $state_string = scalar(@opened_valves) > 0
 
-      }
-      readingsBulkUpdate(
-        $hash, 'state',  RigReadingsValue( $hash, $state_string ) );
+              # offen
+              ? sprintf(
+                ( RigReadingsValue( $hash, 'watering. %.f minutes left' ) ),
+                $longest_duration / 60
+              )
+
+              # zu
+              : (    $has_schedule
+                  && $nearst_irrigation ne '2999-12-12 12:00' )
+
+# zeitplan aktiv
+# ? ( $nearst_irrigation eq '2038-01-18 00:00')   sprintf( RigReadingsValue($hash, 'paused until %s') , $nearst_irrigation)
+              ? (    $nearst_irrigation eq RigReadingsValue( $hash, 'n/a' )
+                  || $nearst_irrigation =~ '2038-01-18.*' )
+
+              # dauerhaft pausiert
+                  ? sprintf(
+                      (
+                          RigReadingsValue( $hash, 'closed' ) . '. '
+                            . RigReadingsValue(
+                              $hash, 'schedule permanently paused'
+                            )
+                      )
+                  )
+
+                  # naechster zeutplan
+                  : (
+                      ReadingsVal( $name,
+                          'scheduling-scheduled_watering_next_start', '' ) eq
+                        RigReadingsValue( $hash, 'n/a' )
+                  ) ? sprintf(
+                      RigReadingsValue( $hash, 'paused until %s' ),
+                      $nearst_irrigation
+                  )
+                : sprintf(
+                      (
+                              RigReadingsValue( $hash, 'closed' ) . '. '
+                            . RigReadingsValue( $hash, 'next watering: %s' )
+                      ),
+                      $nearst_irrigation
+                )
+
+                  # zeitplan pausiert
+              : RigReadingsValue( $hash, 'closed' );
+
+            # state offline | override
+            $state_string = 'offline' if ( $online_state eq 'offline' );
+            $state_string =
+              ( $error_type ne 'ok' ) ? $error_type : $state_string;
+
+        }
+        readingsBulkUpdate( $hash, 'state',
+            RigReadingsValue( $hash, $state_string ) );
     }
 
     # Sensor / Sensor 2
@@ -1167,7 +1382,9 @@ sub setState {
 
         #online state sensor I II
         readingsBulkUpdate( $hash, 'state',
-            $online_state eq 'online' ? RigReadingsValue( $hash, $state_string) : RigReadingsValue( $hash, 'offline') );
+            $online_state eq 'online'
+            ? RigReadingsValue( $hash, $state_string )
+            : RigReadingsValue( $hash, 'offline' ) );
     }
 
     readingsBulkUpdate( $hash, 'state',
@@ -1187,21 +1404,22 @@ sub ReadingLangGerman {
 
     my $name           = $hash->{NAME};
     my %langGermanMapp = (
-        'ok_cutting'                     => 'mähen',
-        'paused'                         => 'pausiert',
-        'ok_searching'                   => 'suche Ladestation',
-        'ok_charging'                    => 'lädt',
-        'ok_leaving'                     => 'unterwegs zum Startpunkt',
-        'wait_updating'                  => 'wird aktualisiert ...',
-        'wait_power_up'                  => 'wird eingeschaltet ...',
-        'parked_timer'                   => 'geparkt nach Zeitplan',
-        'parked_park_selected'           => 'geparkt',
-        'off_disabled'                   => 'der Mäher ist ausgeschaltet',
-        'off_hatch_open'                 => 'deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich',
-        'unknown'                        => 'unbekannter Status',
-        'error'                          => 'Fehler',
-        'error_at_power_up'              => 'Neustart ...',
-        'off_hatch_closed'               => 'Deaktiviert. Manueller Start erforderlich',
+        'ok_cutting'           => 'mähen',
+        'paused'               => 'pausiert',
+        'ok_searching'         => 'suche Ladestation',
+        'ok_charging'          => 'lädt',
+        'ok_leaving'           => 'unterwegs zum Startpunkt',
+        'wait_updating'        => 'wird aktualisiert ...',
+        'wait_power_up'        => 'wird eingeschaltet ...',
+        'parked_timer'         => 'geparkt nach Zeitplan',
+        'parked_park_selected' => 'geparkt',
+        'off_disabled'         => 'der Mäher ist ausgeschaltet',
+        'off_hatch_open'       =>
+          'deaktiviert. Abdeckung ist offen oder PIN-Code erforderlich',
+        'unknown'           => 'unbekannter Status',
+        'error'             => 'Fehler',
+        'error_at_power_up' => 'Neustart ...',
+        'off_hatch_closed'  => 'Deaktiviert. Manueller Start erforderlich',
         'ok_cutting_timer_overridden'    => 'manuelles mähen',
         'parked_autotimer'               => 'geparkt durch SensorControl',
         'parked_daily_limit_reached'     => 'abgeschlossen',
@@ -1239,59 +1457,64 @@ sub ReadingLangGerman {
         'guide_2_not_found'              => 'SK 2 nicht gefunden',
         'guide_3_not_found'              => 'SK 3 nicht gefunden',
         'difficult_finding_home'         => 'Problem die Ladestation zu finden',
-        'guide_calibration_accomplished' => 'Kalibrierung des Suchkabels beendet',
-        'guide_calibration_failed'       => 'Kalibrierung des Suchkabels fehlgeschlagen',
-        'temporary_battery_problem'      => 'kurzzeitiges Batterieproblem',
-        'battery_problem'                => 'Batterieproblem',
-        'alarm_mower_switched_off'       => 'Alarm! Mäher ausgeschalten',
-        'alarm_mower_stopped'            => 'Alarm! Mäher gestoppt',
-        'alarm_mower_lifted'             => 'Alarm! Mäher angehoben',
-        'alarm_mower_tilted'             => 'Alarm! Mäher gekippt',
-        'connection_changed'             => 'Verbindung geändert',
-        'connection_not_changed'         => 'Verbindung nicht geändert',
-        'com_board_not_available'        => 'COM Board nicht verfügbar',
-        'slipped'                        => 'rutscht',
-        'out_of_operation'               => 'ausser Betrieb',
-        'replace_now'                    => 'kritischer Batteriestand, wechseln Sie jetzt',
-        'low'                            => 'niedrig',
-        'ok'                             => 'ok',
-        'no_source'                      => 'ok',
-        'mower_charging'                 => 'Mäher wurde geladen',
-        'completed_cutting_autotimer'    => 'Sensor Control erreicht',
-        'week_timer'                     => 'Wochentimer erreicht',
-        'countdown_timer'                => 'Stoppuhr Timer',
-        'undefined'                      => 'unklar',
-        'unknown'                        => 'unklar',
-        'status_device_unreachable'      => 'Gerät ist nicht in Reichweite',
-        'status_device_alive'            => 'Gerät ist in Reichweite',
-        'bad'                            => 'schlecht',
-        'poor'                           => 'schwach',
-        'good'                           => 'gut',
-        'undefined'                      => 'unklar',
-        'idle'                           => 'nichts zu tun',
-        'firmware_cancel'                => 'Firmwareupload unterbrochen',
-        'firmware_upload'                => 'Firmwareupload',
-        'unsupported'                    => 'nicht unterstützt',
-        'up_to_date'                     => 'auf dem neusten Stand',
-        'mower'                          => 'Mäher',
-        'watering_computer'              => 'Bewässerungscomputer',
-        'no_frost'                       => 'kein Frost',
-        'open'                           => 'offen',
-        'closed'                         => 'geschlossen',
-        'included'                       => 'inbegriffen',
-        'active'                         => 'aktiv',
-        'inactive'                       => 'nicht aktiv',
-        'hibernate'                      => 'Winterschlaf',
-        'awake'                          => 'Aufgewacht',
-        'schedule permanently paused'    => 'Zeitplan dauerhaft pausiert',
-        'paused until %s'                => 'pausiert bis %s',        
-        'watering. %.f minutes left'     => 'Wird bewässert. %.f Minuten verbleibend.',
-        'next watering: %s'              => 'Nächste Bewässerung: %s',
-        'n/a'                            => 'nicht verfügbar',
-        'pump_not_filled'                => 'Pumpe nicht gefüllt',
-        'clean_fine_filter'              => 'Filter reinigen',
-        'concurrent_limit_reached'       => 'Grenze gleichzeitig geöffneter Ventile erreicht',
-        'low_battery_prevents_starting'  => 'Niedrieger Batteriestand verhindert Bewässerung',
+        'guide_calibration_accomplished' =>
+          'Kalibrierung des Suchkabels beendet',
+        'guide_calibration_failed' =>
+          'Kalibrierung des Suchkabels fehlgeschlagen',
+        'temporary_battery_problem' => 'kurzzeitiges Batterieproblem',
+        'battery_problem'           => 'Batterieproblem',
+        'alarm_mower_switched_off'  => 'Alarm! Mäher ausgeschalten',
+        'alarm_mower_stopped'       => 'Alarm! Mäher gestoppt',
+        'alarm_mower_lifted'        => 'Alarm! Mäher angehoben',
+        'alarm_mower_tilted'        => 'Alarm! Mäher gekippt',
+        'connection_changed'        => 'Verbindung geändert',
+        'connection_not_changed'    => 'Verbindung nicht geändert',
+        'com_board_not_available'   => 'COM Board nicht verfügbar',
+        'slipped'                   => 'rutscht',
+        'out_of_operation'          => 'ausser Betrieb',
+        'replace_now'    => 'kritischer Batteriestand, wechseln Sie jetzt',
+        'low'            => 'niedrig',
+        'ok'             => 'ok',
+        'no_source'      => 'ok',
+        'mower_charging' => 'Mäher wurde geladen',
+        'completed_cutting_autotimer' => 'Sensor Control erreicht',
+        'week_timer'                  => 'Wochentimer erreicht',
+        'countdown_timer'             => 'Stoppuhr Timer',
+        'undefined'                   => 'unklar',
+        'unknown'                     => 'unklar',
+        'status_device_unreachable'   => 'Gerät ist nicht in Reichweite',
+        'status_device_alive'         => 'Gerät ist in Reichweite',
+        'bad'                         => 'schlecht',
+        'poor'                        => 'schwach',
+        'good'                        => 'gut',
+        'undefined'                   => 'unklar',
+        'idle'                        => 'nichts zu tun',
+        'firmware_cancel'             => 'Firmwareupload unterbrochen',
+        'firmware_upload'             => 'Firmwareupload',
+        'unsupported'                 => 'nicht unterstützt',
+        'up_to_date'                  => 'auf dem neusten Stand',
+        'mower'                       => 'Mäher',
+        'watering_computer'           => 'Bewässerungscomputer',
+        'no_frost'                    => 'kein Frost',
+        'open'                        => 'offen',
+        'closed'                      => 'geschlossen',
+        'included'                    => 'inbegriffen',
+        'active'                      => 'aktiv',
+        'inactive'                    => 'nicht aktiv',
+        'hibernate'                   => 'Winterschlaf',
+        'awake'                       => 'Aufgewacht',
+        'schedule permanently paused' => 'Zeitplan dauerhaft pausiert',
+        'paused until %s'             => 'pausiert bis %s',
+        'watering. %.f minutes left'  =>
+          'Wird bewässert. %.f Minuten verbleibend.',
+        'next watering: %s'        => 'Nächste Bewässerung: %s',
+        'n/a'                      => 'nicht verfügbar',
+        'pump_not_filled'          => 'Pumpe nicht gefüllt',
+        'clean_fine_filter'        => 'Filter reinigen',
+        'concurrent_limit_reached' =>
+          'Grenze gleichzeitig geöffneter Ventile erreicht',
+        'low_battery_prevents_starting' =>
+          'Niedrieger Batteriestand verhindert Bewässerung',
     );
 
     if (
@@ -2455,7 +2678,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.5.7",
+  "version": "v2.6.0",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],

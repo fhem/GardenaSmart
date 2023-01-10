@@ -166,7 +166,7 @@ BEGIN {
 GP_Export(
     qw(
       Initialize
-      )
+    )
 );
 
 sub Initialize {
@@ -437,12 +437,14 @@ sub Set {
 
         DeletePassword($hash);
     }
-    elsif ( lc $cmd eq 'debughelper') {
-      return "usage: $cmd" if ( scalar( @{$aArg} ) != 2 );
-      my $new_helper = $aArg->[0];
-      my $new_helper_value = $aArg->[1];
-      Log3( $name, 5, "[DEBUG] - GardenaSmartBridge ($name) - override helper $new_helper with $new_helper_value");
-      $hash->{helper}{$new_helper} = $new_helper_value;
+    elsif ( lc $cmd eq 'debughelper' ) {
+        return "usage: $cmd" if ( scalar( @{$aArg} ) != 2 );
+        my $new_helper       = $aArg->[0];
+        my $new_helper_value = $aArg->[1];
+        Log3( $name, 5,
+"[DEBUG] - GardenaSmartBridge ($name) - override helper $new_helper with $new_helper_value"
+        );
+        $hash->{helper}{$new_helper} = $new_helper_value;
     }
     else {
 
@@ -488,8 +490,8 @@ sub Write {
 "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: secret!, DATA: secret!, METHOD: $method"
     );
 
-  # Log3($name, 3,
-  #     "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
+# Log3($name, 3,
+#     "GardenaSmartBridge ($name) - Send with URL: $hash->{URL}$uri, HEADER: $header, DATA: $payload, METHOD: $method");
 
     return;
 }
@@ -611,8 +613,7 @@ sub ErrorHandling {
     }
 
     if (
-        $data =~ /Error/
-        && $data !~ /lastLonaErrorCode/
+        $data =~ /Error/ && $data !~ /lastLonaErrorCode/
         || (   defined($decode_json)
             && ref($decode_json) eq 'HASH'
             && defined( $decode_json->{errors} ) )
@@ -1574,7 +1575,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.5.2",
+  "version": "v2.6.0",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
