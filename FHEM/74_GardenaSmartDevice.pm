@@ -144,7 +144,8 @@ BEGIN {
           modules
           IOWrite
           defs
-          makeDeviceName)
+          makeDeviceName
+          SetExtensions)
     );
 }
 
@@ -616,7 +617,7 @@ sub Set {
 
         # all devices has abilitie to fall a sleep
         $list .= ' winter_mode:awake,hibernate';
-    		return SetExtensions($hash, $list, $name, $cmd, @aArg);
+    		return SetExtensions($hash, $list, $name, $cmd, @$aArg);
         # return "Unknown argument $cmd, choose one of $list";
     }
 
