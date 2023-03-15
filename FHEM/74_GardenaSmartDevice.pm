@@ -67,6 +67,8 @@ use Time::Local;
 use Time::Piece;
 use Time::Seconds;
 
+use SetExtensions;
+
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
 eval {
@@ -142,7 +144,8 @@ BEGIN {
           modules
           IOWrite
           defs
-          makeDeviceName)
+          makeDeviceName
+          SetExtensions)
     );
 }
 
@@ -561,6 +564,7 @@ sub Set {
         $abilities  = 'winter_settings';
         $service_id = $hash->{helper}->{'winter_mode_id'};
     }
+
     else {
 
         my $list = '';
@@ -613,7 +617,8 @@ sub Set {
 
         # all devices has abilitie to fall a sleep
         $list .= ' winter_mode:awake,hibernate';
-        return "Unknown argument $cmd, choose one of $list";
+    		return SetExtensions($hash, $list, $name, $cmd, @$aArg);
+        # return "Unknown argument $cmd, choose one of $list";
     }
 
     $hash->{helper}{deviceAction} = $payload;

@@ -1,4 +1,34 @@
-### docs: change verson numbers (HEAD -> patch-changeVersion)
+### feat: add setextention (HEAD -> patch_setExtention)
+>Thu, 2 Mar 2023 11:58:29 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### feat: test (origin/patch_setExtention)
+>Thu, 2 Mar 2023 11:30:19 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### docs: add changelog file (tag: v2.6.0, origin/patch-changeVersion)
+>Tue, 10 Jan 2023 09:51:23 +0100
+
+>Author: Marko Oldenburg (fhemdevelopment@cooltux.net)
+
+>Commiter: Marko Oldenburg (fhemdevelopment@cooltux.net)
+
+
+
+
+### docs: change verson numbers
 >Tue, 10 Jan 2023 09:50:36 +0100
 
 >Author: Marko Oldenburg (fhemdevelopment@cooltux.net)
@@ -9,7 +39,7 @@ change modul versions
 
 
 
-### test: add hooks (origin/patch-changeVersion)
+### test: add hooks
 >Tue, 10 Jan 2023 09:48:39 +0100
 
 >Author: Marko Oldenburg (fhemdevelopment@cooltux.net)
@@ -20,7 +50,7 @@ hooks for commit test and create changelog
 
 
 
-### [translaten] - add commandref translation
+### [translaten] - add commandref translation (origin/patch-fix_commandref_spell, patch-fix_commandref_spell)
 >Sun, 18 Sep 2022 08:52:43 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -40,7 +70,7 @@ hooks for commit test and create changelog
 
 
 
-### [enhancement] - commandref
+### [enhancement] - commandref (origin/patch-wc_rest_valve_and_additinal_commandref, patch-wc_rest_valve_and_additinal_commandref)
 >Tue, 6 Sep 2022 12:32:40 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -90,7 +120,7 @@ hooks for commit test and create changelog
 
 
 
-### [fix] - upper/lower case
+### [fix] - upper/lower case (origin/patch-offline_status_startup_undefined, patch-offline_status_startup_undefined)
 >Thu, 11 Aug 2022 14:25:19 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -380,7 +410,7 @@ hooks for commit test and create changelog
 
 
 
-### readd lost setter webinterface
+### readd lost setter webinterface (origin/patch-dev_merge_failed_electronic_pressure_pump, patch-dev_merge_failed_electronic_pressure_pump)
 >Wed, 13 Jul 2022 20:56:47 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -401,7 +431,7 @@ hooks for commit test and create changelog
 
 
 
-### „FHEM/74_GardenaSmartDevice.pm“ ändern
+### „FHEM/74_GardenaSmartDevice.pm“ ändern (origin/patch_electronic_pressure_pump_water_pump_name_mistake)
 >Tue, 12 Jul 2022 20:09:33 +0200
 
 >Author: Sebastian Schwaz (sebastianschwarz@noreply@cooltux.net)
@@ -621,7 +651,7 @@ hooks for commit test and create changelog
 
 
 
-### [fix] - setter procedure
+### [fix] - setter procedure (origin/patch_pressure_pump_setlist, patch_pressure_pump_setlist)
 >Wed, 29 Jun 2022 20:32:00 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -771,7 +801,7 @@ hooks for commit test and create changelog
 
 
 
-### patch lono. eventuell recrusive readings einbauen. waterpump rechtschreibfehler mit fixed
+### patch lono. eventuell recrusive readings einbauen. waterpump rechtschreibfehler mit fixed (origin/patch_lona, patch_lona)
 >Sat, 25 Jun 2022 12:58:59 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -1151,7 +1181,7 @@ hooks for commit test and create changelog
 
 
 
-### lona
+### lona (origin/patch_waterpump, patch_waterpump)
 >Tue, 17 May 2022 20:53:37 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -1541,7 +1571,7 @@ hooks for commit test and create changelog
 
 
 
-### round minutes in irregation
+### round minutes in irregation (origin/patch_water_control)
 >Tue, 12 Apr 2022 08:40:40 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -1681,7 +1711,7 @@ hooks for commit test and create changelog
 
 
 
-### fix state
+### fix state (origin/patch_add_sensor2)
 >Tue, 5 Apr 2022 09:23:34 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -1711,7 +1741,7 @@ hooks for commit test and create changelog
 
 
 
-### fix ic24
+### fix ic24 (origin/patch_ic24_schedule)
 >Tue, 29 Mar 2022 16:35:58 +0200
 
 >Author: Sebastian (em@ail.tld)
