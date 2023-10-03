@@ -72,9 +72,9 @@ use SetExtensions;
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
 eval {
-    require JSON::MaybeXS;
-    import JSON::MaybeXS qw( decode_json encode_json );
-    1;
+  require JSON::MaybeXS;
+  import JSON::MaybeXS qw( decode_json encode_json );
+  1;
 } or do {
 
     # try to use JSON wrapper
