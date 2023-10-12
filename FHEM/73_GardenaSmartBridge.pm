@@ -1064,9 +1064,9 @@ sub WriteReadings {
                     if (
                         (
                             $decode_json->{abilities}[0]{properties}
-                            [$properties]{name} eq 'ethernet_status'
+                            [$properties]{name} eq 'ethernet_statusO'
                             || $decode_json->{abilities}[0]{properties}
-                            [$properties]{name} eq 'wifi_status'
+                            [$properties]{name} eq 'wifi_statusO'
                         )
                         && ref($v) eq 'HASH'
                       )
