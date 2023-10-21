@@ -1064,9 +1064,9 @@ sub WriteReadings {
                     if (
                         (
                             $decode_json->{abilities}[0]{properties}
-                            [$properties]{name} eq 'ethernet_statusO'
+                            [$properties]{name} eq 'ethernet_status'
                             || $decode_json->{abilities}[0]{properties}
-                            [$properties]{name} eq 'wifi_statusO'
+                            [$properties]{name} eq 'wifi_status'
                         )
                         && ref($v) eq 'HASH'
                       )
@@ -1075,13 +1075,14 @@ sub WriteReadings {
                             [$properties]{name} eq 'ethernet_status' )
                         {
                             readingsBulkUpdateIfChanged( $hash,
-                                'ethernet_status-mac', $v->{mac} );
-                            readingsBulkUpdateIfChanged( $hash,
                                 'ethernet_status-ip', $v->{ip} )
                               if ( ref( $v->{ip} ) ne 'HASH' );
                             readingsBulkUpdateIfChanged( $hash,
                                 'ethernet_status-isconnected',
-                                $v->{isConnected} );
+                                $v->{is_connected} );
+                            # obsolet, not published anymore
+                            # readingsBulkUpdateIfChanged( $hash,
+                            #     'ethernet_status-mac', $v->{mac} );
                         }
                         elsif ( $decode_json->{abilities}[0]{properties}
                             [$properties]{name} eq 'wifi_status' )
@@ -1089,13 +1090,14 @@ sub WriteReadings {
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-ssid', $v->{ssid} )
                               if ( ref( $v->{ssid} ) ne 'HASH' );
+                            # obsolet, not published anymore
+                            # readingsBulkUpdateIfChanged( $hash,
+                            #     'wifi_status-mac', $v->{mac} );
                             readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-mac', $v->{mac} );
+                                'wifi_status-isconnected', $v->{is_connected} );
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-ip', $v->{ip} )
                               if ( ref( $v->{ip} ) ne 'HASH' );
-                            readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-isconnected', $v->{isConnected} );
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-signal', $v->{signal} );
                         }

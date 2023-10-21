@@ -1,4 +1,14 @@
-### test: versions pump (HEAD -> patch_mucki)
+### test: gateway readings changed by gardena (HEAD -> patch_mucki)
+>Thu, 12 Oct 2023 21:52:51 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: versions pump (origin/patch_mucki)
 >Tue, 3 Oct 2023 22:40:58 +0200
 
 >Author: Sebastian (em@ail.tld)
