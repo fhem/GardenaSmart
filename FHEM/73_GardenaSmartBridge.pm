@@ -1087,19 +1087,22 @@ sub WriteReadings {
                         elsif ( $decode_json->{abilities}[0]{properties}
                             [$properties]{name} eq 'wifi_status' )
                         {
+                            # obsolet, not published anymore TODO: ask user using wifi
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-ssid', $v->{ssid} )
-                              if ( ref( $v->{ssid} ) ne 'HASH' );
-                            # obsolet, not published anymore
+                              if (( ref( $v->{ssid} ) ne 'HASH' ) 
+                              && ( $v->{is_connected} )) ;
                             # readingsBulkUpdateIfChanged( $hash,
                             #     'wifi_status-mac', $v->{mac} );
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-isconnected', $v->{is_connected} );
                             readingsBulkUpdateIfChanged( $hash,
                                 'wifi_status-ip', $v->{ip} )
-                              if ( ref( $v->{ip} ) ne 'HASH' );
+                              if (( ref( $v->{ip} ) ne 'HASH' )
+                                && ( $v->{is_connected} )) ;
                             readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-signal', $v->{signal} );
+                                'wifi_status-signal', $v->{signal} )
+                              if ( $v->{is_connected} ) ;
                         }
                     }
                 }
