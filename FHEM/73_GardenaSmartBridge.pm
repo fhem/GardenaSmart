@@ -628,7 +628,9 @@ sub ErrorHandling {
         if ( $param->{code} == 400 ) {
             if ($decode_json) {
                 if ( ref( $decode_json->{errors} ) eq "ARRAY"
-                    && defined( $decode_json->{errors} ) )
+                    && exists( $decode_json->{errors} ) )
+                    # replace defined with exists
+                    # && defined( $decode_json->{errors} ) )
                 {
                     readingsBulkUpdate(
                         $dhash,

@@ -1,4 +1,14 @@
-### test: changed published gateway informations (HEAD -> patch_mucki)
+### test: fix wifi status if is_connected (HEAD -> patch_mucki)
+>Mon, 23 Oct 2023 22:04:31 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: changed published gateway informations (origin/patch_mucki)
 >Sat, 21 Oct 2023 20:21:31 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -8,7 +18,7 @@
 
 
 
-### test: gateway readings changed by gardena (origin/patch_mucki)
+### test: gateway readings changed by gardena
 >Thu, 12 Oct 2023 21:52:51 +0200
 
 >Author: Sebastian (em@ail.tld)
