@@ -1,4 +1,14 @@
-### test: fix wifi status if is_connected (HEAD -> patch_mucki)
+### test: cleanup initial error handling (HEAD -> patch_mucki)
+>Wed, 25 Oct 2023 22:16:26 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: fix wifi status if is_connected (origin/patch_mucki)
 >Mon, 23 Oct 2023 22:04:31 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -8,7 +18,7 @@
 
 
 
-### test: changed published gateway informations (origin/patch_mucki)
+### test: changed published gateway informations
 >Sat, 21 Oct 2023 20:21:31 +0200
 
 >Author: Sebastian (em@ail.tld)

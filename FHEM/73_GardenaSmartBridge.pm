@@ -632,6 +632,9 @@ sub ErrorHandling {
                     # replace defined with exists
                     # && defined( $decode_json->{errors} ) )
                 {
+              Log3 $name, 4, "[DEBUG] $name - ERROR HANDLING Bridge Parts 2";
+              Log3 $name, 4, "[DEBUG] $name - ERROR HANDLING Bridge Parts 1/2".$decode_json->{errors};
+              Log3 $name, 4, "[DEBUG] $name - ERROR HANDLING Bridge Parts 2/2".$decode_json->{errors}[0];
                     readingsBulkUpdate(
                         $dhash,
                         "state",
