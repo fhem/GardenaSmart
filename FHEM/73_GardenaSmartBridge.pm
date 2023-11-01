@@ -632,27 +632,28 @@ sub ErrorHandling {
                     # replace defined with exists
                     # && defined( $decode_json->{errors} ) )
                 {
-              Log3 $name, 4, "[DEBUG] $name - ERROR HANDLING Bridge Parts 2";
-              Log3 $name, 4, "[DEBUG] $name - ERROR HANDLING Bridge Parts 1/2".$decode_json->{errors};
-              Log3 $name, 4, "[DEBUG] $name - ERROR HANDLING Bridge Parts 2/2".$decode_json->{errors}[0];
-                    readingsBulkUpdate(
+                    # $decode_json->{errors} -> ARRAY
+                    # $decode_json->{errors}[0] -> HASH
+                    if (exists ($decode_json->{errors}[0]{error}) ) {
+                      readingsBulkUpdate(
                         $dhash,
                         "state",
                         $decode_json->{errors}[0]{error} . ' '
                           . $decode_json->{errors}[0]{attribute},
                         1
-                    );
-                    readingsBulkUpdate(
-                        $dhash,
-                        "lastRequestState",
-                        $decode_json->{errors}[0]{error} . ' '
-                          . $decode_json->{errors}[0]{attribute},
-                        1
-                    );
-                    Log3 $dname, 5,
-                        "GardenaSmartBridge ($dname) - RequestERROR: "
-                      . $decode_json->{errors}[0]{error} . " "
-                      . $decode_json->{errors}[0]{attribute};
+                      );
+                      readingsBulkUpdate(
+                          $dhash,
+                          "lastRequestState",
+                          $decode_json->{errors}[0]{error} . ' '
+                            . $decode_json->{errors}[0]{attribute},
+                          1
+                      );
+                      Log3 $dname, 5,
+                          "GardenaSmartBridge ($dname) - RequestERROR: "
+                        . $decode_json->{errors}[0]{error} . " "
+                        . $decode_json->{errors}[0]{attribute};
+                  } # fi exists error
                 }
             }
             else {

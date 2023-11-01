@@ -1,4 +1,14 @@
-### test: cleanup initial error handling (HEAD -> patch_mucki)
+### test: debug line (HEAD -> patch_mucki)
+>Sat, 28 Oct 2023 18:02:17 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: cleanup initial error handling (origin/patch_mucki)
 >Wed, 25 Oct 2023 22:16:26 +0200
 
 >Author: Sebastian (em@ail.tld)
@@ -8,7 +18,7 @@
 
 
 
-### test: fix wifi status if is_connected (origin/patch_mucki)
+### test: fix wifi status if is_connected
 >Mon, 23 Oct 2023 22:04:31 +0200
 
 >Author: Sebastian (em@ail.tld)
