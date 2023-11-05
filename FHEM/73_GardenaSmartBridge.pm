@@ -1076,41 +1076,16 @@ sub WriteReadings {
                         )
                         && ref($v) eq 'HASH'
                       )
-                    {
-                        if ( $decode_json->{abilities}[0]{properties}
-                            [$properties]{name} eq 'ethernet_status' )
-                        {
-                            readingsBulkUpdateIfChanged( $hash,
-                                'ethernet_status-ip', $v->{ip} )
-                              if ( ref( $v->{ip} ) ne 'HASH' );
-                            readingsBulkUpdateIfChanged( $hash,
-                                'ethernet_status-isconnected',
-                                $v->{is_connected} );
-                            # obsolet, not published anymore
-                            # readingsBulkUpdateIfChanged( $hash,
-                            #     'ethernet_status-mac', $v->{mac} );
+                      {
+                        if ($v->{is_connected} ) {
+                          readingsBulkUpdateIfChanged( $hash,
+                            [$properties]{name}.'-ip', $v->{ip} )
+                            if ( ref( $v->{ip} ) ne 'HASH' );
+                          readingsBulkUpdateIfChanged( $hash,
+                            [$properties]{name}.'-isconnected', $v->{is_connected} )
+                            if ( $v->{is_connected} );
                         }
-                        elsif ( $decode_json->{abilities}[0]{properties}
-                            [$properties]{name} eq 'wifi_status' )
-                        {
-                            # obsolet, not published anymore TODO: ask user using wifi
-                            readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-ssid', $v->{ssid} )
-                              if (( ref( $v->{ssid} ) ne 'HASH' ) 
-                              && ( $v->{is_connected} )) ;
-                            # readingsBulkUpdateIfChanged( $hash,
-                            #     'wifi_status-mac', $v->{mac} );
-                            readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-isconnected', $v->{is_connected} );
-                            readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-ip', $v->{ip} )
-                              if (( ref( $v->{ip} ) ne 'HASH' )
-                                && ( $v->{is_connected} )) ;
-                            readingsBulkUpdateIfChanged( $hash,
-                                'wifi_status-signal', $v->{signal} )
-                              if ( $v->{is_connected} ) ;
-                        }
-                    }
+                      } # fi ethernet and wifi
                 }
                 $properties--;
 
@@ -1586,7 +1561,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.0",
+  "version": "v2.6.1",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
