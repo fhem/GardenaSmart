@@ -1079,10 +1079,10 @@ sub WriteReadings {
                       {
                         if ($v->{is_connected} ) {
                           readingsBulkUpdateIfChanged( $hash,
-                            [$properties]{name}.'-ip', $v->{ip} )
+                            $decode_json->{abilities}[0]{properties}[$properties]{name}.'-ip', $v->{ip} )
                             if ( ref( $v->{ip} ) ne 'HASH' );
                           readingsBulkUpdateIfChanged( $hash,
-                            [$properties]{name}.'-isconnected', $v->{is_connected} )
+                            $decode_json->{abilities}[0]{properties}[$properties]{name}.'-isconnected', $v->{is_connected} )
                             if ( $v->{is_connected} );
                         }
                       } # fi ethernet and wifi
