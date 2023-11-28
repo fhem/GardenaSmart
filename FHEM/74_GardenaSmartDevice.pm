@@ -72,9 +72,9 @@ use SetExtensions;
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
 eval {
-  require JSON::MaybeXS;
-  import JSON::MaybeXS qw( decode_json encode_json );
-  1;
+    require JSON::MaybeXS;
+    import JSON::MaybeXS qw( decode_json encode_json );
+    1;
 } or do {
 
     # try to use JSON wrapper
@@ -617,7 +617,8 @@ sub Set {
 
         # all devices has abilitie to fall a sleep
         $list .= ' winter_mode:awake,hibernate';
-    		return SetExtensions($hash, $list, $name, $cmd, @$aArg);
+        return SetExtensions( $hash, $list, $name, $cmd, @$aArg );
+
         # return "Unknown argument $cmd, choose one of $list";
     }
 
@@ -1688,7 +1689,7 @@ sub SetPredefinedStartPoints {
     pump. Schedules can be disabled/enabled via fhem, defining or deleting them must be done via Gardena App or its web interface.<br>
 </ul>
 <br>
-<div style="display: none">
+<div>
   <a id="GardenaSmartDevice-set"></a>
   <li><a id="GardenaSmartDevice-set-parkUntilFurtherNotice">parkUntilFurtherNotice</a> - park mower and disable schedule</li>
   <li><a id="GardenaSmartDevice-set-parkUntilNextTimer">parkUntilNextTimer</a> - park mower until next schedule</li>
@@ -2154,7 +2155,7 @@ sub SetPredefinedStartPoints {
     Steckdosen-Adapter und Pumpe. Zeitpl&auml;ne k&ouml;nnen &uuml;ber fhem pausiert/aktiviert werden, das Anlegen oder L&ouml;schen erfolgt
     derzeit nur &uuml;ber die App oder deren Web-Frontend.
 </ul>
-<div style="display: none">
+<div>
   <a id="GardenaSmartDevice-set"></a>
   <li><a id="GardenaSmartDevice-set-parkUntilFurtherNotice">parkUntilFurtherNotice</a> - Parken des M&auml;hers und Aussetzen des Zeitplans</li>
   <li><a id="GardenaSmartDevice-set-parkUntilNextTimer">parkUntilNextTimer</a> - Parken bis zum n&auml;chsten Start nach Zeitplan</li>
