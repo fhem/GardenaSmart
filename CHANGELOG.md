@@ -1,4 +1,94 @@
-### feat: add setextention (HEAD -> patch_setExtention)
+### test: smartdevice variable wintermode initializied Bridge consolidiert wifi/ethernet (HEAD -> patch_mucki)
+>Sun, 5 Nov 2023 21:52:24 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: fix initial variables (origin/patch_mucki)
+>Wed, 1 Nov 2023 21:04:39 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: debug line
+>Sat, 28 Oct 2023 18:02:17 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: cleanup initial error handling
+>Wed, 25 Oct 2023 22:16:26 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: fix wifi status if is_connected
+>Mon, 23 Oct 2023 22:04:31 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: changed published gateway informations
+>Sat, 21 Oct 2023 20:21:31 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: gateway readings changed by gardena
+>Thu, 12 Oct 2023 21:52:51 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: versions pump
+>Tue, 3 Oct 2023 22:40:58 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### feat: changelog (origin/patch_setExtention, patch_setExtention)
+>Thu, 2 Mar 2023 11:58:58 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### feat: add setextention
 >Thu, 2 Mar 2023 11:58:29 +0100
 
 >Author: Sebastian (em@ail.tld)
@@ -8,7 +98,7 @@
 
 
 
-### feat: test (origin/patch_setExtention)
+### feat: test
 >Thu, 2 Mar 2023 11:30:19 +0100
 
 >Author: Sebastian (em@ail.tld)

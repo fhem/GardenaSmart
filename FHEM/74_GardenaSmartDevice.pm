@@ -72,9 +72,9 @@ use SetExtensions;
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
 eval {
-    require JSON::MaybeXS;
-    import JSON::MaybeXS qw( decode_json encode_json );
-    1;
+  require JSON::MaybeXS;
+  import JSON::MaybeXS qw( decode_json encode_json );
+  1;
 } or do {
 
     # try to use JSON wrapper
@@ -992,7 +992,7 @@ sub WriteReadings {
     }
     ;    # fi scheduled_events
 
-    my $winter_mode;
+    my $winter_mode = 'awake';
 
     do {
 #Log3 $name, 1, "Settings pro Device : ".$decode_json->{settings}[$settings]{name};
@@ -2683,7 +2683,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.0",
+  "version": "v2.6.1",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
