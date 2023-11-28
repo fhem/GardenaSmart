@@ -67,12 +67,14 @@ use Time::Local;
 use Time::Piece;
 use Time::Seconds;
 
+use SetExtensions;
+
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
 eval {
-    require JSON::MaybeXS;
-    import JSON::MaybeXS qw( decode_json encode_json );
-    1;
+  require JSON::MaybeXS;
+  import JSON::MaybeXS qw( decode_json encode_json );
+  1;
 } or do {
 
     # try to use JSON wrapper
@@ -142,7 +144,8 @@ BEGIN {
           modules
           IOWrite
           defs
-          makeDeviceName)
+          makeDeviceName
+          SetExtensions)
     );
 }
 
@@ -561,6 +564,7 @@ sub Set {
         $abilities  = 'winter_settings';
         $service_id = $hash->{helper}->{'winter_mode_id'};
     }
+
     else {
 
         my $list = '';
@@ -613,7 +617,8 @@ sub Set {
 
         # all devices has abilitie to fall a sleep
         $list .= ' winter_mode:awake,hibernate';
-        return "Unknown argument $cmd, choose one of $list";
+    		return SetExtensions($hash, $list, $name, $cmd, @$aArg);
+        # return "Unknown argument $cmd, choose one of $list";
     }
 
     $hash->{helper}{deviceAction} = $payload;
@@ -987,7 +992,7 @@ sub WriteReadings {
     }
     ;    # fi scheduled_events
 
-    my $winter_mode;
+    my $winter_mode = 'awake';
 
     do {
 #Log3 $name, 1, "Settings pro Device : ".$decode_json->{settings}[$settings]{name};
@@ -2678,7 +2683,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.0",
+  "version": "v2.6.1",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
