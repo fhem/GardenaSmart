@@ -1059,6 +1059,13 @@ sub WriteReadings {
                       if ( ref($v) eq 'ARRAY' );
 
                     #$v = encode_utf8($v);
+                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 1 ".$decode_json->{abilities}[0]{properties}[$properties{name} if ( $decode_json->{abilities}[0]{properties}[$properties]
+                        {name} !~ /ethernet_status|wifi_status/ );
+                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 2".$t if ( $decode_json->{abilities}[0]{properties}[$properties]
+                        {name} !~ /ethernet_status|wifi_status/ );
+                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 3".$v if ( $decode_json->{abilities}[0]{properties}[$properties]
+                        {name} !~ /ethernet_status|wifi_status/ );
+
                     readingsBulkUpdateIfChanged(
                         $hash,
                         $decode_json->{abilities}[0]{properties}[$properties]
