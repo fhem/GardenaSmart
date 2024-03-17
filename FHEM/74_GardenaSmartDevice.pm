@@ -324,8 +324,8 @@ sub Set {
     elsif ( lc $cmd eq 'parkuntilnexttimer' ) {
         $payload = '"name":"park_until_next_timer"';
         if ( $mainboard_version > 10.30 ) {
-            $payload   = '"properties":{"name":"mower_timer","value":0}';
-            $abilities = 'mower_timer';
+            $payload   = '"mowerTimer":0,"startingPointDistance":null,"areaId":null';
+            $abilities = 'mower';
         }
     }
     elsif ( lc $cmd eq 'startresumeschedule' ) {
@@ -339,13 +339,13 @@ sub Set {
         }
     }
     elsif ( lc $cmd eq 'startoverridetimer' ) {
-        $payload = '"name":"start_override_timer","parameters":{"duration":'
-          . $aArg->[0] * 60 . '}';
-        if ( $mainboard_version > 10.30 ) {
-            $payload = '"properties":{"name":"mower_timer","value":'
-              . $aArg->[0] * 60 . '}';
-            $abilities = 'mower_timer';
-        }
+        # $payload = '"name":"start_override_timer","parameters":{"duration":'
+          # . $aArg->[0] * 60 . '}';
+        # if ( $mainboard_version > 10.30 ) {
+            $payload   = '"startingPointDistance":null,"areaId":null, "mowerTimer": '
+              . $aArg->[0] * 60;
+            $abilities = 'mower';
+        # }  removed code < 10.30 api changes March 2024
 
     }
     elsif ( lc $cmd eq 'startpoint' ) {
@@ -2684,7 +2684,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.1",
+  "version": "v2.6.2",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
