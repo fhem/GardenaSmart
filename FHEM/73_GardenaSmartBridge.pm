@@ -1318,8 +1318,7 @@ sub createHttpValueStrings {
             && $abilities eq 'mower' )
         {
             my $valve_id;
-            $method = 'PUT';
-
+            
             $uri .=
                 '/devices/'
               . $deviceId
