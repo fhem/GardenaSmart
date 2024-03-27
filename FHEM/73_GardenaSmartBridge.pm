@@ -1315,17 +1315,16 @@ sub createHttpValueStrings {
         }    # park until next schedules or override
         elsif (defined($abilities)
             && defined($payload)
-            && $abilities eq 'mower_timer' )
+            && $abilities eq 'mower' )
         {
             my $valve_id;
-            $method = 'PUT';
-
+            
             $uri .=
                 '/devices/'
               . $deviceId
               . '/abilities/'
               . $abilities
-              . '/properties/mower_timer';
+              . '/commands/manual_start';
 
         }
         elsif (defined($abilities)
@@ -1561,7 +1560,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.1",
+  "version": "v2.6.2",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
