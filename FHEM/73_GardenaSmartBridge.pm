@@ -1059,6 +1059,14 @@ sub WriteReadings {
                       if ( ref($v) eq 'ARRAY' );
 
                     #$v = encode_utf8($v);
+                    $v = ' ' if (!defined $v);
+                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 1 ".$decode_json->{abilities}[0]{properties}[$properties]{name} if ( $decode_json->{abilities}[0]{properties}[$properties]
+                        {name} !~ /ethernet_status|wifi_status/ );
+                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 2".$t if ( $decode_json->{abilities}[0]{properties}[$properties]
+                        {name} !~ /ethernet_status|wifi_status/ );
+                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 3".$v if ( $decode_json->{abilities}[0]{properties}[$properties]
+                        {name} !~ /ethernet_status|wifi_status/ );
+
                     readingsBulkUpdateIfChanged(
                         $hash,
                         $decode_json->{abilities}[0]{properties}[$properties]
@@ -1315,17 +1323,16 @@ sub createHttpValueStrings {
         }    # park until next schedules or override
         elsif (defined($abilities)
             && defined($payload)
-            && $abilities eq 'mower_timer' )
+            && $abilities eq 'mower' )
         {
             my $valve_id;
-            $method = 'PUT';
-
+            
             $uri .=
                 '/devices/'
               . $deviceId
               . '/abilities/'
               . $abilities
-              . '/properties/mower_timer';
+              . '/commands/manual_start';
 
         }
         elsif (defined($abilities)
@@ -1561,7 +1568,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.1",
+  "version": "v2.6.2",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],

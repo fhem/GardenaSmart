@@ -72,9 +72,9 @@ use SetExtensions;
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
 eval {
-  require JSON::MaybeXS;
-  import JSON::MaybeXS qw( decode_json encode_json );
-  1;
+    require JSON::MaybeXS;
+    import JSON::MaybeXS qw( decode_json encode_json );
+    1;
 } or do {
 
     # try to use JSON wrapper
@@ -324,8 +324,8 @@ sub Set {
     elsif ( lc $cmd eq 'parkuntilnexttimer' ) {
         $payload = '"name":"park_until_next_timer"';
         if ( $mainboard_version > 10.30 ) {
-            $payload   = '"properties":{"name":"mower_timer","value":0}';
-            $abilities = 'mower_timer';
+            $payload   = '"mowerTimer":0,"startingPointDistance":null,"areaId":null';
+            $abilities = 'mower';
         }
     }
     elsif ( lc $cmd eq 'startresumeschedule' ) {
@@ -339,13 +339,13 @@ sub Set {
         }
     }
     elsif ( lc $cmd eq 'startoverridetimer' ) {
-        $payload = '"name":"start_override_timer","parameters":{"duration":'
-          . $aArg->[0] * 60 . '}';
-        if ( $mainboard_version > 10.30 ) {
-            $payload = '"properties":{"name":"mower_timer","value":'
-              . $aArg->[0] * 60 . '}';
-            $abilities = 'mower_timer';
-        }
+        # $payload = '"name":"start_override_timer","parameters":{"duration":'
+          # . $aArg->[0] * 60 . '}';
+        # if ( $mainboard_version > 10.30 ) {
+            $payload   = '"startingPointDistance":null,"areaId":null, "mowerTimer": '
+              . $aArg->[0] * 60;
+            $abilities = 'mower';
+        # }  removed code < 10.30 api changes March 2024
 
     }
     elsif ( lc $cmd eq 'startpoint' ) {
@@ -617,7 +617,8 @@ sub Set {
 
         # all devices has abilitie to fall a sleep
         $list .= ' winter_mode:awake,hibernate';
-    		return SetExtensions($hash, $list, $name, $cmd, @$aArg);
+        return SetExtensions( $hash, $list, $name, $cmd, @$aArg );
+
         # return "Unknown argument $cmd, choose one of $list";
     }
 
@@ -1688,7 +1689,7 @@ sub SetPredefinedStartPoints {
     pump. Schedules can be disabled/enabled via fhem, defining or deleting them must be done via Gardena App or its web interface.<br>
 </ul>
 <br>
-<div style="display: none">
+<div>
   <a id="GardenaSmartDevice-set"></a>
   <li><a id="GardenaSmartDevice-set-parkUntilFurtherNotice">parkUntilFurtherNotice</a> - park mower and disable schedule</li>
   <li><a id="GardenaSmartDevice-set-parkUntilNextTimer">parkUntilNextTimer</a> - park mower until next schedule</li>
@@ -2154,7 +2155,7 @@ sub SetPredefinedStartPoints {
     Steckdosen-Adapter und Pumpe. Zeitpl&auml;ne k&ouml;nnen &uuml;ber fhem pausiert/aktiviert werden, das Anlegen oder L&ouml;schen erfolgt
     derzeit nur &uuml;ber die App oder deren Web-Frontend.
 </ul>
-<div style="display: none">
+<div>
   <a id="GardenaSmartDevice-set"></a>
   <li><a id="GardenaSmartDevice-set-parkUntilFurtherNotice">parkUntilFurtherNotice</a> - Parken des M&auml;hers und Aussetzen des Zeitplans</li>
   <li><a id="GardenaSmartDevice-set-parkUntilNextTimer">parkUntilNextTimer</a> - Parken bis zum n&auml;chsten Start nach Zeitplan</li>
@@ -2683,7 +2684,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.1",
+  "version": "v2.6.2",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
