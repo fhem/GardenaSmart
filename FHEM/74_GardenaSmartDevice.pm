@@ -754,6 +754,8 @@ sub WriteReadings {
                     . $propertie->{name} ne 'ic24-valves_connected'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'ic24-valves_master_config'
+                    && ($decode_json->{abilities}[$abilities]{name} . '-'
+                    . $propertie->{name}) !~ /scheduling-timeslot_state_\d/
                     && ref( $propertie->{value} ) ne "HASH" );
 
                 readingsBulkUpdateIfChanged(
@@ -850,7 +852,28 @@ sub WriteReadings {
                         }
                     }
                 }
-
+                # decode timeslot_state_N arrays  code by hhhdg
+                if ( defined( $propertie->{value} )
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
+                       . $propertie->{name} =~ /scheduling-timeslot_state_\d/
+                    && ref( $propertie->{value} ) eq "ARRAY" ) {
+                    while ( my ( $r, $v ) = each @{ $propertie->{value} } ) {
+                        if ( ref($v) eq "HASH" ) {
+                            my $entry = $r+1;
+                            while ( my ( $i_r, $i_v ) = each %{$v} ) {
+                                readingsBulkUpdateIfChanged(
+                                    $hash,
+                                    $decode_json->{abilities}[$abilities]{name}
+                                      . '-'
+                                      . $propertie->{name} . '_'
+                                      . $entry . '_'
+                                      . $i_r,
+                                    RigReadingsValue( $hash, $i_v )
+                                );
+                            }
+                        }
+                    }
+                } # fi defined
                 # ic24 and other watering devices calc irrigation left in sec
                 readingsBulkUpdateIfChanged(
                     $hash,
@@ -907,15 +930,15 @@ sub WriteReadings {
         foreach my $dev_schedules ( sort keys %{ $hash->{READINGS} } ) {
             my $dev_reading = ReadingsVal( $name, $dev_schedules, "error" );
             push @ist, $dev_reading
-              if $dev_schedules =~ /schedule.*\d_id/;    # push reading _id
+              if $dev_schedules =~ /schedule.*\d+_id/;    # push reading _id
             push @ist, $1
               if $dev_schedules =~
-              /schedule.*_(\d)_id/;    # push readigs d from x_id
+              /schedule.*_(\d+)_id/;    # push readigs d from x_id
 
             Log3 $name, 5,
               "[DEBUG] $name - Schedule - Key ist : $dev_schedules ";
             Log3 $name, 5, "[DEBUG] $name - Schedule - ID FOUND $dev_reading"
-              if $dev_schedules =~ /schedule.*_\d_id/;    # cloud hat  SOLL
+              if $dev_schedules =~ /schedule.*_\d+_id/;    # cloud hat  SOLL
         }
 
    #Log3 $name, 5, "[DEBUG] Cloud:".Dumper(@soll) . "- Internal:". Dumper(@ist);
@@ -951,15 +974,12 @@ sub WriteReadings {
             && scalar(@soll) != scalar( @ist / 2 ) )
         {
             while ( my $old_schedule_id = shift(@ist) ) {
-                if ( length($old_schedule_id) == 1 ) {
-                    foreach ( keys %{ $hash->{READINGS} } ) {
-                        delete $hash->{READINGS}->{$_}
-                          if ( $_ =~
-                            /scheduling-schedules_event_$old_schedule_id.*/ );
-                    }
+              foreach ( keys %{ $hash->{READINGS} } ) {
+                delete $hash->{READINGS}->{$_}
+                  if ( $_ =~ /scheduling-schedules_event_${old_schedule_id}_.*/ );
                 }    # fi
                 Log3 $name, 5,
-"[DEBUG] - $name : deletereading scheduling-schedules_event_$old_schedule_id.*"
+"[DEBUG] - $name : deletereading scheduling-schedules_event_${old_schedule_id}_.*"
                   if length($old_schedule_id) == 1;
             }
         }
