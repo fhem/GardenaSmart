@@ -1,4 +1,114 @@
-### test: smartdevice variable wintermode initializied Bridge consolidiert wifi/ethernet (HEAD -> patch_mucki)
+### fix: patch code scheduling by hhhdg (HEAD -> patch_valve_hhhdg)
+>Mon, 15 Apr 2024 09:32:51 +0200
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### controls_GardenaSmartDevice.txt aktualisiert
+>Thu, 28 Mar 2024 06:05:59 +0100
+
+>Author: Marko Oldenburg (marko@noreply@cooltux.net)
+
+>Commiter: Marko Oldenburg (marko@noreply@cooltux.net)
+
+
+
+
+### controls_GardenaSmartDevice.txt aktualisiert
+>Thu, 28 Mar 2024 05:59:55 +0100
+
+>Author: Marko Oldenburg (marko@noreply@cooltux.net)
+
+>Commiter: Marko Oldenburg (marko@noreply@cooltux.net)
+
+
+
+
+### fix: put to post (origin/patch_newstart_command, patch_newstart_command)
+>Mon, 18 Mar 2024 10:15:25 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: new api start cmd
+>Sun, 17 Mar 2024 20:58:13 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: catch null value (origin/patch_mucki_gwoffline, patch_mucki_gwoffline)
+>Fri, 23 Feb 2024 22:52:25 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### fix: fix
+>Wed, 21 Feb 2024 22:00:02 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### fix: push version
+>Wed, 21 Feb 2024 21:58:05 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: fix error spam
+>Wed, 21 Feb 2024 21:56:14 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### fix: closes #90
+>Tue, 28 Nov 2023 08:52:33 +0100
+
+>Author: Marko Oldenburg (fhemdevelopment@cooltux.net)
+
+>Commiter: Marko Oldenburg (fhemdevelopment@cooltux.net)
+
+
+
+
+### fix: missing tree (origin/patch_mucki, patch_mucki)
+>Sun, 12 Nov 2023 19:47:49 +0100
+
+>Author: Sebastian (em@ail.tld)
+
+>Commiter: Sebastian (em@ail.tld)
+
+
+
+
+### test: smartdevice variable wintermode initializied Bridge consolidiert wifi/ethernet
 >Sun, 5 Nov 2023 21:52:24 +0100
 
 >Author: Sebastian (em@ail.tld)
@@ -8,7 +118,7 @@
 
 
 
-### test: fix initial variables (origin/patch_mucki)
+### test: fix initial variables
 >Wed, 1 Nov 2023 21:04:39 +0100
 
 >Author: Sebastian (em@ail.tld)
