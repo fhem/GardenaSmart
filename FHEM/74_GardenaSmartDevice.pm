@@ -2,7 +2,7 @@
 #
 # Developed with VSCodium and richterger perl plugin.
 #
-#  (c) 2017-2022 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
+#  (c) 2017-2024 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
 #  All rights reserved
 #
 #   Special thanks goes to comitters:
@@ -324,7 +324,8 @@ sub Set {
     elsif ( lc $cmd eq 'parkuntilnexttimer' ) {
         $payload = '"name":"park_until_next_timer"';
         if ( $mainboard_version > 10.30 ) {
-            $payload   = '"mowerTimer":0,"startingPointDistance":null,"areaId":null';
+            $payload =
+              '"mowerTimer":0,"startingPointDistance":null,"areaId":null';
             $abilities = 'mower';
         }
     }
@@ -339,12 +340,14 @@ sub Set {
         }
     }
     elsif ( lc $cmd eq 'startoverridetimer' ) {
+
         # $payload = '"name":"start_override_timer","parameters":{"duration":'
-          # . $aArg->[0] * 60 . '}';
+        # . $aArg->[0] * 60 . '}';
         # if ( $mainboard_version > 10.30 ) {
-            $payload   = '"startingPointDistance":null,"areaId":null, "mowerTimer": '
-              . $aArg->[0] * 60;
-            $abilities = 'mower';
+        $payload = '"startingPointDistance":null,"areaId":null, "mowerTimer": '
+          . $aArg->[0] * 60;
+        $abilities = 'mower';
+
         # }  removed code < 10.30 api changes March 2024
 
     }
@@ -735,7 +738,8 @@ sub WriteReadings {
                       . RigReadingsValue( $hash,
                         $propertie->{value} )  # cast all data to string with ""
                   )
-                  if ( exists( $propertie->{value} )
+                  if (
+                    exists( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'radio-quality'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
@@ -754,9 +758,10 @@ sub WriteReadings {
                     . $propertie->{name} ne 'ic24-valves_connected'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'ic24-valves_master_config'
-                    && ($decode_json->{abilities}[$abilities]{name} . '-'
-                    . $propertie->{name}) !~ /scheduling-timeslot_state_\d/
-                    && ref( $propertie->{value} ) ne "HASH" );
+                    && (  $decode_json->{abilities}[$abilities]{name} . '-'
+                        . $propertie->{name} ) !~ /scheduling-timeslot_state_\d/
+                    && ref( $propertie->{value} ) ne "HASH"
+                  );
 
                 readingsBulkUpdateIfChanged(
                     $hash,
@@ -852,14 +857,16 @@ sub WriteReadings {
                         }
                     }
                 }
+
                 # decode timeslot_state_N arrays  code by hhhdg
                 if ( defined( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} . '-'
-                       . $propertie->{name} =~ /scheduling-timeslot_state_\d/
-                    && ref( $propertie->{value} ) eq "ARRAY" ) {
+                    . $propertie->{name} =~ /scheduling-timeslot_state_\d/
+                    && ref( $propertie->{value} ) eq "ARRAY" )
+                {
                     while ( my ( $r, $v ) = each @{ $propertie->{value} } ) {
                         if ( ref($v) eq "HASH" ) {
-                            my $entry = $r+1;
+                            my $entry = $r + 1;
                             while ( my ( $i_r, $i_v ) = each %{$v} ) {
                                 readingsBulkUpdateIfChanged(
                                     $hash,
@@ -873,8 +880,8 @@ sub WriteReadings {
                             }
                         }
                     }
-                } # fi defined
-                # ic24 and other watering devices calc irrigation left in sec
+                }    # fi defined
+                   # ic24 and other watering devices calc irrigation left in sec
                 readingsBulkUpdateIfChanged(
                     $hash,
                     $decode_json->{abilities}[$abilities]{name} . '-'
@@ -974,9 +981,10 @@ sub WriteReadings {
             && scalar(@soll) != scalar( @ist / 2 ) )
         {
             while ( my $old_schedule_id = shift(@ist) ) {
-              foreach ( keys %{ $hash->{READINGS} } ) {
-                delete $hash->{READINGS}->{$_}
-                  if ( $_ =~ /scheduling-schedules_event_${old_schedule_id}_.*/ );
+                foreach ( keys %{ $hash->{READINGS} } ) {
+                    delete $hash->{READINGS}->{$_}
+                      if ( $_ =~
+                        /scheduling-schedules_event_${old_schedule_id}_.*/ );
                 }    # fi
                 Log3 $name, 5,
 "[DEBUG] - $name : deletereading scheduling-schedules_event_${old_schedule_id}_.*"
