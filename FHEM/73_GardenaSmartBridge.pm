@@ -2,7 +2,7 @@
 #
 # Developed with VSCodium and richterger perl plugin.
 #
-#  (c) 2017-2022 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
+#  (c) 2017-2024 Copyright: Marko Oldenburg (fhemdevelopment at cooltux dot net)
 #  All rights reserved
 #
 #   Special thanks goes to comitters:
@@ -75,9 +75,9 @@ eval { use IO::Socket::SSL; 1 }
 # try to use JSON::MaybeXS wrapper
 #   for chance of better performance + open code
 eval {
-  require JSON::MaybeXS;
-  import JSON::MaybeXS qw( decode_json encode_json );
-  1;
+    require JSON::MaybeXS;
+    import JSON::MaybeXS qw( decode_json encode_json );
+    1;
 } or do {
 
     # try to use JSON wrapper
@@ -629,31 +629,32 @@ sub ErrorHandling {
             if ($decode_json) {
                 if ( ref( $decode_json->{errors} ) eq "ARRAY"
                     && exists( $decode_json->{errors} ) )
-                    # replace defined with exists
-                    # && defined( $decode_json->{errors} ) )
+
+                  # replace defined with exists
+                  # && defined( $decode_json->{errors} ) )
                 {
                     # $decode_json->{errors} -> ARRAY
                     # $decode_json->{errors}[0] -> HASH
-                    if (exists ($decode_json->{errors}[0]{error}) ) {
-                      readingsBulkUpdate(
-                        $dhash,
-                        "state",
-                        $decode_json->{errors}[0]{error} . ' '
-                          . $decode_json->{errors}[0]{attribute},
-                        1
-                      );
-                      readingsBulkUpdate(
-                          $dhash,
-                          "lastRequestState",
-                          $decode_json->{errors}[0]{error} . ' '
-                            . $decode_json->{errors}[0]{attribute},
-                          1
-                      );
-                      Log3 $dname, 5,
-                          "GardenaSmartBridge ($dname) - RequestERROR: "
-                        . $decode_json->{errors}[0]{error} . " "
-                        . $decode_json->{errors}[0]{attribute};
-                  } # fi exists error
+                    if ( exists( $decode_json->{errors}[0]{error} ) ) {
+                        readingsBulkUpdate(
+                            $dhash,
+                            "state",
+                            $decode_json->{errors}[0]{error} . ' '
+                              . $decode_json->{errors}[0]{attribute},
+                            1
+                        );
+                        readingsBulkUpdate(
+                            $dhash,
+                            "lastRequestState",
+                            $decode_json->{errors}[0]{error} . ' '
+                              . $decode_json->{errors}[0]{attribute},
+                            1
+                        );
+                        Log3 $dname, 5,
+                            "GardenaSmartBridge ($dname) - RequestERROR: "
+                          . $decode_json->{errors}[0]{error} . " "
+                          . $decode_json->{errors}[0]{attribute};
+                    }    # fi exists error
                 }
             }
             else {
@@ -1059,12 +1060,18 @@ sub WriteReadings {
                       if ( ref($v) eq 'ARRAY' );
 
                     #$v = encode_utf8($v);
-                    $v = ' ' if (!defined $v);
-                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 1 ".$decode_json->{abilities}[0]{properties}[$properties]{name} if ( $decode_json->{abilities}[0]{properties}[$properties]
+                    $v = ' ' if ( !defined $v );
+                    Log3 $name, 4,
+                      "Gardena DEBUG DEBUG DEBUG stage 1 "
+                      . $decode_json->{abilities}[0]{properties}[$properties]
+                      {name}
+                      if ( $decode_json->{abilities}[0]{properties}[$properties]
                         {name} !~ /ethernet_status|wifi_status/ );
-                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 2".$t if ( $decode_json->{abilities}[0]{properties}[$properties]
+                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 2" . $t
+                      if ( $decode_json->{abilities}[0]{properties}[$properties]
                         {name} !~ /ethernet_status|wifi_status/ );
-                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 3".$v if ( $decode_json->{abilities}[0]{properties}[$properties]
+                    Log3 $name, 4, "Gardena DEBUG DEBUG DEBUG stage 3" . $v
+                      if ( $decode_json->{abilities}[0]{properties}[$properties]
                         {name} !~ /ethernet_status|wifi_status/ );
 
                     readingsBulkUpdateIfChanged(
@@ -1084,16 +1091,22 @@ sub WriteReadings {
                         )
                         && ref($v) eq 'HASH'
                       )
-                      {
-                        if ($v->{is_connected} ) {
-                          readingsBulkUpdateIfChanged( $hash,
-                            $decode_json->{abilities}[0]{properties}[$properties]{name}.'-ip', $v->{ip} )
-                            if ( ref( $v->{ip} ) ne 'HASH' );
-                          readingsBulkUpdateIfChanged( $hash,
-                            $decode_json->{abilities}[0]{properties}[$properties]{name}.'-isconnected', $v->{is_connected} )
-                            if ( $v->{is_connected} );
+                    {
+                        if ( $v->{is_connected} ) {
+                            readingsBulkUpdateIfChanged(
+                                $hash,
+                                $decode_json->{abilities}[0]{properties}
+                                  [$properties]{name} . '-ip',
+                                $v->{ip}
+                            ) if ( ref( $v->{ip} ) ne 'HASH' );
+                            readingsBulkUpdateIfChanged(
+                                $hash,
+                                $decode_json->{abilities}[0]{properties}
+                                  [$properties]{name} . '-isconnected',
+                                $v->{is_connected}
+                            ) if ( $v->{is_connected} );
                         }
-                      } # fi ethernet and wifi
+                    }    # fi ethernet and wifi
                 }
                 $properties--;
 
@@ -1326,7 +1339,7 @@ sub createHttpValueStrings {
             && $abilities eq 'mower' )
         {
             my $valve_id;
-            
+
             $uri .=
                 '/devices/'
               . $deviceId
