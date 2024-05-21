@@ -221,7 +221,7 @@ sub Define {
     $hash->{URL} =
       AttrVal( $name, 'gardenaBaseURL', 'https://smart.gardena.com' ) . '/v1';
     $hash->{VERSION}   = version->parse($VERSION)->normal;
-    $hash->{INTERVAL}  = 60;
+    $hash->{INTERVAL}  = 180;
     $hash->{NOTIFYDEV} = "global,$name";
 
     CommandAttr( undef, $name . ' room GardenaSmart' )
@@ -292,14 +292,14 @@ sub Attr {
               if ( $attrVal == 0 );
             RemoveInternalTimer( $hash,
                 "FHEM::GardenaSmartBridge::getDevices" );
-            $hash->{INTERVAL} = $attrVal;
+            $hash->{INTERVAL} = $attrVal if $attrVal >= 180;
             Log3 $name, 3,
               "GardenaSmartBridge ($name) - set interval: $attrVal";
         }
         elsif ( $cmd eq 'del' ) {
             RemoveInternalTimer( $hash,
                 "FHEM::GardenaSmartBridge::getDevices" );
-            $hash->{INTERVAL} = 60;
+            $hash->{INTERVAL} = 180;
             Log3 $name, 3,
 "GardenaSmartBridge ($name) - delete User interval and set default: 60";
         }
@@ -1307,7 +1307,7 @@ sub createHttpValueStrings {
     my $session_id = $hash->{helper}{session_id};
     my $header = 'Content-Type: application/json';
     $header .= "\r\norigin: https://smart.gardena.com";
-
+    $header .= "\r\nuser-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
     #my $header     = "Content-Type: application/json; origin: https://smart.gardena.com";
     my $uri        = '';
     my $method     = 'POST';
@@ -1515,7 +1515,7 @@ sub DeletePassword {
   <ul>
     <li>debugJSON - </li>
     <li>disable - Disables the Bridge</li>
-    <li>interval - Interval in seconds (Default=60)</li>
+    <li>interval - Interval in seconds (Default=180)</li>
     <li>gardenaAccountEmail - Email Adresse which was used in the GardenaAPP</li>
   </ul>
 </ul>
@@ -1576,7 +1576,7 @@ sub DeletePassword {
   <ul>
     <li>debugJSON - JSON Fehlermeldungen</li>
     <li>disable - Schaltet die Datenübertragung der Bridge ab</li>
-    <li>interval - Abfrageinterval in Sekunden (default: 60)</li>
+    <li>interval - Abfrageinterval in Sekunden (default: 180)</li>
     <li>gardenaAccountEmail - Email Adresse, die auch in der GardenaApp verwendet wurde</li>
   </ul>
 </ul>
