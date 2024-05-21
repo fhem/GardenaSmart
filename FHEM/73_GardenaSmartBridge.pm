@@ -264,6 +264,8 @@ sub Attr {
         if ( $cmd eq 'set' && $attrVal eq '1' ) {
             RemoveInternalTimer( $hash,
                 "FHEM::GardenaSmartBridge::getDevices" );
+            RemoveInternalTimer( $hash,
+                "FHEM::GardenaSmartBridge::getToken" );
             readingsSingleUpdate( $hash, 'state', 'inactive', 1 );
             Log3 $name, 3, "GardenaSmartBridge ($name) - disabled";
         }
@@ -690,6 +692,20 @@ sub ErrorHandling {
             Log3 $dname, 5,
               "GardenaSmartBridge ($dname) - RequestERROR: check the ???";
 
+        }
+        elsif ( $decode_json->{errors}[0]{code} eq "ratelimit.exceeded"  ) {
+          Log3 $dname, 5,
+            "GardenaSmartBridge ($dname) - RequestERROR: error ratelimit.exceeded";
+          readingsBulkUpdate( $dhash, "lastRequestState", "too many requests", 1 );
+          readingsBulkUpdate( $dhash, "state", "inactive", 1 );
+          # remove all timer and disable bridge
+          readingsBulkUpdate( $dhash, "disable", "1", 1 );
+#          AttrVal( $name, 'disable', '1');
+          RemoveInternalTimer( $dhash, "FHEM::GardenaSmartBridge::getDevices" );
+          RemoveInternalTimer( $dhash, "FHEM::GardenaSmartBridge::getToken" );
+          
+
+          return; # post request max.
         }
         else {
 
@@ -1176,21 +1192,21 @@ sub getToken {
 
     Write(
         $hash,
-        '"data": {"type":"token", "attributes":{"username": "'
+        '"data":{"type":"token","attributes":{"username":"'
           . AttrVal( $name, 'gardenaAccountEmail', 'none' )
-          . '","password": "'
+          . '","password":"'
           . ReadPassword( $hash, $name )
-          . '", "client_id":"smartgarden-jwt-client"}}',
+          . '","client_id":"smartgarden-jwt-client"}}',
         undef,
         undef
     );
 
     Log3 $name, 4,
-        '"data": {"type":"token", "attributes":{"username": "'
+        '"data": {"type":"token", "attributes":{"username":"'
       . AttrVal( $name, 'gardenaAccountEmail', 'none' )
-      . '","password": "'
+      . '","password":"'
       . ReadPassword( $hash, $name )
-      . '", "client_id":"smartgarden-jwt-client"}}';
+      . '","client_id":"smartgarden-jwt-client"}}';
     Log3 $name, 3,
 "GardenaSmartBridge ($name) - send credentials to fetch Token and locationId";
 
@@ -1289,7 +1305,10 @@ sub createHttpValueStrings {
     my ( $hash, $payload, $deviceId, $abilities, $service_id ) = @_;
 
     my $session_id = $hash->{helper}{session_id};
-    my $header     = "Content-Type: application/json";
+    my $header = 'Content-Type: application/json';
+    $header .= "\r\norigin: https://smart.gardena.com";
+
+    #my $header     = "Content-Type: application/json; origin: https://smart.gardena.com";
     my $uri        = '';
     my $method     = 'POST';
     $header .= "\r\nAuthorization: Bearer $session_id"
