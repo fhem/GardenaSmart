@@ -718,10 +718,14 @@ sub ErrorHandling {
               "GardenaSmartBridge ($name) - getToken limit: " 
               . $hash->{helper}{gettoken_count} ;
 
-            $hash->{helper}{gettoken_count}++;
-            InternalTimer( gettimeofday() + 5,
+            if ($hash->{helper}{gettoken_count} < 6) {
+              $hash->{helper}{gettoken_count}++;
+              InternalTimer( gettimeofday() + 5,
                 "FHEM::GardenaSmartBridge::getToken", $hash )
-                if ($hash->{helper}{gettoken_count} < 6);
+            } else {
+              RemoveInternalTimer ($hash);
+              $hash->{helper}{gettoken_count} = 0;
+            }
         }
         readingsEndUpdate( $dhash, 1 );
 
