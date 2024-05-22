@@ -205,6 +205,7 @@ sub Define {
     my $hash = shift // return;
     my $aArg = shift // return;
 
+
     return $@ unless ( FHEM::Meta::SetInternals($hash) );
     use version 0.60; our $VERSION = FHEM::Meta::Get( $hash, 'version' );
 
@@ -223,6 +224,7 @@ sub Define {
     $hash->{VERSION}   = version->parse($VERSION)->normal;
     $hash->{INTERVAL}  = 180;
     $hash->{NOTIFYDEV} = "global,$name";
+    $hash->{helper}{gettoken_count} = 0;
 
     CommandAttr( undef, $name . ' room GardenaSmart' )
       if ( AttrVal( $name, 'room', 'none' ) eq 'none' );
@@ -700,7 +702,7 @@ sub ErrorHandling {
           readingsBulkUpdate( $hash, "state", "inactive", 1 );
           # remove all timer and disable bridge
           RemoveInternalTimer( $hash );
-          
+
           return; # post request max.
         }
         else {
@@ -712,8 +714,14 @@ sub ErrorHandling {
 
         if ( !defined( $hash->{helper}{session_id} ) ) {
             readingsSingleUpdate( $hash, 'token', 'none', 1 );
+            Log3 $name, 3,
+              "GardenaSmartBridge ($name) - getToken limit: " 
+              . $hash->{helper}{gettoken_count} ;
+
+            $hash->{helper}{gettoken_count}++;
             InternalTimer( gettimeofday() + 5,
-                "FHEM::GardenaSmartBridge::getToken", $hash );
+                "FHEM::GardenaSmartBridge::getToken", $hash )
+                if ($hash->{helper}{gettoken_count} < 6);
         }
         readingsEndUpdate( $dhash, 1 );
 
