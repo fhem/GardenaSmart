@@ -694,17 +694,13 @@ sub ErrorHandling {
 
         }
         elsif ( $decode_json->{errors}[0]{code} eq "ratelimit.exceeded"  ) {
-          Log3 $dname, 5,
-            "GardenaSmartBridge ($dname) - RequestERROR: error ratelimit.exceeded";
-          readingsBulkUpdate( $dhash, "lastRequestState", "too many requests", 1 );
-          readingsBulkUpdate( $dhash, "state", "inactive", 1 );
+          Log3 $name, 5,
+            "GardenaSmartBridge ($name) - RequestERROR: error ratelimit.exceeded";
+          readingsBulkUpdate( $hash, "lastRequestState", "too many requests", 1 );
+          readingsBulkUpdate( $hash, "state", "inactive", 1 );
           # remove all timer and disable bridge
-          readingsBulkUpdate( $dhash, "disable", "1", 1 );
-#          AttrVal( $name, 'disable', '1');
-          RemoveInternalTimer( $dhash, "FHEM::GardenaSmartBridge::getDevices" );
-          RemoveInternalTimer( $dhash, "FHEM::GardenaSmartBridge::getToken" );
+          RemoveInternalTimer( $hash );
           
-
           return; # post request max.
         }
         else {
