@@ -587,20 +587,20 @@ sub Set {
 
         $list .=
 'closeAllValves:noArg resetValveErrors:noArg stopScheduleValve:select,'
-          . ReadingsVal( $name, 'ic24-valves_connected', '1' )
+          . ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) )
           . ' resumeScheduleValve:select,'
-          . ReadingsVal( $name, 'ic24-valves_connected', '1' )
+          . ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) )
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
 
         foreach my $valve (
-            split( ',', ReadingsVal( $name, 'ic24-valves_connected', '1' ) ) )
+            split( ',', ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) ) ) )
         {
             $list .= ' manualDurationValve' . $valve . ':slider,1,1,90 '
               if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
         }
 
         foreach my $valve (
-            split( ',', ReadingsVal( $name, 'ic24-valves_connected', '1' ) ) )
+            split( ',', ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) ) ) )
         {
             $list .= ' cancelOverrideValve' . $valve . ':noArg '
               if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
@@ -758,6 +758,10 @@ sub WriteReadings {
                     . $propertie->{name} ne 'ic24-valves_connected'
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} ne 'ic24-valves_master_config'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
+                    . $propertie->{name} ne 'valve-valves_connected'
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
+                    . $propertie->{name} ne 'valve-valves_master_config'
                     && (  $decode_json->{abilities}[$abilities]{name} . '-'
                         . $propertie->{name} ) !~ /scheduling-timeslot_state_\d/
                     && ref( $propertie->{value} ) ne "HASH"
@@ -827,6 +831,26 @@ sub WriteReadings {
                   if ( defined( $propertie->{value} )
                     && $decode_json->{abilities}[$abilities]{name} . '-'
                     . $propertie->{name} eq 'ic24-valves_master_config' );
+
+                readingsBulkUpdateIfChanged(
+                    $hash,
+                    $decode_json->{abilities}[$abilities]{name} . '-'
+                      . $propertie->{name},
+                    join( ',', @{ $propertie->{value} } )
+                  )
+                  if ( defined( $propertie->{value} )
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
+                    . $propertie->{name} eq 'valve-valves_connected' );
+
+                readingsBulkUpdateIfChanged(
+                    $hash,
+                    $decode_json->{abilities}[$abilities]{name} . '-'
+                      . $propertie->{name},
+                    join( ',', @{ $propertie->{value} } )
+                  )
+                  if ( defined( $propertie->{value} )
+                    && $decode_json->{abilities}[$abilities]{name} . '-'
+                    . $propertie->{name} eq 'valve-valves_master_config' );
 
                 if ( ref( $propertie->{value} ) eq "HASH" ) {
                     my $sub_state = 0;
@@ -1190,7 +1214,8 @@ sub setState {
         my $error_type        = 'ok';
         my @valves_connected =
           AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
-          ? split( ',', ReadingsVal( $name, 'ic24-valves_connected', '' ) )
+          ? split( ',', ( ReadingsVal( $name, 'ic24-valves_connected', '' )
+                      || ReadingsVal( $name, 'valve-valves_connected', '1' ) ) )
           : '1';
 
         $has_schedule = 1
@@ -1975,8 +2000,8 @@ sub SetPredefinedStartPoints {
         <li>firmware-firmware_status - firmware status </li>
         <li>firmware-firmware_upload_progress - progress indicator of firmware update</li>
         <li>firmware-inclusion_status - inclusion status</li>        
-        <li>ic24-valves_connected - connected valves (comma separated)</li>
-        <li>ic24-valves_master_config - master valve (only if defined in Gardena app)</li>
+        <li>[ic24|valve]-valves_connected - connected valves (comma separated)</li>
+        <li>[ic24|valve]-valves_master_config - master valve (only if defined in Gardena app)</li>
         <li>radio-quality - percentage of the radio quality</li>
         <li>radio-state - radio state (bad/poor/good/undefined)</li>   
         <li>scheduling-scheduled_watering_end - next schedule ending time</li>
@@ -2442,8 +2467,8 @@ sub SetPredefinedStartPoints {
         <li>firmware-firmware_status - Firmware Status </li>
         <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
         <li>firmware-inclusion_status - Einbindungsstatus</li>        
-        <li>ic24-valves_connected - Verbundene Ventile (ID, kommagetrennt)</li>
-        <li>ic24-valves_master_config - Masterventil (nur, wenn in Gardena-App definiert)</li>
+        <li>[ic24|valve]-valves_connected - Verbundene Ventile (ID, kommagetrennt)</li>
+        <li>[ic24|valve]-valves_master_config - Masterventil (nur, wenn in Gardena-App definiert)</li>
         <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
         <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>   
         <li>scheduling-scheduled_watering_end - Endzeit des n&auml;chsten Zeitplans</li>
