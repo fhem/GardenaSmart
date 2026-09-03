@@ -169,7 +169,7 @@ sub Initialize {
     $hash->{AttrFn} = \&Attr;
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
-      . "model:watering_computer,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
+      . "model:watering_computer,watering_computer_duo,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
       . "extendedState:0,1 "
       . "IODev "
       . $readingFnAttributes;
@@ -303,7 +303,8 @@ sub Set {
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
     $abilities = 'watering'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
-        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' );
+        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' 
+        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo' );
     $abilities = 'power'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
     $abilities = 'watering'
@@ -445,7 +446,7 @@ sub Set {
         $payload =
           '"properties":{"name":"power_timer", "value":"' . $val . '"}';
     }
-    ### Watering ic24
+    ### Watering ic24 | watering_computer_duo
     elsif ( $cmd =~ m{\AmanualDurationValve\d\z}xms ) {
         my $valve_id;
 
@@ -590,20 +591,23 @@ sub Set {
           . ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) )
           . ' resumeScheduleValve:select,'
           . ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) )
-          if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+          if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
+            || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo') ;
 
         foreach my $valve (
             split( ',', ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) ) ) )
         {
             $list .= ' manualDurationValve' . $valve . ':slider,1,1,90 '
-              if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+              if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
+                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo');
         }
 
         foreach my $valve (
             split( ',', ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) ) ) )
         {
             $list .= ' cancelOverrideValve' . $valve . ':noArg '
-              if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' );
+              if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
+                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo');
         }
 
         $list .= 'refresh:temperature,humidity'
@@ -945,7 +949,7 @@ sub WriteReadings {
             scalar( @{ $decode_json->{scheduled_events} } )
         );
         my $valve_id = 1;
-        my $event_id = 0;    # ic24 [1..6] | wc, pump [1]
+        my $event_id = 0;    # ic24 [1..6] | wc, pump [1] | wc_duo [1..2]
 
         ##
         # validiere schedules
@@ -1019,7 +1023,7 @@ sub WriteReadings {
 
         for my $event_schedules ( @{ $decode_json->{scheduled_events} } ) {
             $valve_id = $event_schedules->{valve_id}
-              if ( exists( $event_schedules->{valve_id} ) );    #ic24
+              if ( exists( $event_schedules->{valve_id} ) );    #ic24 || wc_duo
             $event_id++;                                        # event id
 
             while ( my ( $r, $v ) = each %{$event_schedules} ) {
@@ -1085,7 +1089,7 @@ sub WriteReadings {
                 );
             }
             #####
-            #ic24 schedules pause until
+            #ic24 || wc_duo schedules pause until
             if ( $decode_json->{settings}[$settings]{name} =~
                 /schedules_paused_until_?(\d)?$/ )
             {
@@ -1199,10 +1203,11 @@ sub setState {
         : 'offline' )
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'mower' );
 
-    # ic24 / wc / electronic pump
+    # ic24 / wc / wc_duo / electronic pump
 
     if (   AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
         || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer'
+        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo'
         || AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' )
     {
         my @opened_valves;
@@ -1213,7 +1218,8 @@ sub setState {
         my $processed_item    = '';
         my $error_type        = 'ok';
         my @valves_connected =
-          AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
+          ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'  
+            || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo' )
           ? split( ',', ( ReadingsVal( $name, 'ic24-valves_connected', '' )
                       || ReadingsVal( $name, 'valve-valves_connected', '1' ) ) )
           : '1';
@@ -1260,7 +1266,8 @@ sub setState {
 
             # y-m-d h:m
             $processed_item =
-              AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
+              ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
+                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo' )
               ? RigReadingsValue(
                 $hash,
                 ReadingsVal(
@@ -2110,7 +2117,7 @@ sub SetPredefinedStartPoints {
     <b>Attribute (all models)</b>
     <ul>
         <li>IODev - Name of GardenaSmartBridge device</li>
-        <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - model of
+        <li>model watering_computer|watering_computer_duo|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - model of
             GardenaSmartDevice</li>
         <li>readingValueLanguage en|de - Reading language enlish or german (default: english, if global language is not
             set to german)</li>
@@ -2142,6 +2149,21 @@ sub SetPredefinedStartPoints {
             "permanently")</li>
         <li>winter_mode hibernate|awake - enable or disable winter mode</li>
     </ul>
+    <br><br>
+    <b>set (model = watering_computer_duo)</b>
+    <ul>
+        <li>cancelOverrideValve1 - stop (manual) watering for valve 1 </li>
+        <li>cancelOverrideValve2 - stop (manual) watering for valve 2 </li>
+        <li>closeAllValves - close all valves</li>
+        <li>manualDurationValve1 n - open valve 1 for n minutes</li>
+        <li>manualDurationValve2 n - open valve 2 for n minutes</li>
+        <li>resetValveErrors - reset valve errormessage</li>
+        <li>resumeScheduleValve n - (re)start irrigation schedule for valve n</li>
+        <li>stopScheduleValve n m - stop irrigation schedule for valve n  (Default: 2038-01-18T00:00:00.000Z, Gardena
+            App reads it as "permanently")</li>
+        <li>winter_mode hibernate|awake - enable or disable winter mode</li>
+    </ul>
+   
     <br><br>
     <b>set (model = ic24)</b>
     <ul>
@@ -2447,6 +2469,64 @@ sub SetPredefinedStartPoints {
         <li>winter_mode - Status Winterschlaf (awake/hibernate)</li>        
     </ul>
     <br><br>
+    <b>Readings (model = watering_computer_duo/Bew&auml;sserungscomputer mit 2 Ventilen)</b>
+      <ul>
+        <li>device_info-category - Art des Ger&auml;ts</li>
+        <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
+        <li>device_info-last_time_online - Zeitpunkt der letzten Funk&uuml;bertragung</li>
+        <li>device_info-manufacturer - Hersteller</li>
+        <li>device_info-product - Produkttyp</li>
+        <li>device_info-serial_number - Seriennummer</li>
+        <li>device_info-sgtin - (tbd.)</li>
+        <li>device_info-version - Firmware Version</li>
+        <li>error-error - Fehlermeldung (tbd.)</li>
+        <li>error-valve_error_0_severity - (tbd.)</li>
+        <li>error-valve_error_0_type - (tbd.)</li>
+        <li>error-valve_error_0_valve_id - ID des fehlerhaften Ventils</li>
+        <li>...ggf. weitere Error-Readings</li>
+        <li>firmware-firmware_available_version - Neue Firmware (nur wenn verf&uuml;gbar)</li>
+        <li>firmware-firmware_command - Firmware-Kommando (idle/firmware_cancel/firmware_upload/unsupported)</li>
+        <li>firmware-firmware_status - Firmware Status </li>
+        <li>firmware-firmware_upload_progress - Firmwareupdatestatus in Prozent</li>
+        <li>firmware-inclusion_status - Einbindungsstatus</li>        
+        <li>[valve]-valves_connected - Verbundene Ventile (ID, kommagetrennt)</li>
+        <li>[valve]-valves_master_config - Masterventil (nur, wenn in Gardena-App definiert)</li>
+        <li>radio-quality - Indikator f&uuml;r die Funkverbindung in Prozent</li>
+        <li>radio-state - Verbindungsqualit&auml;t (schlecht/schwach/gut/Undefiniert)</li>   
+        <li>scheduling-scheduled_watering_end - Endzeit des n&auml;chsten Zeitplans</li>
+        <li>scheduling-scheduled_watering_end_1 - Endzeit des n&auml;chsten Zeitplans f&uuml;r Ventil 1</li>
+        <li>...weitere Readings f&uuml;r Ventile 2</li>
+        <li>scheduling-scheduled_watering_next_start - Startzeit des n&auml;chsten Zeitplans</li>
+        <li>scheduling-scheduled_watering_next_start_1 - Startzeit des n&auml;chsten Zeitplans f&uuml;r Ventil 1</li>
+        <li>...weitere Readings f&uuml;r Ventile 2</li>
+        <li>scheduling-schedules_event_n_end_at - Endzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_n_id - ID des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_n_start_at - Startzeit des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_event_n_weekly - Wochentage des ersten definierten Zeitplans f&uuml;r Ventil n</li>
+        <li>scheduling-schedules_events_count - Anzahl angelegter Zeitpl&auml;ne</li>
+        <li>...weitere Readings f&uuml;r zus&auml;tzliche Zeitpl&auml;ne/Ventile</li>
+        <li>scheduling-schedules_paused_until_1 - Datum/Uhrzeit, bis wann Zeitplan pausiert ist (2038-01-18T00:00:00.000Z wird von Gardena-Cloud als dauerhaft angesehen) </li>
+        <li>...weitere Readings f&uuml;r Ventile 2</li>
+        <li>state - Status des Ger&auml;ts
+           <ul>
+               <li>geschossen - Ventil geschlossen, keine Zeitpl&auml;ne definiert</li>
+               <li>geschlossen. Zeitplan dauerhaft pausiert - Ventil geschlossen, Zeitplan dauerhaft pausiert</li>
+               <li>geschlossen. N&auml;chste Bew&auml;sserung: YYYY-MM-DD HH:MM - Ventil geschlossen, n&auml;chster Zeitplan-Start YYYY-MM-DDTHH:MM:00.000Z</li>
+               <li>wird bew&auml;ssert. n Minuten verbleibend - Bew&auml;sserung aktiv, n Minuten verbleibend (wenn 2 Ventile ge&ouml;ffnet sind, wird die l&auml;ngere Dauer angezeigt)</li>
+               <li>offline - Ger&auml;t ist ausgeschaltet/hat keine Verbindung</li>
+               <li>Winterschlaf - Ger&auml;t ist im Winterschlaf</li>
+           </ul>
+        </li>
+        <li>valve-valve_name_1 - Eigener Name f&uuml;r Ventil 1</li>
+        <li>...weitere Readings f&uuml;r Ventile 2</li>
+	    <li>watering-watering_timer_1_duration - Gesamt-Dauer der aktuellen Bew&auml;sserung in Sekunden</li>
+        <li>watering-watering_timer_1_irrigation_left - Verbleibende Dauer der aktuellen Bew&auml;sserung in Minuten</li>
+        <li>watering-watering_timer_1_state - Status des Timers</li>
+        <li>watering-watering_timer_1_valve_id - Ventil-ID des Timers</li>
+        <li>...weitere Readings f&uuml;r weitere Ventile/Zeitpl&auml;ne</li>
+        <li>winter_mode - Status Winterschlaf (awake/hibernate)</li>
+    </ul>
+    <br><br>
     <b>Readings (model = ic24)</b>
       <ul>
         <li>device_info-category - Art des Ger&auml;ts</li>
@@ -2638,7 +2718,7 @@ sub SetPredefinedStartPoints {
     <b>Attribute (alle Modelle)</b>
     <ul>
       <li>IODev - Name des GardenaSmartBridge Devices</li>
-      <li>model watering_computer|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - Modell des GardenaSmartDevice</li>
+      <li>model watering_computer|watering_computer_duo|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - Modell des GardenaSmartDevice</li>
       <li>readingValueLanguage en|de - Sprache der Readings englisch oder deutsch (default: englisch, es sei denn, Deutsch ist als globale Sprache gesetzt)</li>
     </ul>
     <br><br><br> 
@@ -2664,6 +2744,19 @@ sub SetPredefinedStartPoints {
         <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
         <li>resumeSchedule - Zeitplan wieder aktivieren</li>
         <li>stopSchedule n - Zeitplan anhalten f&uuml;r n Stunden (Default: 2038-01-18T00:00:00.000Z, durch Gardena-App als "dauerhaft" interpretiert)</li>
+        <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
+    </ul>
+    <br><br>
+    <b>set (model = watering_computer_duo)</b> 
+    <ul>
+        <li>cancelOverrideValve1 - (Manuelle) Bew&auml;sserung an Ventil 1 stoppen </li>
+        <li>cancelOverrideValve2 - (Manuelle) Bew&auml;sserung an Ventil 2 stoppen </li>
+        <li>closeAllValves - Alle Ventile schliessen</li>
+        <li>manualDurationValve1 n - Ventil 1 f&uuml;r n Minuten &ouml;ffnen</li>
+        <li>manualDurationValve2 n - Ventil 2 f&uuml;r n Minuten &ouml;ffnen</li>
+        <li>resetValveErrors - Ventilfehler zur&uuml;cksetzen</li>
+        <li>resumeScheduleValve n - Zeitplan f&uuml;r Ventil n wieder aktivieren</li>
+        <li>stopScheduleValve n m - Zeitplan f&uuml;r Ventil n anhalten f&uuml;r m Stunden (Default: 2038-01-18T00:00:00.000Z durch Gardena-App als "dauerhaft" interpretiert)</li>
         <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
@@ -2737,7 +2830,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.3",
+  "version": "v2.7.0",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],

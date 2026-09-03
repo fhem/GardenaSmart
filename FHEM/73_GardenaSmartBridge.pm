@@ -1608,7 +1608,7 @@ sub DeletePassword {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.6.3",
+  "version": "v2.7.0",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
