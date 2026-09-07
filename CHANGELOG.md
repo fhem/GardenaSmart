@@ -1,4 +1,14 @@
-### feat: added watering_computer_duo (HEAD -> patch_add_wateringcomputer_duo)
+### fix: fix (HEAD -> patch_add_wateringcomputer_duo)
+>Thu, 3 Sep 2026 23:42:17 +0200
+
+>Author: Sebastian (Sebastian.m@il.tld)
+
+>Commiter: Sebastian (Sebastian.m@il.tld)
+
+
+
+
+### feat: added watering_computer_duo
 >Thu, 3 Sep 2026 23:41:20 +0200
 
 >Author: Sebastian (Sebastian.m@il.tld)
@@ -11,9 +21,9 @@
 ### fix: ic24 array (origin/patch_ic24_array, patch_ic24_array)
 >Tue, 1 Sep 2026 00:03:10 +0200
 
->Author: sebastian (root@localhost)
+>Author: sebastianschwarz (root@localhost)
 
->Commiter: sebastian (root@localhost)
+>Commiter: sebastianschwarz (root@localhost)
 
 
 

@@ -169,7 +169,7 @@ sub Initialize {
     $hash->{AttrFn} = \&Attr;
     $hash->{AttrList} =
         "readingValueLanguage:de,en "
-      . "model:watering_computer,watering_computer_duo,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
+      . "model:watering_computer,watering_computer_dual,sensor,sensor2,mower,ic24,power,electronic_pressure_pump "
       . "extendedState:0,1 "
       . "IODev "
       . $readingFnAttributes;
@@ -304,7 +304,7 @@ sub Set {
     $abilities = 'watering'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
         || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer' 
-        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo' );
+        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_dual' );
     $abilities = 'power'
       if ( AttrVal( $name, 'model', 'unknown' ) eq 'power' );
     $abilities = 'watering'
@@ -446,7 +446,7 @@ sub Set {
         $payload =
           '"properties":{"name":"power_timer", "value":"' . $val . '"}';
     }
-    ### Watering ic24 | watering_computer_duo
+    ### Watering ic24 | watering_computer_dual
     elsif ( $cmd =~ m{\AmanualDurationValve\d\z}xms ) {
         my $valve_id;
 
@@ -592,14 +592,14 @@ sub Set {
           . ' resumeScheduleValve:select,'
           . ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) )
           if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
-            || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo') ;
+            || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_dual') ;
 
         foreach my $valve (
             split( ',', ( ReadingsVal( $name, 'ic24-valves_connected', '' ) || ReadingsVal( $name, 'valve-valves_connected', '1' ) ) ) )
         {
             $list .= ' manualDurationValve' . $valve . ':slider,1,1,90 '
               if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
-                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo');
+                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_dual');
         }
 
         foreach my $valve (
@@ -607,7 +607,7 @@ sub Set {
         {
             $list .= ' cancelOverrideValve' . $valve . ':noArg '
               if ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24' 
-                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo');
+                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_dual');
         }
 
         $list .= 'refresh:temperature,humidity'
@@ -1207,7 +1207,7 @@ sub setState {
 
     if (   AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
         || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer'
-        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo'
+        || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_dual'
         || AttrVal( $name, 'model', 'unknown' ) eq 'electronic_pressure_pump' )
     {
         my @opened_valves;
@@ -1219,7 +1219,7 @@ sub setState {
         my $error_type        = 'ok';
         my @valves_connected =
           ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'  
-            || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo' )
+            || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_dual' )
           ? split( ',', ( ReadingsVal( $name, 'ic24-valves_connected', '' )
                       || ReadingsVal( $name, 'valve-valves_connected', '1' ) ) )
           : '1';
@@ -1267,7 +1267,7 @@ sub setState {
             # y-m-d h:m
             $processed_item =
               ( AttrVal( $name, 'model', 'unknown' ) eq 'ic24'
-                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_duo' )
+                || AttrVal( $name, 'model', 'unknown' ) eq 'watering_computer_dual' )
               ? RigReadingsValue(
                 $hash,
                 ReadingsVal(
@@ -1563,7 +1563,7 @@ sub ReadingLangGerman {
         'watering_computer'           => 'Bewässerungscomputer',
         'no_frost'                    => 'kein Frost',
         'open'                        => 'offen',
-        'closed'                      => 'geschlossen',
+        'closed'                      => 'geschlossen.',
         'included'                    => 'inbegriffen',
         'active'                      => 'aktiv',
         'inactive'                    => 'nicht aktiv',
@@ -2117,7 +2117,7 @@ sub SetPredefinedStartPoints {
     <b>Attribute (all models)</b>
     <ul>
         <li>IODev - Name of GardenaSmartBridge device</li>
-        <li>model watering_computer|watering_computer_duo|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - model of
+        <li>model watering_computer|watering_computer_dual|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - model of
             GardenaSmartDevice</li>
         <li>readingValueLanguage en|de - Reading language enlish or german (default: english, if global language is not
             set to german)</li>
@@ -2150,7 +2150,7 @@ sub SetPredefinedStartPoints {
         <li>winter_mode hibernate|awake - enable or disable winter mode</li>
     </ul>
     <br><br>
-    <b>set (model = watering_computer_duo)</b>
+    <b>set (model = watering_computer_dual)</b>
     <ul>
         <li>cancelOverrideValve1 - stop (manual) watering for valve 1 </li>
         <li>cancelOverrideValve2 - stop (manual) watering for valve 2 </li>
@@ -2469,7 +2469,7 @@ sub SetPredefinedStartPoints {
         <li>winter_mode - Status Winterschlaf (awake/hibernate)</li>        
     </ul>
     <br><br>
-    <b>Readings (model = watering_computer_duo/Bew&auml;sserungscomputer mit 2 Ventilen)</b>
+    <b>Readings (model = watering_computer_dual/Bew&auml;sserungscomputer mit 2 Ventilen)</b>
       <ul>
         <li>device_info-category - Art des Ger&auml;ts</li>
         <li>device_info-connection_status - Verbindungsstatus (online/offline/unknown)</li>
@@ -2718,7 +2718,7 @@ sub SetPredefinedStartPoints {
     <b>Attribute (alle Modelle)</b>
     <ul>
       <li>IODev - Name des GardenaSmartBridge Devices</li>
-      <li>model watering_computer|watering_computer_duo|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - Modell des GardenaSmartDevice</li>
+      <li>model watering_computer|watering_computer_dual|sensor|sensor2|mower|ic24|power|electronic_pressure_pump - Modell des GardenaSmartDevice</li>
       <li>readingValueLanguage en|de - Sprache der Readings englisch oder deutsch (default: englisch, es sei denn, Deutsch ist als globale Sprache gesetzt)</li>
     </ul>
     <br><br><br> 
@@ -2747,7 +2747,7 @@ sub SetPredefinedStartPoints {
         <li>winter_mode hibernate|awake - Winterschlaf aktivieren oder Ger&auml;t aufwecken</li>
     </ul>
     <br><br>
-    <b>set (model = watering_computer_duo)</b> 
+    <b>set (model = watering_computer_dual)</b> 
     <ul>
         <li>cancelOverrideValve1 - (Manuelle) Bew&auml;sserung an Ventil 1 stoppen </li>
         <li>cancelOverrideValve2 - (Manuelle) Bew&auml;sserung an Ventil 2 stoppen </li>
@@ -2830,7 +2830,7 @@ sub SetPredefinedStartPoints {
   ],
   "release_status": "stable",
   "license": "GPL_2",
-  "version": "v2.7.0",
+  "version": "v2.7.1",
   "author": [
     "Marko Oldenburg <fhemdevelopment@cooltux.net>"
   ],
