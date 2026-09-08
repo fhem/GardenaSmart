@@ -1,4 +1,14 @@
-### fix: fix (HEAD -> patch_add_wateringcomputer_duo)
+### fix: watering_computer_duo -> dual (HEAD -> patch_add_wateringcomputer_duo)
+>Mon, 7 Sep 2026 13:07:26 +0200
+
+>Author: Sebastian (Sebastian.m@il.tld)
+
+>Commiter: Sebastian (Sebastian.m@il.tld)
+
+
+
+
+### fix: fix (origin/patch_add_wateringcomputer_duo)
 >Thu, 3 Sep 2026 23:42:17 +0200
 
 >Author: Sebastian (Sebastian.m@il.tld)

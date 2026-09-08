@@ -1339,7 +1339,7 @@ sub setState {
             else {
                 $state_string .= RigReadingsValue( $hash, 'closed' );
             }
-            $state_string .=
+            $state_string .= '. ' .
               ($has_schedule)
               ? sprintf(
                 RigReadingsValue( $hash, 'next watering: %s' ),
@@ -1563,7 +1563,7 @@ sub ReadingLangGerman {
         'watering_computer'           => 'Bewässerungscomputer',
         'no_frost'                    => 'kein Frost',
         'open'                        => 'offen',
-        'closed'                      => 'geschlossen.',
+        'closed'                      => 'geschlossen',
         'included'                    => 'inbegriffen',
         'active'                      => 'aktiv',
         'inactive'                    => 'nicht aktiv',
